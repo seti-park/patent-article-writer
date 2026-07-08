@@ -1,0 +1,4 @@
+{
+  "gate_pass": false,
+  "must_contain_check_ids": ["HEDGE-001", "HEDGE-002"]
+}

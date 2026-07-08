@@ -1,0 +1,82 @@
+# banned_terms.txt -- mechanical mirror of the patent-essay anti-AI banned list.
+#
+# AUTHORITATIVE SOURCE: _shared/references/anti-ai-writing.md (Pass 1 banned list).
+# This file is the deterministic, hard-fail SUBSET of that canon: every term here
+# is unambiguous enough to enforce mechanically without false positives. The
+# richer judgment list (copula avoidance, transition fingerprint, hedging, etc.)
+# lives in anti-ai-writing.md and is enforced by editorial Pass 1, not this gate.
+#
+# Keep this file in sync when the canon banned list changes. The meta-loop
+# (pipeline-retro) proposes additions here when a banned pattern recurs across
+# essays and is mechanically safe to promote.
+#
+# Format (one entry per line):
+#   - '#' lines            -> comment, ignored
+#   - blank lines          -> ignored
+#   - 're:' prefix         -> Python regex (case-insensitive)
+#   - everything else      -> case-insensitive WHOLE-WORD literal
+#
+# Literals match on word boundaries: "enhance" will not match "enhancement".
+
+# --- SETI anti-ai banned words (Pass 1, authoritative) ---
+delve
+tapestry
+vibrant
+pivotal
+crucial
+fostering
+underscore
+meticulous
+intricate
+testament
+garner
+bolstered
+showcase
+enhance
+enduring
+valuable
+boasts
+renowned
+multifaceted
+leverage
+navigate
+resonate
+nestled
+groundbreaking
+interplay
+
+# NOTE: "landscape" (abstract sense) and sentence-initial "Additionally" are
+# banned in canon but context-dependent. "landscape" is left to editorial
+# judgment (geographic use is fine). Sentence-initial "Additionally" is the
+# regex below; mid-sentence "additionally" is left to editorial judgment.
+
+# --- sentence-initial Additionally (abstract connector) ---
+re:(?:^|[.!?]\s+)additionally\b
+
+# --- banned rhetorical patterns (Pass 1, high confidence) ---
+# not-just-X-but-Y / not-only-but negative parallelism
+re:not just .{1,40}?,? but
+re:not only .{1,60}? but
+# despite-the-challenges throat-clearing
+re:despite the challenges
+# copula avoidance (elaborate substitutes for is/are)
+re:\b(serves|stands) as a\b
+# section summaries / generic conclusions
+re:\b(in summary|to recap|in conclusion)\b
+# filler announcement
+re:it'?s worth noting
+
+# --- GOV.UK plain-English base: govspeak + clichés (mechanically safe subset) ---
+# Plain-word swaps (use / help / start, not these formal tells). The sense-dependent
+# swaps (about<-in relation to, so<-in order to, enough<-sufficient) stay in
+# anti-ai-writing.md judgment to avoid false positives in patent prose.
+utilise
+utilize
+facilitate
+commence
+# Unambiguous clichés. Ambiguous singles (unlock, drive, robust, hub, portal,
+# ecosystem) are deliberately left to editorial judgment — they have legitimate
+# technical senses in patent prose.
+re:deep[ -]dive
+re:going forward
+re:ring[ -]fence

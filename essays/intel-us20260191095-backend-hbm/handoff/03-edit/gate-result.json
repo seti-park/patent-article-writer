@@ -1,0 +1,75 @@
+{
+  "passed": true,
+  "gates": [
+    {
+      "gate": "emdash",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "anchors",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "quotes",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "sources",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "banned",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "structure",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "figure_use",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "meta",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "stub",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "cashtag",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "dupe",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "typography",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "hedge",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "surface",
+      "passed": true,
+      "findings": []
+    }
+  ]
+}

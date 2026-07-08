@@ -1,0 +1,170 @@
+# voice-canon/ index
+# 각 entry 의 metadata. 본문은 해당 .md 파일 참조.
+
+entries:
+  - entry_id: opening-news-event-tesla-terafab
+    pattern_category: opening-news-event
+    source_essay: interview-md-q12
+    file: opening-news-event-tesla-terafab.md
+
+  - entry_id: opening-news-event-cybercab-production-timeline
+    pattern_category: opening-news-event
+    source_essay: essay-cybercab-etherloop
+    file: opening-news-event-cybercab-production-timeline.md
+
+  - entry_id: opening-news-event-cloud-cascade
+    pattern_category: opening-news-event
+    source_essay: essay-google-cloud-cascade
+    file: opening-news-event-cloud-cascade.md
+
+  - entry_id: opening-news-event-genie-hassabis-quote
+    pattern_category: opening-news-event
+    source_essay: essay-genie-physics-reverse-engineering
+    file: opening-news-event-genie-hassabis-quote.md
+
+  - entry_id: opening-news-event-spacex-xai-merger
+    pattern_category: opening-news-event
+    source_essay: essay-spacex-tesla-convergence-en
+    file: opening-news-event-spacex-xai-merger.md
+
+  - entry_id: opening-reader-experience-llm-date
+    pattern_category: opening-reader-experience
+    source_essay: interview-md-q12
+    file: opening-reader-experience-llm-date.md
+
+  - entry_id: opening-industry-norm-reversal-xray-tesla
+    pattern_category: opening-industry-norm-reversal
+    source_essay: essay-tesla-4680-terahertz
+    file: opening-industry-norm-reversal-xray-tesla.md
+
+  - entry_id: closing-aphoristic-landing-circuit-contract
+    pattern_category: closing-aphoristic-landing
+    source_essay: interview-md-q14
+    file: closing-aphoristic-landing-circuit-contract.md
+
+  - entry_id: closing-aphoristic-landing-paintshop-rewrote
+    pattern_category: closing-aphoristic-landing
+    source_essay: essay-cybercab-taillight
+    file: closing-aphoristic-landing-paintshop-rewrote.md
+
+  - entry_id: closing-aphoristic-landing-redundancy-steady-state
+    pattern_category: closing-aphoristic-landing
+    source_essay: essay-cybercab-etherloop
+    file: closing-aphoristic-landing-redundancy-steady-state.md
+
+  - entry_id: closing-aphoristic-landing-architecture-harder-to-read
+    pattern_category: closing-aphoristic-landing
+    source_essay: essay-google-cloud-cascade
+    file: closing-aphoristic-landing-architecture-harder-to-read.md
+
+  - entry_id: closing-aphoristic-landing-xray-signal
+    pattern_category: closing-aphoristic-landing
+    source_essay: essay-tesla-4680-terahertz
+    file: closing-aphoristic-landing-xray-signal.md
+
+  - entry_id: closing-aphoristic-landing-learning-vs-inference-asymmetry
+    pattern_category: closing-aphoristic-landing
+    source_essay: essay-genie-physics-reverse-engineering
+    file: closing-aphoristic-landing-learning-vs-inference-asymmetry.md
+
+  - entry_id: closing-aphoristic-landing-pin-replacement-materials
+    pattern_category: closing-aphoristic-landing
+    source_essay: essay-optimus-finger-no-pin
+    file: closing-aphoristic-landing-pin-replacement-materials.md
+
+  - entry_id: closing-aphoristic-landing-corporate-story-vs-patents
+    pattern_category: closing-aphoristic-landing
+    source_essay: essay-spacex-tesla-convergence-en
+    file: closing-aphoristic-landing-corporate-story-vs-patents.md
+
+  - entry_id: closing-open-question-model-weights
+    pattern_category: closing-open-question
+    source_essay: interview-md-q14
+    file: closing-open-question-model-weights.md
+
+  - entry_id: closing-open-question-etherloop-ring-extension
+    pattern_category: closing-open-question
+    source_essay: essay-cybercab-etherloop
+    file: closing-open-question-etherloop-ring-extension.md
+
+  - entry_id: closing-open-question-tesla-yield-rate
+    pattern_category: closing-open-question
+    source_essay: essay-tesla-4680-terahertz
+    file: closing-open-question-tesla-yield-rate.md
+
+  - entry_id: closing-open-question-genie-understanding-world
+    pattern_category: closing-open-question
+    source_essay: essay-genie-physics-reverse-engineering
+    file: closing-open-question-genie-understanding-world.md
+
+  - entry_id: closing-open-question-finger-cable-next-essay
+    pattern_category: closing-open-question
+    source_essay: essay-optimus-finger-no-pin
+    file: closing-open-question-finger-cable-next-essay.md
+
+  - entry_id: closing-open-question-chip-swarm-satellite-mesh
+    pattern_category: closing-open-question
+    source_essay: essay-spacex-satellite-cluster
+    file: closing-open-question-chip-swarm-satellite-mesh.md
+
+  - entry_id: sig-ko-interesting-pivot-spacex-no-training
+    pattern_category: sig-ko-interesting-pivot
+    source_essay: essay-spacex-satellite-cluster
+    file: sig-ko-interesting-pivot-spacex-no-training.md
+
+  - entry_id: sig-ko-hypothesis-statement-spacex-tesla-convergence
+    pattern_category: sig-ko-hypothesis-statement
+    source_essay: essay-spacex-tesla-convergence
+    file: sig-ko-hypothesis-statement-spacex-tesla-convergence.md
+
+  - entry_id: sig-ko-core-claim-optimus-implementation-reading
+    pattern_category: sig-ko-core-claim
+    source_essay: essay-optimus-finger-no-pin
+    file: sig-ko-core-claim-optimus-implementation-reading.md
+
+  - entry_id: sig-ko-next-question-genie-unlabeled-videos
+    pattern_category: sig-ko-next-question
+    source_essay: essay-genie-physics-reverse-engineering
+    file: sig-ko-next-question-genie-unlabeled-videos.md
+
+  # === Phase A 신규 5 범주 instances (2026-05-23) ===
+
+  - entry_id: opening-corporate-event-spacex-xai-merger-exclusion
+    pattern_category: opening-corporate-event
+    source_essay: essay-spacex-tesla-convergence-en
+    file: opening-corporate-event-spacex-xai-merger-exclusion.md
+
+  - entry_id: opening-visual-anomaly-cybercab-taillight-photo-pair
+    pattern_category: opening-visual-anomaly
+    source_essay: essay-cybercab-taillight
+    file: opening-visual-anomaly-cybercab-taillight-photo-pair.md
+
+  - entry_id: inline-bold-thesis-anchor-photon-in-8bit-optimization
+    pattern_category: inline-bold-thesis-anchor
+    source_essay: essay-photon-in-perception-out
+    file: inline-bold-thesis-anchor-photon-in-8bit-optimization.md
+
+  - entry_id: inline-bold-thesis-anchor-etherloop-steady-state
+    pattern_category: inline-bold-thesis-anchor
+    source_essay: essay-cybercab-etherloop
+    file: inline-bold-thesis-anchor-etherloop-steady-state.md
+
+  - entry_id: inline-bold-thesis-anchor-taillight-hidden-skin
+    pattern_category: inline-bold-thesis-anchor
+    source_essay: essay-cybercab-taillight
+    file: inline-bold-thesis-anchor-taillight-hidden-skin.md
+
+  - entry_id: inline-bold-thesis-anchor-spacex-tesla-communication-hub
+    pattern_category: inline-bold-thesis-anchor
+    source_essay: essay-spacex-tesla-convergence-en
+    file: inline-bold-thesis-anchor-spacex-tesla-communication-hub.md
+
+  - entry_id: closing-forward-watching-event-etherloop-next-iteration
+    pattern_category: closing-forward-watching-event
+    source_essay: essay-cybercab-etherloop
+    file: closing-forward-watching-event-etherloop-next-iteration.md
+
+  - entry_id: closing-binary-test-spacex-tesla-ecosystem-realized
+    pattern_category: closing-binary-test
+    source_essay: essay-spacex-tesla-convergence-en
+    file: closing-binary-test-spacex-tesla-ecosystem-realized.md

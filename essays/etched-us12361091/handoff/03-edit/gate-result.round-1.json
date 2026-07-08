@@ -1,0 +1,132 @@
+{
+  "passed": true,
+  "gates": [
+    {
+      "gate": "emdash",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "anchors",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "quotes",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "sources",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "banned",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "structure",
+      "passed": true,
+      "findings": [
+        {
+          "check_id": "STRUCT-004",
+          "severity": "warn",
+          "message": "rule-of-three: 2 'A, B, and C' triad(s) detected",
+          "location": "line 31 (first)"
+        }
+      ]
+    },
+    {
+      "gate": "figure_use",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "meta",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "stub",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "cashtag",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "dupe",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "typography",
+      "passed": true,
+      "findings": [
+        {
+          "check_id": "LONGSENT-001",
+          "severity": "warn",
+          "message": "sentence runs 38 words (target ~15-25)",
+          "location": "sentence: --- essay_id: etched-us12361091 patent_reference: ..."
+        },
+        {
+          "check_id": "LONGSENT-001",
+          "severity": "warn",
+          "message": "sentence runs 44 words (target ~15-25)",
+          "location": "sentence: Held against each other, the two documents split t..."
+        },
+        {
+          "check_id": "LONGSENT-001",
+          "severity": "warn",
+          "message": "sentence runs 37 words (target ~15-25)",
+          "location": "sentence: The stated payoff is the point of the whole shape:..."
+        },
+        {
+          "check_id": "LONGSENT-001",
+          "severity": "warn",
+          "message": "sentence runs 37 words (target ~15-25)",
+          "location": "sentence: A topology-only claim over standard link technolog..."
+        },
+        {
+          "check_id": "LONGSENT-001",
+          "severity": "warn",
+          "message": "sentence runs 40 words (target ~15-25)",
+          "location": "sentence: It is the discipline underneath it: cross-set-only..."
+        },
+        {
+          "check_id": "LONGSENT-001",
+          "severity": "warn",
+          "message": "sentence runs 54 words (target ~15-25)",
+          "location": "sentence: 6: the patent's only memory: box 630 beside the tw..."
+        },
+        {
+          "check_id": "LONGSENT-001",
+          "severity": "warn",
+          "message": "sentence runs 137 words (target ~15-25)",
+          "location": "sentence: The wiring half is the one you can check today, an..."
+        },
+        {
+          "check_id": "LONGSENT-001",
+          "severity": "warn",
+          "message": "sentence runs 109 words (target ~15-25)",
+          "location": "sentence: The 266-day examination period is computed from th..."
+        },
+        {
+          "check_id": "LONGSENT-001",
+          "severity": "warn",
+          "message": "sentence runs 43 words (target ~15-25)",
+          "location": "sentence: Phase 1 reviewed and excluded the method-flowchart..."
+        }
+      ]
+    },
+    {
+      "gate": "hedge",
+      "passed": true,
+      "findings": []
+    }
+  ]
+}

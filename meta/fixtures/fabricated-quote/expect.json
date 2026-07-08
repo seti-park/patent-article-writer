@@ -1,0 +1,5 @@
+{
+  "gate_pass": false,
+  "must_contain_check_ids": ["QUOTE-001"],
+  "must_not_contain_check_ids": ["ANCHOR-001"]
+}

@@ -1,0 +1,120 @@
+{
+  "passed": true,
+  "gates": [
+    {
+      "gate": "emdash",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "anchors",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "quotes",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "sources",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "banned",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "structure",
+      "passed": true,
+      "findings": [
+        {
+          "check_id": "STRUCT-004",
+          "severity": "warn",
+          "message": "rule-of-three: 2 'A, B, and C' triad(s) detected",
+          "location": "line 33 (first)"
+        }
+      ]
+    },
+    {
+      "gate": "figure_use",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "meta",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "stub",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "cashtag",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "dupe",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "typography",
+      "passed": true,
+      "findings": [
+        {
+          "check_id": "LONGSENT-001",
+          "severity": "warn",
+          "message": "sentence runs 38 words (target ~15-25)",
+          "location": "sentence: --- essay_id: etched-us12361091 patent_reference: ..."
+        },
+        {
+          "check_id": "LONGSENT-001",
+          "severity": "warn",
+          "message": "sentence runs 41 words (target ~15-25)",
+          "location": "sentence: None of its claims mention latency, a bandwidth ma..."
+        },
+        {
+          "check_id": "LONGSENT-001",
+          "severity": "warn",
+          "message": "sentence runs 37 words (target ~15-25)",
+          "location": "sentence: The stated payoff is the point of the whole shape:..."
+        },
+        {
+          "check_id": "LONGSENT-001",
+          "severity": "warn",
+          "message": "sentence runs 67 words (target ~15-25)",
+          "location": "sentence: In practice the fence reaches only builders who co..."
+        },
+        {
+          "check_id": "LONGSENT-001",
+          "severity": "warn",
+          "message": "sentence runs 137 words (target ~15-25)",
+          "location": "sentence: The wiring half is the one you can check today, an..."
+        },
+        {
+          "check_id": "LONGSENT-001",
+          "severity": "warn",
+          "message": "sentence runs 109 words (target ~15-25)",
+          "location": "sentence: The \"                  \" examination period is com..."
+        },
+        {
+          "check_id": "LONGSENT-001",
+          "severity": "warn",
+          "message": "sentence runs 43 words (target ~15-25)",
+          "location": "sentence: Phase 1 reviewed and excluded the method-flowchart..."
+        }
+      ]
+    },
+    {
+      "gate": "hedge",
+      "passed": true,
+      "findings": []
+    }
+  ]
+}

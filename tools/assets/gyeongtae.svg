@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 1040">
+  <!-- Gyeongtae: the patent-essayist mascot. Flat editorial style, brand tokens:
+       ink #222933, accent #BF3B2B, tabby #8C7B6B / stripes #6E5F52, pink #E8B4A8.
+       Pose: standing, pointer raised toward upper-left (the whiteboard),
+       rolled patent in the other paw. Pointer tip lands near (20,330). -->
+  <g stroke="#222933" stroke-width="7" stroke-linejoin="round" stroke-linecap="round">
+
+    <!-- tail (behind body) -->
+    <path d="M 336 688 C 462 658 552 708 540 792 C 532 842 488 846 482 808
+             C 478 778 498 756 462 734 C 430 716 392 716 348 734 Z"
+          fill="#8C7B6B"/>
+    <path d="M 468 682 L 458 722" stroke="#6E5F52" stroke-width="10" fill="none"/>
+    <path d="M 507 702 L 494 746" stroke="#6E5F52" stroke-width="10" fill="none"/>
+
+    <!-- trousers -->
+    <path d="M 243 640 L 377 640 L 372 880 L 318 880 L 310 700 L 302 880 L 248 880 Z"
+          fill="#39414E"/>
+    <!-- feet -->
+    <ellipse cx="280" cy="898" rx="52" ry="28" fill="#FFFFFF"/>
+    <ellipse cx="348" cy="898" rx="52" ry="28" fill="#FFFFFF"/>
+
+    <!-- pointer arm (his right, viewer left): sleeve + paw, raised up-left -->
+    <path d="M 232 432 C 190 450 160 440 138 410 L 168 372 C 192 396 214 400 238 392 Z"
+          fill="#FFFFFF"/>
+    <!-- pointer stick -->
+    <line x1="148" y1="388" x2="28" y2="338" stroke="#6E5F52" stroke-width="10"/>
+    <circle cx="24" cy="336" r="11" fill="#BF3B2B" stroke="none"/>
+    <!-- paw gripping stick -->
+    <circle cx="150" cy="390" r="26" fill="#FFFFFF"/>
+
+    <!-- body: shirt under vest -->
+    <path d="M 250 392 L 370 392 L 392 430 L 392 650 L 228 650 L 228 430 Z"
+          fill="#FFFFFF"/>
+    <!-- tie -->
+    <path d="M 310 462 L 294 478 L 303 560 L 310 578 L 317 560 L 326 478 Z"
+          fill="#BF3B2B"/>
+    <path d="M 290 432 L 330 432 L 322 462 L 298 462 Z" fill="#BF3B2B"/>
+    <!-- vest (V-neck) -->
+    <path d="M 246 398 L 276 398 L 310 496 L 344 398 L 374 398
+             L 396 440 L 388 658 L 232 658 L 224 440 Z"
+          fill="#2C3543"/>
+    <!-- vest hem rib -->
+    <line x1="232" y1="628" x2="388" y2="628" stroke="#222933" stroke-width="5"/>
+    <!-- shirt collar over vest -->
+    <path d="M 270 396 L 310 442 L 350 396 L 332 384 L 288 384 Z" fill="#FFFFFF"/>
+
+    <!-- scroll arm (his left, viewer right): sleeve down -->
+    <path d="M 372 430 C 408 448 424 490 428 560 L 392 588 C 384 520 372 488 352 470 Z"
+          fill="#FFFFFF"/>
+    <!-- rolled patent scroll -->
+    <g transform="rotate(8 445 600)">
+      <rect x="392" y="572" width="100" height="54" rx="24" fill="#FFFFFF"/>
+      <rect x="426" y="572" width="30" height="54" fill="#BF3B2B" stroke-width="5"/>
+      <ellipse cx="492" cy="599" rx="12" ry="25" fill="#F0E8DA"/>
+    </g>
+    <!-- paw over scroll -->
+    <circle cx="408" cy="578" r="22" fill="#FFFFFF"/>
+
+    <!-- head -->
+    <path d="M 158 268 C 158 180 220 122 310 122 C 400 122 462 180 462 268
+             C 462 348 396 392 310 392 C 224 392 158 348 158 268 Z"
+          fill="#FFFFFF"/>
+    <!-- ears -->
+    <path d="M 196 172 C 176 120 168 84 174 58 C 206 66 238 88 258 116 Z" fill="#8C7B6B"/>
+    <path d="M 424 172 C 444 120 452 84 446 58 C 414 66 382 88 362 116 Z" fill="#8C7B6B"/>
+    <path d="M 204 142 C 196 116 192 98 194 84 C 212 92 228 104 240 122 Z"
+          fill="#E8B4A8" stroke="none"/>
+    <path d="M 416 142 C 424 116 428 98 426 84 C 408 92 392 104 380 122 Z"
+          fill="#E8B4A8" stroke="none"/>
+
+    <!-- tabby cap across the crown -->
+    <path d="M 196 192 C 230 146 270 128 310 128 C 350 128 390 146 424 192
+             C 398 204 358 210 310 210 C 262 210 222 204 196 192 Z"
+          fill="#8C7B6B"/>
+    <!-- cap stripes -->
+    <path d="M 284 132 L 290 184" stroke="#6E5F52" stroke-width="12" fill="none"/>
+    <path d="M 310 128 L 310 188" stroke="#6E5F52" stroke-width="12" fill="none"/>
+    <path d="M 336 132 L 330 184" stroke="#6E5F52" stroke-width="12" fill="none"/>
+    <!-- glasses: the 안경태 -->
+    <circle cx="252" cy="276" r="56" fill="none" stroke-width="9"/>
+    <circle cx="368" cy="276" r="56" fill="none" stroke-width="9"/>
+    <path d="M 304 270 C 306 256 314 256 316 270" fill="none" stroke-width="9"/>
+    <line x1="196" y1="270" x2="162" y2="262" stroke-width="9"/>
+    <line x1="424" y1="270" x2="458" y2="262" stroke-width="9"/>
+
+    <!-- eyes -->
+    <circle cx="252" cy="278" r="13" fill="#222933" stroke="none"/>
+    <circle cx="368" cy="278" r="13" fill="#222933" stroke="none"/>
+    <circle cx="247" cy="273" r="4.5" fill="#FFFFFF" stroke="none"/>
+    <circle cx="363" cy="273" r="4.5" fill="#FFFFFF" stroke="none"/>
+
+    <!-- nose + mouth -->
+    <path d="M 298 330 L 322 330 L 310 346 Z" fill="#D98E80" stroke-width="5"/>
+    <path d="M 310 346 C 310 358 300 362 292 358 M 310 346 C 310 358 320 362 328 358"
+          fill="none" stroke-width="6"/>
+
+    <!-- whiskers -->
+    <g stroke-width="5">
+      <line x1="161" y1="300" x2="98"  y2="290"/>
+      <line x1="163" y1="322" x2="102" y2="324"/>
+      <line x1="161" y1="342" x2="104" y2="354"/>
+      <line x1="459" y1="300" x2="522" y2="290"/>
+      <line x1="457" y1="322" x2="518" y2="324"/>
+      <line x1="459" y1="342" x2="516" y2="354"/>
+    </g>
+  </g>
+</svg>

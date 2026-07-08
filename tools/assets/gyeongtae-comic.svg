@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 1040">
+  <!-- Gyeongtae, comic edition: chibi proportions, cel shading, amber eyes,
+       blush, lens highlights, manga hatching. Same rig anchors as the flat
+       edition: feet bottom ~926, pointer tip ~(24,336). -->
+  <g stroke="#222933" stroke-width="10" stroke-linejoin="round" stroke-linecap="round">
+
+    <!-- tail: curled up, ringed -->
+    <path d="M 380 700 C 500 700 560 640 552 540 C 548 480 502 466 492 516
+             C 486 552 516 570 488 610 C 462 646 416 660 372 656 Z"
+          fill="#8C7B6B"/>
+    <path d="M 380 700 C 470 698 520 672 540 622 C 534 668 488 700 430 706 Z"
+          fill="#7A6A5B" stroke="none"/>
+    <path d="M 549 559 L 504 549" stroke="#6E5F52" stroke-width="14" fill="none"/>
+    <path d="M 541 597 L 498 583" stroke="#6E5F52" stroke-width="14" fill="none"/>
+
+    <!-- trousers -->
+    <path d="M 240 640 L 380 640 L 374 878 L 318 878 L 310 706 L 302 878 L 246 878 Z"
+          fill="#39414E"/>
+    <path d="M 340 640 L 380 640 L 374 878 L 340 878 Z" fill="#2E3542" stroke="none"/>
+    <path d="M 240 640 L 380 640 L 374 878 L 318 878 L 310 706 L 302 878 L 246 878 Z"
+          fill="none"/>
+    <!-- feet -->
+    <ellipse cx="278" cy="896" rx="54" ry="30" fill="#FFFFFF"/>
+    <ellipse cx="350" cy="896" rx="54" ry="30" fill="#FFFFFF"/>
+    <path d="M 262 906 L 262 922 M 286 908 L 286 924" stroke-width="6" fill="none"/>
+    <path d="M 334 908 L 334 924 M 358 906 L 358 922" stroke-width="6" fill="none"/>
+
+    <!-- pointer arm (viewer left), raised -->
+    <path d="M 236 440 C 188 458 154 446 132 412 L 166 370 C 192 396 216 402 242 396 Z"
+          fill="#FFFFFF"/>
+    <path d="M 236 440 C 210 448 188 448 170 438 L 164 452 C 190 462 218 458 240 450 Z"
+          fill="#E9E2D4" stroke="none"/>
+    <line x1="146" y1="386" x2="28" y2="338" stroke="#6E5F52" stroke-width="11"/>
+    <circle cx="24" cy="336" r="12" fill="#BF3B2B" stroke="none"/>
+    <circle cx="148" cy="388" r="27" fill="#FFFFFF"/>
+    <path d="M 138 380 L 158 396 M 148 374 L 162 388" stroke-width="6" fill="none"/>
+
+    <!-- torso: shirt + tie + vest -->
+    <path d="M 252 408 L 368 408 L 390 440 L 390 648 L 230 648 L 230 440 Z"
+          fill="#FFFFFF"/>
+    <path d="M 310 470 L 292 488 L 302 566 L 310 584 L 318 566 L 328 488 Z"
+          fill="#BF3B2B"/>
+    <path d="M 296 484 L 310 560 L 306 566 L 294 492 Z" fill="#A03226" stroke="none"/>
+    <path d="M 290 442 L 330 442 L 322 470 L 298 470 Z" fill="#BF3B2B"/>
+    <path d="M 248 408 L 278 408 L 310 504 L 342 408 L 372 408
+             L 394 444 L 386 656 L 234 656 L 226 444 Z"
+          fill="#2C3543"/>
+    <path d="M 332 416 L 372 408 L 394 444 L 386 656 L 336 656
+             C 348 570 348 480 332 416 Z" fill="#232B38" stroke="none"/>
+    <path d="M 248 408 L 278 408 L 310 504 L 342 408 L 372 408
+             L 394 444 L 386 656 L 234 656 L 226 444 Z" fill="none"/>
+    <line x1="234" y1="626" x2="386" y2="626" stroke-width="6"/>
+    <path d="M 272 406 L 310 450 L 348 406 L 330 392 L 290 392 Z" fill="#FFFFFF"/>
+
+    <!-- scroll arm (viewer right) -->
+    <path d="M 370 440 C 406 458 422 498 426 562 L 390 590 C 382 522 370 496 350 478 Z"
+          fill="#FFFFFF"/>
+    <path d="M 408 500 C 416 524 420 548 422 566 L 390 590 C 388 568 384 544 378 524 Z"
+          fill="#E9E2D4" stroke="none"/>
+    <g transform="rotate(8 445 600)">
+      <rect x="390" y="574" width="102" height="56" rx="25" fill="#FFFFFF"/>
+      <rect x="390" y="600" width="102" height="30" rx="14" fill="#EDE6D6" stroke="none"/>
+      <rect x="426" y="574" width="30" height="56" fill="#BF3B2B" stroke-width="6"/>
+      <ellipse cx="492" cy="601" rx="13" ry="26" fill="#F0E8DA"/>
+    </g>
+    <circle cx="406" cy="580" r="23" fill="#FFFFFF"/>
+
+    <!-- head: chibi -->
+    <path d="M 138 262 C 138 158 212 92 310 92 C 408 92 482 158 482 262
+             C 482 356 404 410 310 410 C 216 410 138 356 138 262 Z"
+          fill="#FFFFFF"/>
+    <!-- right-side cel shadow on the head -->
+    <path d="M 422 138 C 462 176 482 216 482 262 C 482 356 404 410 310 410
+             C 376 396 442 350 452 270 C 458 216 444 170 422 138 Z"
+          fill="#E9E2D4" stroke="none"/>
+    <!-- hatching in the shadow -->
+    <path d="M 444 220 L 462 232 M 438 252 L 458 262 M 436 284 L 454 292"
+          stroke-width="5" fill="none" stroke="#C9BFAC"/>
+
+    <!-- ears -->
+    <path d="M 184 150 C 162 96 154 60 162 32 C 198 42 234 68 256 100 Z" fill="#8C7B6B"/>
+    <path d="M 436 150 C 458 96 466 60 458 32 C 422 42 386 68 364 100 Z" fill="#8C7B6B"/>
+    <path d="M 194 118 C 184 90 180 70 184 54 C 204 64 222 80 234 100 Z"
+          fill="#E8B4A8" stroke="none"/>
+    <path d="M 426 118 C 436 90 440 70 436 54 C 416 64 398 80 386 100 Z"
+          fill="#E8B4A8" stroke="none"/>
+
+    <!-- tabby cap, scalloped -->
+    <path d="M 182 172 C 214 120 258 98 310 98 C 362 98 406 120 438 172
+             C 420 184 404 178 388 188 C 372 198 356 190 340 198
+             C 330 202 290 202 280 198 C 264 190 248 198 232 188
+             C 216 178 200 184 182 172 Z"
+          fill="#8C7B6B"/>
+    <path d="M 280 104 L 288 174" stroke="#6E5F52" stroke-width="14" fill="none"/>
+    <path d="M 310 98 L 310 180" stroke="#6E5F52" stroke-width="14" fill="none"/>
+    <path d="M 340 104 L 332 174" stroke="#6E5F52" stroke-width="14" fill="none"/>
+
+    <!-- blush -->
+    <ellipse cx="182" cy="334" rx="26" ry="14" fill="#F2B8AC" stroke="none"/>
+    <ellipse cx="438" cy="334" rx="26" ry="14" fill="#F2B8AC" stroke="none"/>
+
+    <!-- glasses -->
+    <circle cx="244" cy="274" r="64" fill="#FFFFFF" fill-opacity="0.35" stroke-width="11"/>
+    <circle cx="376" cy="274" r="64" fill="#FFFFFF" fill-opacity="0.35" stroke-width="11"/>
+    <path d="M 306 266 C 308 252 312 252 314 266" fill="none" stroke-width="11"/>
+    <line x1="181" y1="262" x2="146" y2="252" stroke-width="11"/>
+    <line x1="439" y1="262" x2="474" y2="252" stroke-width="11"/>
+
+    <!-- eyes: big, amber -->
+    <g stroke="none">
+      <circle cx="244" cy="278" r="30" fill="#FFFFFF"/>
+      <circle cx="376" cy="278" r="30" fill="#FFFFFF"/>
+      <circle cx="244" cy="280" r="20" fill="#C98A2B"/>
+      <circle cx="376" cy="280" r="20" fill="#C98A2B"/>
+      <circle cx="244" cy="282" r="10" fill="#222933"/>
+      <circle cx="376" cy="282" r="10" fill="#222933"/>
+      <circle cx="237" cy="270" r="6" fill="#FFFFFF"/>
+      <circle cx="369" cy="270" r="6" fill="#FFFFFF"/>
+      <circle cx="250" cy="290" r="3" fill="#FFF3DA"/>
+      <circle cx="382" cy="290" r="3" fill="#FFF3DA"/>
+    </g>
+    <!-- lens highlights -->
+    <path d="M 206 240 L 226 220 M 216 252 L 244 224" stroke="#FFFFFF"
+          stroke-width="8" fill="none" opacity="0.85"/>
+    <path d="M 338 240 L 358 220 M 348 252 L 376 224" stroke="#FFFFFF"
+          stroke-width="8" fill="none" opacity="0.85"/>
+
+    <!-- nose + open smile -->
+    <path d="M 300 330 L 320 330 L 310 344 Z" fill="#D98E80" stroke-width="6"/>
+    <path d="M 286 352 C 296 372 324 372 334 352 C 326 384 294 384 286 352 Z"
+          fill="#A04A40" stroke-width="7"/>
+    <path d="M 298 366 C 306 372 314 372 322 366 C 318 376 302 376 298 366 Z"
+          fill="#E8867A" stroke="none"/>
+
+    <!-- whiskers -->
+    <g stroke-width="6">
+      <line x1="142" y1="304" x2="78"  y2="292"/>
+      <line x1="144" y1="328" x2="82"  y2="330"/>
+      <line x1="142" y1="350" x2="86"  y2="362"/>
+      <line x1="478" y1="304" x2="542" y2="292"/>
+      <line x1="476" y1="328" x2="538" y2="330"/>
+      <line x1="478" y1="350" x2="534" y2="362"/>
+    </g>
+  </g>
+</svg>

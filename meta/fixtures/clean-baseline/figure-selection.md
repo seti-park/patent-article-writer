@@ -1,0 +1,2 @@
+- fig-01 -> signal path (caption_role: mechanism)
+- fig-02 -> timing diagram (caption_role: evidence)
