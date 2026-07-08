@@ -1,7 +1,7 @@
 # Patent Essay Pipeline — stage graph and profiles
 # Source of truth for what runs. Orchestrator interprets this; CLAUDE.md only summarizes.
 
-name: patent-essay-pipeline
+name: patent-article-writer
 version: 2
 
 stages:

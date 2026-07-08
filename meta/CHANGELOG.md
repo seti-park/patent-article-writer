@@ -3,9 +3,10 @@
 One line per applied control-plane / skill / gate change. Proposal details live under
 `meta/improvement-proposals/`.
 
-## 2026-07-09 — patent-essay-pipeline fork (understand-first)
+## 2026-07-09 — patent-article-writer (understand-first)
 
-- **New repo** `patent-essay-pipeline` from `patent-essayist` snapshot.
+- **New repo** `patent-article-writer` (was briefly `patent-understand-pipeline`) from
+  `patent-essayist` snapshot.
 - **Stage `understand`** (`patent-understand` / `patent-reader`): Problem · Solution · Benefits triad, `owner-study-pack.md`, invention-summary, owner-briefing, figure-primer; gates via `gate_quotes`.
 - **Design slimmed**: `thesis-architect` consumes frozen understand/; does not re-extract summary.
 - **Contracts layer**: `contracts/pipeline.yaml`, `contracts/stages/*`, `glossary.md`, `invariants.md`.

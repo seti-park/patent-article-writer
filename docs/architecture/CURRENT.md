@@ -1,4 +1,4 @@
-# Architecture — CURRENT (patent-essay-pipeline)
+# Architecture — CURRENT (patent-article-writer)
 
 **Status:** living. Historical overhauls live in `docs/architecture/history/`.
 

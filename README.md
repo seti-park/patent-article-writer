@@ -1,10 +1,13 @@
-# patent-essay-pipeline
+# patent-article-writer
+
+Writes **articles** from patents: English long-form (X Articles / retail investor) plus
+Korean owner briefing and promo pack.
 
 Refactor of [`patent-essayist`](https://github.com/seti-park/patent-essayist) with an
 **Understand-first** control plane.
 
 English patent (+ figures) → frozen patent model for the **Owner** → angled thesis →
-English essay (X Articles / retail investor) → Korean briefing + promo pack.
+English article → Korean briefing + promo pack.
 
 ## Why a new repo
 

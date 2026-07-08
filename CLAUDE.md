@@ -1,10 +1,11 @@
-# Patent Essay Pipeline
+# Patent Article Writer
 
-Skill-based system: English patent (+ figures) → English X Articles essay for a
+Skill-based system: English patent (+ figures) → English X Articles **article** for a
 curious retail investor, plus a Korean **owner** briefing and promo pack.
 
-Fork of `patent-essayist` with an **Understand-first** control plane: the patent
-model is frozen and owner-confirmed before any thesis angle is chosen.
+Repo: `patent-article-writer`. Fork of `patent-essayist` with an **Understand-first**
+control plane: the patent model is frozen and owner-confirmed before any thesis angle
+is chosen.
 
 ## North-star goals
 

@@ -3,7 +3,7 @@
 **Status: historical — not live runbooks.**
 
 These files record overhauls and audits that shaped `patent-essayist` before the
-`patent-essay-pipeline` understand-first control plane. For how the system works
+`patent-article-writer` understand-first control plane. For how the system works
 **now**, read `../CURRENT.md` and `../../contracts/`.
 
 | File | Topic |
