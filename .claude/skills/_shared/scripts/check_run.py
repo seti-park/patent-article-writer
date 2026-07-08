@@ -44,11 +44,12 @@ Checks:
   RUN-007 (fail): --self-audit on and essay-final.md exists, but
                   revision-notes.md is missing or has neither a "## delta"
                   block nor an explicit no-findings statement.
-  RUN-008 (fail): essay-final.md exists but handoff/01-design/owner-briefing.md
-                  is missing or empty (whitespace-only) -- the Phase-1 Korean
-                  owner briefing (owner-comprehension overhaul, U5) was never
-                  produced. Unconditional: unlike RUN-007, not gated by
-                  --self-audit or --threshold.
+  RUN-008 (fail): essay-final.md exists but owner-briefing.md is missing or empty
+                  from handoff/01-design/ AND handoff/00-understand/ -- the Korean
+                  owner briefing was never produced. Unconditional.
+  RUN-009 (fail): essay-final.md exists but handoff/00-understand/ is missing the
+                  understand triad (owner-study-pack.md empty/missing, or
+                  invention-summary.md missing). Understand-first control plane.
   RUN-000 (warn): informational skips (incl. a confirmation transition, below).
 
 Confirmation-transition model (2026-07-03-check-run-confirmation-round-model
@@ -306,19 +307,56 @@ def check(handoff_dir, threshold="pass", self_audit="on"):
                         "explicit 'self-audit: no unresolved findings' statement",
                         notes_path)
 
-        # RUN-008 is unconditional -- unlike RUN-007 it is not gated by
-        # --self-audit or --threshold. Every completed run must carry the
-        # Phase-1 Korean owner briefing (owner-comprehension overhaul, U5).
-        briefing_path = os.path.join(design_dir, "owner-briefing.md")
-        if not os.path.exists(briefing_path):
+        # RUN-008: Korean owner briefing (compat: 01-design or 00-understand).
+        understand_dir = os.path.join(handoff_dir, "00-understand")
+        briefing_design = os.path.join(design_dir, "owner-briefing.md")
+        briefing_understand = os.path.join(understand_dir, "owner-briefing.md")
+        briefing_path = None
+        for candidate in (briefing_design, briefing_understand):
+            if os.path.exists(candidate) and _read(candidate).strip():
+                briefing_path = candidate
+                break
+        if briefing_path is None:
             add("RUN-008", "fail",
-                "owner-briefing.md missing from handoff/01-design/ (the Korean "
-                "owner briefing was never produced)", briefing_path)
-        elif not _read(briefing_path).strip():
-            add("RUN-008", "fail",
-                "owner-briefing.md in handoff/01-design/ is empty or "
-                "whitespace-only (the Korean owner briefing was never produced)",
-                briefing_path)
+                "owner-briefing.md missing or empty under handoff/01-design/ and "
+                "handoff/00-understand/ (the Korean owner briefing was never produced)",
+                design_dir)
+
+        # RUN-009: understand-first triad (study pack + invention-summary).
+        # Legacy archives without 00-understand/ may place study pack only after
+        # migration; if 00-understand exists it must be complete. If it does not
+        # exist, require invention-summary under 01-design (pre-refactor archive)
+        # and emit RUN-000 warn rather than fail — hard-require study pack when
+        # 00-understand is present OR when UNDERSTAND_REQUIRED=1.
+        study_pack = os.path.join(understand_dir, "owner-study-pack.md")
+        inv_u = os.path.join(understand_dir, "invention-summary.md")
+        inv_d = os.path.join(design_dir, "invention-summary.md")
+        understand_present = os.path.isdir(understand_dir) and any(
+            name != ".gitkeep"
+            for name in (os.listdir(understand_dir) if os.path.isdir(understand_dir) else [])
+        )
+        if understand_present:
+            if not os.path.exists(study_pack) or not _read(study_pack).strip():
+                add("RUN-009", "fail",
+                    "owner-study-pack.md missing or empty under handoff/00-understand/ "
+                    "(Problem·Solution·Benefits triad was never produced)",
+                    study_pack)
+            if not os.path.exists(inv_u) or not _read(inv_u).strip():
+                if not os.path.exists(inv_d) or not _read(inv_d).strip():
+                    add("RUN-009", "fail",
+                        "invention-summary.md missing under 00-understand/ and 01-design/",
+                        understand_dir)
+        else:
+            if not os.path.exists(inv_d) or not _read(inv_d).strip():
+                add("RUN-009", "fail",
+                    "invention-summary.md missing from handoff/01-design/ and no "
+                    "00-understand/ bundle (no frozen patent model)",
+                    design_dir)
+            else:
+                add("RUN-000", "warn",
+                    "legacy layout: no handoff/00-understand/ (pre understand-first); "
+                    "01-design invention-summary accepted",
+                    design_dir)
     else:
         add("RUN-000", "warn",
             "essay-final.md not present — acceptance checks skipped (run in progress?)",

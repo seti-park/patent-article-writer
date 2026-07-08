@@ -1,0 +1,129 @@
+# Patent Essay Pipeline — stage graph and profiles
+# Source of truth for what runs. Orchestrator interprets this; CLAUDE.md only summarizes.
+
+name: patent-essay-pipeline
+version: 2
+
+stages:
+  - id: figures
+    skill: patent-figures-clean
+    agent: figures-prep
+    optional: true   # skip if input/figures/ already has fig-*.png
+
+  - id: understand
+    skill: patent-understand
+    agent: patent-reader
+    required: true
+    human_checkpoint: understand_confirm   # hard on publish unless --yes
+
+  - id: design
+    skill: thesis-architect
+    agent: design-architect
+    requires: [understand]
+
+  - id: compose
+    skill: essay-en-composer
+    agent: essay-composer
+    requires: [design]
+
+  - id: review_loop
+    skill: editorial-review
+    agent: editorial-reviewer
+    requires: [compose]
+    # acceptance policy set by profile
+
+  - id: self_audit
+    agents: [adversarial-reader, grounding-verifier]
+    requires: [review_loop]
+
+  - id: polish
+    skill: prose-polish
+    agent: prose-polish
+    requires: [self_audit]
+
+  - id: verify
+    scripts:
+      - .claude/skills/_shared/scripts/check_run.py
+      - .claude/skills/_shared/scripts/run_gates.py
+
+  - id: archive
+    writes: [essays/<id>/, runs/<id>/]
+
+  - id: promo
+    skill: promo-composer
+    agent: promo-composer
+    requires: [archive]
+
+  - id: retro
+    skill: pipeline-retro
+    requires: [archive]
+
+profiles:
+  understand-only:
+    description: Freeze patent triad for Owner study; no angle, no essay.
+    stages: [figures, understand]
+    review_loop: null
+    owner_confirm: true
+    self_audit: false
+    polish: false
+    promo: false
+    retro: false
+
+  draft:
+    description: Fast exploration; single-clean; no audit/polish/promo.
+    stages: [figures, understand, design, compose, review_loop, verify]
+    review_loop:
+      acceptance: single_clean
+      max_revision: 2
+    owner_confirm: soft    # surface study pack; may continue
+    self_audit: false
+    polish: false
+    promo: false
+    retro: false
+
+  wire:
+    description: Wire/short mode; self-audit off.
+    stages: [figures, understand, design, compose, review_loop, verify, archive]
+    review_loop:
+      acceptance: single_clean
+      max_revision: 3
+    owner_confirm: soft
+    self_audit: false
+    polish: false
+    promo: false
+    retro: true
+    mode: wire
+
+  publish:
+    description: Default essay path — full quality graph.
+    stages:
+      - figures
+      - understand
+      - design
+      - compose
+      - review_loop
+      - self_audit
+      - polish
+      - verify
+      - archive
+      - promo
+      - retro
+    review_loop:
+      acceptance: double_clean
+      max_revision: 4
+    owner_confirm: hard
+    self_audit: true
+    polish: true
+    promo: true
+    retro: true
+    mode: essay
+
+  promo-only:
+    description: Rebuild promo pack from an existing essays/<id>/ archive.
+    stages: [promo]
+    owner_confirm: false
+
+defaults:
+  profile: publish
+  threshold: pass
+  # --yes skips owner_confirm hard/soft stops

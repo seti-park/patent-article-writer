@@ -837,6 +837,13 @@ class TestCheckRun(unittest.TestCase):
             "**근거 (verbatim):**\n"
             '- `[0001]`: "sample verbatim line for fixture"\n'
         ))
+        # invention-summary satisfies check_run RUN-009 (frozen patent model /
+        # legacy 01-design path when 00-understand/ is absent).
+        inv = os.path.join(self.root, "01-design", "invention-summary.md")
+        if not os.path.exists(inv):
+            self._w("01-design/invention-summary.md",
+                    "# Invention Summary\n\n## Metadata\n- **Patent ID**: US fixture\n\n"
+                    "## Layer 1\nFixture mechanism for check_run tests.\n")
 
     def _accepted_double_clean(self, with_briefing=True):
         self._w("03-edit/edit-log.round-1.md", self.FAIL_LOG)
@@ -952,6 +959,21 @@ class TestCheckRun(unittest.TestCase):
         self.assertFalse(_has(r, "RUN-001"))
         self.assertFalse(_has(r, "RUN-003"))
         self.assertTrue(_has(r, "RUN-000"))  # informational confirmation-skip note
+
+    def test_understand_study_pack_required_when_00_present(self):
+        self._accepted_double_clean()
+        os.makedirs(os.path.join(self.root, "00-understand"), exist_ok=True)
+        self._w("00-understand/invention-summary.md", "# Invention Summary\n\nlayer\n")
+        # study pack missing → RUN-009
+        r = check_run.check(self.root)
+        self.assertFalse(r["passed"])
+        self.assertTrue(_has(r, "RUN-009"))
+        self._w("00-understand/owner-study-pack.md",
+                "# Owner Study Pack\n\n## 1. Problem\n\n"
+                '**근거 (verbatim):**\n- `[0001]`: "sample verbatim line for fixture"\n')
+        r2 = check_run.check(self.root)
+        self.assertTrue(r2["passed"], r2["findings"])
+        self.assertFalse(_has(r2, "RUN-009"))
 
     def test_prior_severity_notation_excluded_from_run003_and_run004(self):
         # Round 1: fresh high finding r1-F1, dispositioned normally.

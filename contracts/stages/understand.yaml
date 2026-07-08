@@ -1,0 +1,83 @@
+# Stage contract: understand
+# First content stage. Problem · Solution · Benefits triad. No thesis angle.
+
+id: understand
+skill: patent-understand
+agent: patent-reader
+handoff: handoff/00-understand/
+
+may_read:
+  - input/patent.md
+  - input/figures/**
+  - input/figures/figures-manifest.md
+  - input/essay-context.md   # questions only; must not become the spine
+  - handoff-template/00-understand/**
+  - .claude/skills/patent-understand/**
+  - .claude/skills/thesis-architect/references/invention-summary-schema.md
+  - .claude/skills/thesis-architect/references/quote-anchor-conventions.md
+  - .claude/skills/_shared/references/owner-briefing-schema.md
+
+must_not_read:
+  - .claude/skills/voice-canon-lookup/**
+  - .claude/skills/_shared/references/deliverable-voice-rules.md
+  - .claude/skills/essay-en-composer/**
+  - handoff/01-design/**      # design does not exist yet / must not pollute
+
+must_not_write:
+  - thesis-spine.md
+  - thesis-candidates.md
+  - title-lead-candidates.md
+  - essay-draft.md
+
+required_outputs:
+  - handoff/00-understand/invention-summary.md
+  - handoff/00-understand/owner-study-pack.md
+  - handoff/00-understand/owner-briefing.md
+  - handoff/00-understand/figure-primer.md
+  - handoff/00-understand/open-questions.md
+
+optional_outputs:
+  - handoff/00-understand/understand-confirmed.md   # written by Owner or orchestrator after confirm
+
+# Compatibility copies (orchestrator may symlink/copy for design + gates that still
+# look under 01-design during migration):
+compat_copies:
+  - from: handoff/00-understand/invention-summary.md
+    to: handoff/01-design/invention-summary.md
+  - from: handoff/00-understand/owner-briefing.md
+    to: handoff/01-design/owner-briefing.md
+
+gates_before_exit:
+  - cmd: >
+      python3 .claude/skills/_shared/scripts/gate_quotes.py
+      handoff/00-understand/invention-summary.md
+      --invention-summary handoff/00-understand/invention-summary.md
+      --patent input/patent.md
+  - cmd: >
+      python3 .claude/skills/_shared/scripts/gate_quotes.py
+      handoff/00-understand/owner-briefing.md
+      --invention-summary handoff/00-understand/owner-briefing.md
+      --patent input/patent.md
+  - cmd: >
+      python3 .claude/skills/_shared/scripts/gate_quotes.py
+      handoff/00-understand/owner-study-pack.md
+      --invention-summary handoff/00-understand/owner-study-pack.md
+      --patent input/patent.md
+
+owner_checkpoint:
+  id: understand_confirm
+  surfaces:
+    - handoff/00-understand/owner-study-pack.md
+    - handoff/00-understand/owner-briefing.md
+    - handoff/00-understand/open-questions.md
+  confirm_file: handoff/00-understand/understand-confirmed.md
+  question: >
+    Can you restate Problem, Solution (incl. claim scope), and Benefits without
+    reopening the full patent? If yes, confirm. If no, edit open-questions or
+    request re-run of understand.
+
+north_star: |
+  Owner and pipeline share one frozen patent model:
+  (1) Problem — what was wrong
+  (2) Solution — how this invention fixes it (mechanism + claim scope)
+  (3) Benefits — what the document asserts as upside

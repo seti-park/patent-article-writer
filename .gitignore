@@ -4,6 +4,7 @@ handoff/**
 !handoff/
 !handoff/*/
 !handoff/**/.gitkeep
+# (includes 00-understand/, 01-design/, 02-compose/, 03-edit/)
 
 # Pipeline inputs are provided per run; keep the dirs, ignore the payloads.
 # (figures-work/ — Phase 0 staging — stays ignored by input/**.)

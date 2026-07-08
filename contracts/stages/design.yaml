@@ -1,0 +1,52 @@
+# Stage contract: design
+# Angle only. Consumes frozen understand/ outputs; does not re-extract the patent model.
+
+id: design
+skill: thesis-architect
+agent: design-architect
+handoff: handoff/01-design/
+
+may_read:
+  - handoff/00-understand/**
+  - handoff/01-design/invention-summary.md   # compat copy from understand
+  - handoff/01-design/owner-briefing.md
+  - input/patent.md                          # allowed for quote repair only
+  - input/figures/**
+  - input/essay-context.md
+  - handoff-template/01-design/**
+  - .claude/skills/thesis-architect/**
+  - .claude/skills/_shared/references/reader-energy.md
+  - .claude/skills/_shared/references/reader-profile.md
+
+must_not_read:
+  - .claude/skills/voice-canon-lookup/**
+  - .claude/skills/_shared/references/deliverable-voice-rules.md
+  - handoff/02-compose/**
+
+required_outputs:
+  - handoff/01-design/thesis-spine.md
+  - handoff/01-design/thesis-candidates.md
+  - handoff/01-design/title-lead-candidates.md
+  - handoff/01-design/figure-selection.md
+  - handoff/01-design/figure-rationale.md
+  - handoff/01-design/fact-check-log.md
+  - handoff/01-design/search-log.md
+  - handoff/01-design/phase2-handoff-notes.md
+  - handoff/01-design/figures-index.txt
+
+# invention-summary + owner-briefing are OWNED by understand (copied in).
+# Design may update owner-briefing section ⑤ (promo link) only, with a Revision note.
+must_not_recreate:
+  - invention-summary.md   # edit only via Revision note if understand was wrong; prefer re-run understand
+
+owner_checkpoint:
+  id: design_title_pick
+  surfaces:
+    - handoff/01-design/title-lead-candidates.md
+    - handoff/01-design/thesis-candidates.md
+  soft: true
+
+rules:
+  - Consume understand triad; do not invent a new mechanism story.
+  - closing_posture defaults to firm for verdict editions.
+  - Steelman must be THIS-patent, not category truisms.
