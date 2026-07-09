@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "fable-advisor": {
+      "source": {
+        "source": "github",
+        "repo": "DannyMac180/fable-advisor"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "fable-advisor@fable-advisor": true
+  }
+}
