@@ -180,27 +180,51 @@ Follow **Owner checkpoint protocol (STOP/CONFIRM)** above. This instance:
    - `open-questions.md` in full
    - the five output paths (study pack, briefing, invention-summary, figure-primer,
      open-questions)
-2. **Comprehension check (P1, capture-only)** — runs only when `--comprehension-check`
+2. **Comprehension check (P2, keyed grading)** — runs only when `--comprehension-check`
    resolves **on** (per Parameters defaults) **and** not `--yes`. Reuses the
-   STOP/CONFIRM protocol; does not invent a parallel mechanism.
-   - Ask the five `owner-study-pack.md` §5 Self-check questions **one at a time**,
-     each as its own ASK→STOP turn (end the turn after each question; resume on the
-     Owner's reply). Questions stay Korean (verbatim from the study pack):
-     1. 이 특허가 출발점으로 삼는 문제는?
-     2. 핵심 독립항이 요구하는 것은?
-     3. 명세서 선호일 뿐인 것은?
-     4. 문서가 주장하는 효과 한 가지는?
-     5. 독자 앞에서 단정하면 안 되는 것 한 가지는?
-   - Capture each answer **verbatim** and any Owner pushback/correction.
-   - **P1 is CAPTURE-ONLY:** do NOT grade answers, do NOT compute pass/fail, do NOT
-     hard-STOP on a wrong answer, do NOT re-open/re-freeze the model. P2 adds keyed
-     grading and the claim-scope hard STOP; P1 only captures.
-   - The Owner may opt out at any point ("confirm without the questions") — honor it.
-   - After the questions (or opt-out), write
-     `handoff/00-understand/comprehension-notes.md` (template shape) from the
-     dialogue, then proceed to the main ASK/RECORD as normal.
-   - When this step is skipped (`--yes`, or flag off): do not write
-     `comprehension-notes.md`; RECORD still sets `comprehension:` per step 5.
+   STOP/CONFIRM protocol; does not invent a parallel mechanism. Bank:
+   `handoff/00-understand/comprehension-quiz.md` (worker-produced; IF-2). Design:
+   `docs/architecture/comprehension-loop.md` §4.2–4.3 / IF-1 / IF-4.
+
+   **Per item (in bank order), each its own ASK→STOP turn:**
+   1. **ASK** — RENDER the item's `question:` + `options:` inline (Korean stays
+      Korean). STOP (end the turn; wait for the Owner).
+   2. **GRADE** — compare the Owner's reply against `key` (mechanical, decidable).
+      - **Correct** → advance to the next item.
+      - **Incorrect** → **TEACH**: render the item's `rationale:` (study-pack span
+        the answer rests on; positive framing only — never name a defensive
+        writing behavior), then re-ASK a *paraphrased* form of the same item once.
+   3. **Second miss (non-claim-scope aspects):** log as an explanation-prior
+      ("this aspect did not land") in `comprehension-notes.md` and advance.
+      Does **not** fail the Owner for problem / benefits / boundary.
+
+   **PASS predicate (§4.3 / IF-1 `demonstrated`):** every mandatory aspect
+   (`problem` | `claim-scope` | `benefits` | `boundary`) has at least one item
+   answered correctly on the first or second try.
+
+   **General opt-out:** at any non-claim-scope turn the Owner may say they will
+   "confirm without the quiz" → set `comprehension: self-asserted` and stop
+   asking remaining general items. **The general opt-out does NOT cover claim
+   scope** — the claim-scope item must still be answered (or risk-accepted).
+
+   **Claim-scope HARD STOP (§4.3, locked):** a **second miss** on the
+   `aspect: claim-scope` item does **NOT** advance. The checkpoint STOPs and
+   offers exactly two ways forward:
+   - **(a)** re-read the claim-scope card (study pack §2b) and answer again, or
+   - **(b)** explicitly accept the risk — recorded **verbatim** in the confirm
+     `notes:` as `claim-scope risk accepted by owner`, and
+     `comprehension: risk-accepted`.
+
+   **`--yes` / flag off:** skip the loop entirely;
+   `comprehension: skipped-unattended`. Do not write `comprehension-notes.md`.
+
+   **After the loop (when it ran):** write
+   `handoff/00-understand/comprehension-notes.md` (template shape) from the
+   dialogue. Always include the **IF-4 claim-scope framing** section — a
+   **positive** seed: the precise claimed-vs-described contrast to lead with,
+   phrased affirmatively (whether demonstrated first try, taught-then-correct,
+   or risk-accepted). Never name a defensive behavior (§5.1). Then proceed to
+   the main ASK/RECORD; RECORD sets `comprehension:` per step 5.
 3. **ASK** — utter the stage contract `question:` verbatim:
    > Can you restate Problem, Solution (incl. claim scope), and Benefits without
    > reopening the full patent? If yes, confirm. If no, edit open-questions or
@@ -211,10 +235,17 @@ Follow **Owner checkpoint protocol (STOP/CONFIRM)** above. This instance:
    reply to override").
 5. **RECORD** — only after Owner's explicit affirmative in a later turn, write
    `handoff/00-understand/understand-confirmed.md` (`by: owner`, quote utterance in
-   `notes:`). Set `comprehension:` to `captured` (questions asked), `self-asserted`
-   (Owner opted out), or `skipped-unattended` (`--yes`). **`--yes` only** writes
-   without Owner utterance (`by: orchestrator-yes-flag`). Stage worker never writes
-   this file.
+   `notes:`). Set `comprehension:` to exactly one of (IF-1 frozen value set):
+   - `demonstrated` — every mandatory aspect correct within two tries
+   - `self-asserted` — Owner used the general opt-out ("confirm without the quiz");
+     NOT available for claim scope
+   - `skipped-unattended` — `--yes` or `--comprehension-check off`
+   - `risk-accepted` — claim-scope item missed twice and Owner accepted the risk;
+     `notes:` **MUST** then contain the verbatim string
+     `claim-scope risk accepted by owner`
+
+   **`--yes` only** writes without Owner utterance (`by: orchestrator-yes-flag`,
+   `comprehension: skipped-unattended`). Stage worker never writes this file.
 6. **RESUME** — valid confirm file for the current patent (see protocol validity) ⇒
    skip to design without re-asking; else RENDER→ASK→STOP again.
 

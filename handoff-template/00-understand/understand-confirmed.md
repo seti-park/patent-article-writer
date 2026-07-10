@@ -5,8 +5,10 @@
   write this file. A file with placeholder or missing values is INVALID
   (the checkpoint counts as unconfirmed).
 
-  comprehension: set by the P1 comprehension check at understand_confirm
-  (captured | self-asserted | skipped-unattended). P2 will add demonstrated.
+  comprehension: P2 value set (IF-1 frozen) —
+    demonstrated | self-asserted | skipped-unattended | risk-accepted
+  When comprehension: risk-accepted, notes: MUST contain the verbatim string
+  "claim-scope risk accepted by owner".
 -->
 
 # understand-confirmed
@@ -15,5 +17,6 @@
 - **by**:                      # owner | orchestrator-yes-flag
 - **date**:                    # YYYY-MM-DD (real date)
 - **patent**:                  # identifier from input/patent.md (e.g. US1234567B2)
-- **comprehension**:            # captured | self-asserted | skipped-unattended (P1)
+- **comprehension**:            # demonstrated | self-asserted | skipped-unattended | risk-accepted
 - **notes**:                   # REQUIRED when by: owner — quote the Owner's confirming utterance
+                               # when risk-accepted: MUST include "claim-scope risk accepted by owner"

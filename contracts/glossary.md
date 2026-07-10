@@ -16,9 +16,12 @@ Use these terms in all live skills and operator docs. Do not invent synonyms mid
 | **checkpoint** | A PROCEDURE (RENDER→ASK→STOP→RECORD→RESUME), not a state. See patent-essay SKILL.md "Owner checkpoint protocol". |
 | **confirm file** | Disk record written only after Owner affirmative (or `--yes`); validity rules in the protocol. |
 | **OWNER_QUESTION** | Structured block a forked worker emits to request an Owner decision; orchestrator relays it as a checkpoint instance. Shape: `OWNER_QUESTION:` / `FILES:` / optional `DEFAULT:`. Under `--yes`, a missing `DEFAULT:` aborts the run (no guessing); a present `DEFAULT:` is used and recorded in the run report. |
-| **comprehension loop** | Optional mode of `understand_confirm`: interactive Owner quiz + capture at the checkpoint (design: `docs/architecture/comprehension-loop.md`). P1 is capture-only. |
-| **comprehension-notes** | `handoff/00-understand/comprehension-notes.md` — teaching brief from the comprehension dialogue (stumble points, framing that landed, Owner-declared crux). |
+| **comprehension loop** | Optional mode of `understand_confirm`: interactive Owner quiz + teach at the checkpoint (design: `docs/architecture/comprehension-loop.md`). P2 = keyed grading + pass predicate + claim-scope hard STOP. |
+| **comprehension-quiz** | `handoff/00-understand/comprehension-quiz.md` — worker-produced keyed bank (IF-2): per item `question:` / `options:` / `key:` / `aspect:` (`problem\|claim-scope\|benefits\|boundary`) / `rationale:`. ≥1 item per aspect; claim-scope mandatory. |
+| **comprehension-notes** | `handoff/00-understand/comprehension-notes.md` — teaching brief from the comprehension dialogue (stumble points, framing that landed, Owner-declared crux, claim-scope framing). |
 | **explanation-prior** | Framing/emphasis guidance from the Owner's learning dialogue; never a fact source (facts stay in invention-summary / owner-study-pack). |
+| **comprehension** (confirm field) | On `understand-confirmed.md` (IF-1): `demonstrated` \| `self-asserted` \| `skipped-unattended` \| `risk-accepted`. `risk-accepted` requires notes string `claim-scope risk accepted by owner`. |
+| **claim-scope hard STOP** | On a second miss of the `claim-scope` quiz item, the checkpoint does not advance; Owner must re-answer after re-read or accept risk in writing (§4.3). |
 
 ## Run identity
 

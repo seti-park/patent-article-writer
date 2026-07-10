@@ -40,7 +40,9 @@ required_outputs:
 optional_outputs:
   # written only via the Owner checkpoint protocol (orchestrator after Owner's affirmative reply, or --yes)
   - handoff/00-understand/understand-confirmed.md
-  # P1 comprehension loop (orchestrator at understand_confirm when --comprehension-check on)
+  # P2 comprehension loop: worker-produced keyed bank (IF-2); orchestrator grades at checkpoint
+  - handoff/00-understand/comprehension-quiz.md
+  # P2 comprehension loop (orchestrator at understand_confirm when --comprehension-check on)
   - handoff/00-understand/comprehension-notes.md
 
 # Compatibility copies (orchestrator may symlink/copy for design + gates that still
@@ -87,20 +89,31 @@ owner_checkpoint:
     - open-questions.md in full
     - the five output paths (study pack, briefing, invention-summary,
       figure-primer, open-questions)
-  # P1 capture-only: orchestrator asks study-pack §5 self-check one at a time
-  # (ASK→STOP per question), writes comprehension-notes.md, sets confirm
-  # comprehension: field. No grading / claim-scope hard STOP / re-freeze in P1.
+  # P2 keyed grading: orchestrator asks comprehension-quiz.md items one at a time
+  # (ASK→STOP per question), GRADEs against key, TEAChes on miss, writes
+  # comprehension-notes.md (incl. IF-4 claim-scope framing), sets confirm
+  # comprehension: field. Claim-scope second miss = HARD STOP (§4.3).
+  # Model-correction re-freeze is P3 — not in this phase.
   comprehension_loop:
-    phase: P1   # capture-only; P2 adds keyed grading + claim-scope hard STOP
+    phase: P2   # keyed grading + pass predicate + claim-scope hard STOP
     flag: --comprehension-check
     default_on: [publish, understand-only]
     default_off: [draft, wire]
     forced_off_under: --yes
-    asks: owner-study-pack.md §5 Self-check (five questions, Korean, one ASK→STOP each)
-    capture_only: true   # no grade, no pass/fail, no hard STOP on wrong answer, no re-freeze
-    opt_out: "confirm without the questions"   # → comprehension: self-asserted
+    quiz_bank: handoff/00-understand/comprehension-quiz.md   # worker-produced (IF-2)
+    asks: comprehension-quiz.md items (Korean, one ASK→STOP each; grade against key)
+    grading: true
+    pass_predicate: >
+      every mandatory aspect (problem | claim-scope | benefits | boundary)
+      correct within two tries → comprehension: demonstrated
+    opt_out: "confirm without the quiz"   # → self-asserted; NOT available for claim scope
+    claim_scope_hard_stop: >
+      second miss on aspect: claim-scope does NOT advance; Owner must (a) re-read
+      claim-scope card and re-answer, or (b) accept risk → notes MUST contain
+      "claim-scope risk accepted by owner" and comprehension: risk-accepted
+    positive_framing: true   # quiz rationale + notes never name a defensive behavior (§5.1)
     output: handoff/00-understand/comprehension-notes.md
-    confirm_field: "comprehension: captured | self-asserted | skipped-unattended"
+    confirm_field: "comprehension: demonstrated | self-asserted | skipped-unattended | risk-accepted"
   validity: # confirm file counts only if ALL hold
     - "status: confirmed"
     - "by: owner | orchestrator-yes-flag"
