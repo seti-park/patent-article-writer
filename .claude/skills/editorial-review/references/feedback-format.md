@@ -8,8 +8,14 @@ Referenced by editorial-review SKILL.md. Defines structured feedback YAML output
 review_id: <slug>
 draft_source: <draft path>
 review_timestamp: <ISO-8601>
+round_type: confirmation | revision   # orchestrator assigns; reviewer copies into header
 posture_applied: aggressive | measured | conservative
 overall_assessment: pass | revise-recommended | revise-required
+# arbitration: optional; orchestrator may append after a reject→re-assert cycle
+# arbitration:
+#   - finding_id: r1-F1
+#     ruling: apply | sustain_rejection | owner_question
+#     notes: "..."
 
 findings:
   - finding_id: r1-F1        # r<round>-F<seq>; stable for the whole run, never reused
@@ -17,6 +23,7 @@ findings:
     location: <where in draft>
     severity: critical | high | medium | low
     severity_under_default_posture: <severity if measured posture applied>
+    prior_severity: <optional: sev (round N)>  # when re-asserting a dispositioned finding
     finding: "<what was observed>"
     recommendation: "<what to do about it>"
     quote: "<optional: the prose passage in question>"
@@ -46,6 +53,8 @@ findings:
 
 - `quote`: helpful for context, especially redundancy
 - `related_fact_entry`: for paraphrase mutation, points to fact-base entry
+- `prior_severity`: when a re-review re-asserts a previously dispositioned finding, carry
+  `prior_severity: <sev> (round N)` (e.g. `prior_severity: high (round 1)`)
 
 ## Severity criteria
 
@@ -94,18 +103,23 @@ Low findings do not affect assessment.
 
 Findings are tracked BY ID across the whole Compose↔Edit loop; nothing closes silently:
 
-1. **Review round N** writes `handoff/03-edit/edit-log.round-N.md` (the canonical
-   `edit-log.md` is a copy of the latest round). Every real finding carries `finding_id: rN-F<k>`.
+1. **Review round N** writes `handoff/03-edit/edit-log.round-N.md` with header field
+   `round_type: confirmation | revision` (orchestrator assigns; reviewer records). The
+   canonical `edit-log.md` is a copy of the latest round. Every real finding carries
+   `finding_id: rN-F<k>`. Confirmation rounds have no `revision-response.round-N.md`
+   (if one exists, the round counts as revision).
 2. **Revision** (composer, revision mode — see
    `essay-en-composer/references/revision-mode.md`) writes
    `handoff/02-compose/revision-response.round-N.md` with exactly one disposition per
    medium/high/critical finding: `applied` (what changed, where) or `rejected` (why — must argue
    from the spine, the source text, or an explicit rule; "disagree" is not a justification).
-3. **Review round N+1** starts from round N's log + responses and MUST rule on each carried id
-   before hunting new findings: verify each `applied` disposition actually landed (and did not
-   regress a neighbor — after any structural edit, re-count paragraph bands), and either accept
-   each `rejected` disposition or re-assert the finding (same id, escalation noted). A high or
-   critical finding stays open under its id until verified fixed or its rejection is accepted.
+   Not written for confirmation rounds.
+3. **Review round N+1** starts from round N's log + responses (when revision) and MUST rule
+   on each carried id before hunting new findings: verify each `applied` disposition actually
+   landed (and did not regress a neighbor — after any structural edit, re-count paragraph
+   bands), and either accept each `rejected` disposition or re-assert the finding (same id,
+   `prior_severity: <sev> (round N)`). A high or critical finding stays open under its id
+   until verified fixed or its rejection is accepted.
 4. `_shared/scripts/check_run.py` verifies this chain mechanically (artifact presence,
    disposition coverage, no silently dropped ids) before a run may be archived.
 
@@ -123,10 +137,13 @@ This proves the pass ran. Empty pass output without explicit `no findings` annot
 
 ## Example output
 
+### Round 1 (revision)
+
 ```yaml
 review_id: 044-tesla-rcm-vindication-review-1
 draft_source: /mnt/user-data/outputs/044-022-essay-draft.md
 review_timestamp: 2026-05-10T19:00:00Z
+round_type: revision
 posture_applied: measured
 overall_assessment: revise-required
 
@@ -184,6 +201,42 @@ findings:
       Lead opens with event but conclusion does not explicitly return to event framing.
     recommendation: |
       Optional. Closing paragraph could reference the event to close the frame.
+```
+
+### Round 2 (carried ruling + new finding)
+
+Composer rejected r1-F1; reviewer re-asserts. One new finding appears.
+
+```yaml
+review_id: 044-tesla-rcm-vindication-review-2
+draft_source: handoff/02-compose/essay-draft.md
+review_timestamp: 2026-05-10T20:00:00Z
+round_type: revision
+posture_applied: measured
+overall_assessment: revise-required
+
+findings:
+  - finding_id: r1-F1
+    pass: paraphrase-mutation-judgment
+    location: §3, sentence containing "complements"
+    severity: high
+    severity_under_default_posture: high
+    prior_severity: high (round 1)
+    finding: |
+      Re-assert: disposition was rejected but prose still says "complements"
+      where source is "supplements". Rejection not accepted.
+    recommendation: |
+      Re-anchor to source verbatim.
+
+  - finding_id: r2-F1
+    pass: redundancy-compression
+    location: §4, paragraphs 2–3
+    severity: medium
+    severity_under_default_posture: medium
+    finding: |
+      Core mechanism restated almost verbatim across two consecutive paragraphs.
+    recommendation: |
+      Keep one full pass; compress the second to a single consequence sentence.
 ```
 
 ## Notes

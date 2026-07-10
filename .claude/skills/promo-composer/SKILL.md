@@ -7,6 +7,8 @@ agent: promo-composer
 
 # promo-composer
 
+**Contract:** `contracts/stages/promo.yaml`
+
 Phase 4 Promote. Runs POST-archive against a finished `essays/<id>/` tree and emits one
 promo pack. The essay is FINAL: this skill digests it, never edits it, and its findings
 never reopen the Compose↔Edit loop.

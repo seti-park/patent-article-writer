@@ -7,6 +7,8 @@ agent: editorial-reviewer
 
 # editorial-review
 
+**Contract:** `contracts/stages/review_loop.yaml`
+
 Phase 3 Edit's mandatory inferential review. Six passes. Structured feedback YAML output.
 
 ```
@@ -67,17 +69,31 @@ lead: without it, count rules sand the aphorisms and insurance stacks ahead of t
 
 After `essay-en-composer` produces `handoff/02-compose/essay-draft.md`. Mandatory on every essay. No skip option. Rationale: v1 historical leaks (paraphrase mutation in published draft) reached publication only because editorial-review was skipped.
 
+## Round type (orchestrator-assigned)
+
+The **orchestrator** is the producer of round type. When forking a reviewer it states
+`round_type: confirmation` or `round_type: revision` in the fork instruction. The reviewer
+writes `round_type: confirmation | revision` as a YAML field in the header block of
+`edit-log.round-N.md`.
+
+- **Confirmation rounds:** no `revision-response.round-N.md` may exist for that round; its
+  absence is corroborating evidence. **Veto rule:** if a revision-response for N is present,
+  the round counts as a **revision** round. Confirmation-round reviews tolerate the missing
+  revision-response (fresh full review, nothing to disposition).
+- **Revision rounds:** expect prior-round dispositions; re-review protocol below applies.
+
 ## Re-review protocol (round N > 1)
 
 A re-review is NOT a fresh review plus vibes — it starts from the carried state:
 
 1. Read round N-1's `edit-log.round-(N-1).md` and the composer's
-   `revision-response.round-(N-1).md`.
+   `revision-response.round-(N-1).md` (required for revision rounds; absent on confirmation).
 2. **Rule on every carried finding_id first**: verify each `applied` disposition actually
    landed in the draft (quote the fixed span) and did not regress a neighbor (re-count
    paragraph bands around any structural edit); for each `rejected` disposition, either accept
    the rejection (note why) or re-assert the finding under its original id with the escalation
-   noted. No id disappears silently.
+   noted. No id disappears silently. A re-asserted finding carries
+   `prior_severity: <sev> (round N)` per `references/feedback-format.md`.
 3. Then run the full 7 passes on the current draft for NEW findings (ids `rN-F<k>`).
 4. A round-N review that finds zero medium+ findings must still show the carried-id rulings —
    an edit-log that only says "no findings" after a failing round is invalid.
@@ -108,6 +124,7 @@ Minimal example:
 ```yaml
 review_id: <essay-id>-editorial-review-1
 draft_source: handoff/02-compose/essay-draft.md
+round_type: revision          # confirmation | revision (orchestrator-assigned)
 posture_applied: measured
 overall_assessment: revise-required
 

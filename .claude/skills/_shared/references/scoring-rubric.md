@@ -157,8 +157,10 @@ ACCEPTED  ⇔  two consecutive CLEAN rounds from independently spawned reviewers
 - **Max revision iterations: 4** (`--max-iter`). On FAIL, the orchestrator feeds the
   `findings` back into `essay-en-composer` (revision mode; every medium+ finding gets a
   disposition in `revision-response.round-N.md`) and re-scores with a fresh reviewer. At the
-  cap, the best round may ship ONLY with an explicit `CAP HIT` line in `score-history.md`
-  and the unresolved findings surfaced.
+  cap, reaching max without acceptance is an owner checkpoint (`cap_hit`): ship the **last
+  draft** only (never a "best round" selection), with an explicit `CAP HIT` row in
+  `score-history.md` and unresolved findings surfaced. Hard stop unless `--yes` (then ship
+  last draft and continue).
 - **Run-completeness:** before archiving, `_shared/scripts/check_run.py` must pass — it
   mechanically verifies round artifacts, disposition coverage, carried finding_ids,
   double-clean (or CAP HIT) acceptance, and self-audit evidence.

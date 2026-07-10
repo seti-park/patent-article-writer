@@ -1,0 +1,43 @@
+# Stage contract: retro
+# Meta-loop. Propose-only (invariant 8). Never edits skills/gates/canon.
+
+id: retro
+skill: pipeline-retro
+# no agent pin required; fork context OK
+
+may_read:
+  - handoff/03-edit/edit-log*.md
+  - handoff/03-edit/revision-notes.md
+  - handoff/03-edit/gate-result*.json
+  - runs/*/gate-result.json
+  - meta/findings-ledger.jsonl
+  - meta/attribution-table.md
+  - meta/improvement-proposals/**
+  - .claude/skills/pipeline-retro/**
+  - .claude/skills/_shared/references/scoring-rubric.md
+
+# Hard rule: propose-only. Permitted writes ONLY:
+must_not_write:
+  - .claude/skills/**          # never edit skill bodies
+  - .claude/skills/_shared/scripts/**
+  - .claude/skills/_shared/scripts/banned_terms.txt
+  - .claude/skills/voice-canon-lookup/voice-canon/**
+  - handoff/**
+  - essays/**
+  - contracts/**
+
+permitted_writes:
+  - meta/findings-ledger.jsonl              # append normalized findings
+  - meta/attribution-table.md               # recurrence counts only
+  - meta/improvement-proposals/<date>-<slug>.md
+  - meta/improvement-proposals/README.md    # status index update
+
+required_outputs: []   # proposals only when strong signal; may be empty
+
+rules:
+  - "PROPOSE-ONLY — human applies after meta/regression.py."
+  - "Append ledger records (incl. empty-pass and human-revision origin)."
+  - "Strong signal (>= RECUR_THRESHOLD, default 3) -> recommended-apply proposal."
+  - "Weak signal -> watch. Cascade cap stops ineffective re-patches."
+  - "Surface top new proposal one line to Owner."
+  - "Never re-expose voice-profile.md to Phase 3 (fencing)."

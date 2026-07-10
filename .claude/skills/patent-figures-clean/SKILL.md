@@ -6,14 +6,17 @@ description: >
   input/figures-raw/ — into cleaned, white-trimmed, size-capped, canonically
   named input/figures/fig-NN.png files plus a vision-verified
   figures-manifest.md and the figures-index list the gates consume. Use when
-  input/figures/ is empty (or stale) and a raw figure source exists, or when
-  the user asks to clean, rename, split, or verify patent figures.
+  input/figures/ is empty or stale (see "Stale figures" below) and a raw figure
+  source exists, or when the user asks to clean, rename, split, or verify patent
+  figures.
 allowed-tools: Read, Write, Edit, Grep, Glob, Bash
 context: fork
 agent: figures-prep
 ---
 
 # patent-figures-clean — Phase 0 (Layer 1)
+
+**Contract:** `contracts/stages/figures.yaml`
 
 Raw patent figures are hostile inputs: multi-page TIFFs, one sheet holding six panels,
 filenames that say `US12345678-20260224-D00003.tif` while the pixels say "FIG. 5", scanner
@@ -62,20 +65,35 @@ input/figures-raw/  (zip / tif / png / jpg, as delivered)
    ```markdown
    # Figures manifest — <patent id>
 
+   patent: <identifier>
+
    | Figure | File | Labels seen | Description (one line) | Flags |
    |---|---|---|---|---|
    | FIG. 1 | fig-01.png | FIG. 1 | System block diagram: control unit 414 ... | |
    | FIG. 5A-5F | fig-05AF.png | FIG. 5A..5F | Kneel sequence, phases 1-2 | legibility: small numerals |
    ```
 
-   Plus the figures-index list (one integer per line — Phase 1 copies it to
-   `handoff/01-design/figures-index.txt` for the gates).
+   Header line `patent: <identifier>` is **mandatory** (written by this stage;
+   bootstrap and RUN-012 identity checks consume it). Plus the figures-index list
+   (one integer per line — Phase 1 copies it to `handoff/01-design/figures-index.txt`
+   for the gates).
+
+## Stale figures
+
+`input/figures/` is **stale** when either:
+
+- `figures-manifest.md` is missing, or
+- manifest header `patent:` ≠ the current `input/patent.md` identifier
+
+Stale ⇒ bootstrap clears `input/figures/`, `input/figures-work/`, `input/figures-raw/`
+before stages run. Manifest missing but `fig-*.png` present is also stale.
 
 ## Pre/post conditions
 
 Pre: `input/figures-raw/` (or a path given in the invocation) holds the raw drop.
-Post: `input/figures/fig-*.png` cleaned + verified; `figures-manifest.md` present; raw
-sources untouched; `input/figures-work/` left in place for audit (gitignored).
+Post: `input/figures/fig-*.png` cleaned + verified; `figures-manifest.md` present with
+`patent:` header; raw sources untouched; `input/figures-work/` left in place for audit
+(gitignored).
 
 ## Out of scope
 

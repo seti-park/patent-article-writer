@@ -1,0 +1,61 @@
+# Stage contract: review_loop
+# Fresh fork per round (invariant 1). Findings only — no auto-fix.
+
+id: review_loop
+skill: editorial-review
+agent: editorial-reviewer
+handoff: handoff/03-edit/
+
+may_read:
+  - handoff/02-compose/essay-draft.md
+  - handoff/02-compose/thesis-trace.md
+  - handoff/02-compose/revision-response.round-*.md
+  - handoff/01-design/thesis-spine.md
+  - handoff/01-design/invention-summary.md
+  - handoff/01-design/fact-check-log.md
+  - handoff/00-understand/**
+  - input/patent.md                    # Pass 3 verbatim checks
+  - input/figures/**
+  - handoff/03-edit/**                  # prior rounds travel on disk only
+  - handoff-template/03-edit/**
+  - .claude/skills/editorial-review/**
+  - .claude/skills/_shared/references/deliverable-voice-rules.md
+  - .claude/skills/_shared/references/anti-ai-writing.md
+  - .claude/skills/_shared/references/reader-energy.md
+  - .claude/skills/_shared/references/reader-profile.md
+
+must_not_read:
+  - .claude/skills/voice-canon-lookup/**  # voice fencing
+  - .claude/skills/_shared/references/voice-profile.md
+
+# Per round N (orchestrator):
+# 1. run_gates.py → gate-result.round-N.json
+# 2. Fresh forked review → edit-log.round-N.md (header: round_type:)
+# 3. Append score-history.md row
+# 4. If revision: composer → revision-response.round-N.md under 02-compose/
+
+required_outputs:
+  - handoff/03-edit/edit-log.round-N.md       # header field round_type: confirmation|revision
+  - handoff/03-edit/gate-result.round-N.json
+  - handoff/03-edit/score-history.md          # append one row per round
+  # on acceptance:
+  - handoff/03-edit/essay-final.md
+
+optional_outputs:
+  # composer revision mode (not reviewer); required for revision rounds followed
+  # by another round; ABSENT on confirmation (presence vetoes confirmation)
+  - handoff/02-compose/revision-response.round-N.md
+
+rules:
+  - "Fresh editorial-reviewer instance every round — no shared compose/review context."
+  - "Orchestrator assigns round_type in the fork instruction; reviewer writes it in header."
+  - "Veto: if revision-response.round-N.md exists, round counts as revision."
+  - "CLEAN(N) iff gates pass + assessment >= threshold + grounding/goal-2/verdict hard-gates."
+  - "publish: double-clean; draft/wire: single-clean (pipeline.yaml + patent-essay SKILL)."
+  - "Grounding fix priority: anchor → narrow → label → cut (never add a hedge)."
+  - "Findings only; composer dispositions medium+ findings."
+
+owner_checkpoint:
+  id: cap_hit
+  # When max_revision reached without acceptance — patent-essay SKILL "CAP HIT"
+  soft: false   # hard unless --yes

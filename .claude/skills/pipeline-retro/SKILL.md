@@ -16,6 +16,8 @@ context: fork
 
 # pipeline-retro
 
+**Contract:** `contracts/stages/retro.yaml`
+
 Phase-spanning **meta-loop**. The inner loop (Compose↔Edit) improves one essay; this loop
 improves the *system* that makes essays — but only by proposing. It is the second tier of the
 two-tier design (see `_shared/references/scoring-rubric.md` and `CLAUDE.md`).

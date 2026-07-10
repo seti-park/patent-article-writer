@@ -34,7 +34,7 @@ Full matrix: `.claude/skills/_shared/references/scoring-rubric.md`.
 - **`draft`**: understand → design → compose → review (single-clean); no audit/polish/promo  
 - **`--yes`**: skip owner checkpoints (unattended only)
 
-Inputs: `input/patent.md`, `input/figures/` or `figures-raw/`, optional `essay-context.md`.
+Inputs: `input/patent.md`, `input/figures/` or `figures-raw/`, optional `essay-context.md`. Provisioned by **Run bootstrap** (argument → `input/patent.md`, stale-workspace reset, `handoff/run-manifest.md`).
 
 ## Stage graph (names, not phase numbers)
 
@@ -42,6 +42,8 @@ Inputs: `input/patent.md`, `input/figures/` or `figures-raw/`, optional `essay-c
 figures? → understand → [owner confirm] → design → compose ⇄ review_loop
          → self_audit? → polish? → verify → archive → promo? → retro?
 ```
+
+`[owner confirm]` = hard STOP/CONFIRM checkpoint; `?` = optional stage
 
 | Stage | Skill / agent | Job |
 |-------|----------------|-----|
@@ -64,7 +66,7 @@ Profiles and required files: `contracts/pipeline.yaml`, `contracts/stages/`.
 2. **Double-clean on `publish`** — one clean round is a hypothesis  
 3. **Composer never reads raw patent** — only Quotable spans from understand/design  
 4. **Understand before design** — no thesis candidates until triad artifacts exist  
-5. **Owner confirm on `publish`** — unless `--yes`  
+5. **Owner confirm on `publish`** — via the Owner checkpoint protocol (STOP/CONFIRM) in the orchestrator runbook; unless `--yes`  
 6. **Grounding fix priority** — anchor → narrow → label → cut (never “add a hedge”)  
 7. **Meta-loop is propose-only** — humans apply after `meta/regression.py`  
 

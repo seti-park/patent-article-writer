@@ -2,6 +2,11 @@
 
 Referenced by tech-essay-en SKILL.md Step 0 and Step 4. Defines the two-dimensional mode space, default behavior, mid-pipeline shifts, and per-mode composition rhythm.
 
+**Pipeline rule:** when composing inside the patent-essay pipeline (forked worker),
+**strict-execution is the ONLY mode**. `walkthrough` and `pair` are reserved for direct,
+non-forked invocation by the Owner. Worker questions inside the pipeline go through the
+`OWNER_QUESTION` relay (patent-essay SKILL.md), not in-session elicitation.
+
 ## Two dimensions
 
 tech-essay-en operates along two orthogonal dimensions, both selectable at invocation.
@@ -10,9 +15,9 @@ tech-essay-en operates along two orthogonal dimensions, both selectable at invoc
 
 | Mode | Behavior |
 |---|---|
-| **walkthrough** (default) | Section-by-section composition. SETI mid-session editorial intervention welcome. Catches at sentence or section level for voice, clarity, thesis alignment, audience perception. |
-| **strict-execution** | Pure prose expansion from Blueprint. No mid-session intervention. Plan ⊥ Execute strict reading. |
-| **pair** | Interactive at each sentence. SETI plus Claude step-by-step dialogue. |
+| **strict-execution** | Pure prose expansion from Blueprint. No mid-session intervention. Plan ⊥ Execute strict reading. **Only mode when forked inside the pipeline.** |
+| **walkthrough** (default for direct/Owner invocation) | Section-by-section composition. SETI mid-session editorial intervention welcome. Catches at sentence or section level for voice, clarity, thesis alignment, audience perception. **Not used in pipeline forks.** |
+| **pair** | Interactive at each sentence. SETI plus Claude step-by-step dialogue. **Not used in pipeline forks.** |
 
 ### Dimension 2: Posture (mode spectrum)
 
@@ -67,10 +72,14 @@ Aggressive posture extends the bounded scope to allow framing variation. Conserv
 
 ## Mid-pipeline mode shift
 
-SETI may explicitly shift mode mid-essay. The nature of an emerging catch may also trigger an implicit shift suggestion:
+SETI may explicitly shift mode mid-essay (direct/Owner invocation only). The nature of an emerging catch may also trigger an implicit shift suggestion:
 
 - Thesis-altering catch in measured-posture walkthrough → propose aggressive shift
 - Thesis-altering catch in conservative-posture walkthrough → propose either upgrade to measured or aggressive, or return to essay-architect for blueprint revision
 - Strict-execution session reveals blueprint coverage incomplete → propose shift to walkthrough or return for blueprint revision
 
 Surface the shift proposal explicitly. SETI decides: shift, abandon attempt, or return to essay-architect.
+
+**Inside the pipeline (forked):** do not elicit mid-session. End with
+`OWNER_QUESTION: <question>` + `FILES: <paths>` so the orchestrator runs the Owner
+checkpoint protocol and re-invokes the worker with the answer.
