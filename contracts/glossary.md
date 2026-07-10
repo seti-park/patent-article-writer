@@ -17,6 +17,12 @@ Use these terms in all live skills and operator docs. Do not invent synonyms mid
 | **confirm file** | Disk record written only after Owner affirmative (or `--yes`); validity rules in the protocol. |
 | **OWNER_QUESTION** | Structured block a forked worker emits to request an Owner decision; orchestrator relays it as a checkpoint instance. |
 
+## Run identity
+
+| Term | Meaning |
+|------|---------|
+| **run_id** | `<assignee>-<publication-number>` lowercased (e.g. `intel-us20250266395`), matching `essays/` directory names. Re-run of the same patent appends `-r2`, `-r3`, …. Generated at bootstrap. `essay_id` ≡ `run_id`. Written to `handoff/run-manifest.md`. |
+
 ## Legacy alias
 
 If you see **SETI** in historical docs under `docs/architecture/history/` or

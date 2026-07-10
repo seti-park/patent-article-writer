@@ -26,6 +26,9 @@ Content travels on disk. Graph + profiles: `contracts/pipeline.yaml`. Roles:
 | `--self-audit` | from profile | `on` \| `off` |
 | `--yes` | off | Skip owner checkpoints (unattended) |
 
+**`--profile promo-only`:** positional argument MUST be an existing `essays/<id>/` id
+(resolved against `essays/`). Missing or ambiguous id ⇒ ask the Owner before promo.
+
 ## Owner checkpoint protocol (STOP/CONFIRM)
 
 Every owner checkpoint is a PROCEDURE, not a state. When the orchestrator reaches one:
@@ -68,9 +71,66 @@ follows the raising stage's profile), design title-lead override (soft).
 
 ## Pipeline by stage
 
+### -1. Run bootstrap (before any stage)
+
+Before any stage worker or figures check. Orchestrator-inline (no forked agent).
+`check_run` RUN-012 consumes `handoff/run-manifest.md`.
+
+1. **Resolve input**
+   - Path argument ⇒ copy to `input/patent.md`.
+   - Pasted text ⇒ write to `input/patent.md`.
+   - Patent number only ⇒ do **not** fetch autonomously; raise `OWNER_QUESTION`
+     asking the Owner for the document text/file or explicit fetch authorization
+     (name the source).
+   - If `input/patent.md` already exists **and** differs from the argument's
+     document ⇒ hard STOP/CONFIRM (Owner checkpoint protocol) before overwriting.
+
+2. **Identify** — extract patent identifier (publication/application number) +
+   title; echo both in the entry report.
+
+3. **Workspace decision** (`handoff/`)
+   - Empty ⇒ fresh run.
+   - Non-empty, same patent (per `run-manifest.md` / confirm-file `patent:` field)
+     and incomplete ⇒ **RESUME** from on-disk state (name the stage).
+   - Non-empty, different patent ⇒ evacuate whole `handoff/` tree to
+     `runs/<old-run_id>/handoff-abandoned/` and re-create empty stage dirs.
+   - **All fresh-run cases:** delete any leftover `understand-confirmed.md`
+     (a confirm never survives a new run).
+
+4. **Figures identity** — read `input/figures/figures-manifest.md` header
+   `patent:`. Mismatch with current patent ⇒ clear `input/figures/`,
+   `input/figures-work/`, `input/figures-raw/` and note it. Manifest missing but
+   `fig-*.png` present ⇒ stale (clear). Stale definition:
+   `patent-figures-clean` SKILL.md.
+
+5. **Write `handoff/run-manifest.md`** (format frozen; RUN-012 consumes):
+
+   ```markdown
+   # run-manifest
+
+   - **run_id**: intel-us20250266395
+   - **patent**: US20250266395A1
+   - **patent_sha256**: <sha256 of input/patent.md>
+   - **profile**: publish
+   - **started**: 2026-07-10
+   ```
+
+   `run_id` syntax: glossary. Compute sha256 of `input/patent.md`. `essay_id` ≡ `run_id`.
+
+6. **Backlog preflight** (META-BACKLOG-01) — read
+   `meta/improvement-proposals/README.md` status index; report count of pending
+   `recommended-apply` proposals + oldest one's date. If any targets a
+   gate/checker used by this run, warn that the run will hit a known defect.
+
+7. **Entry report** (mandatory, one short block): patent id + title, `run_id`,
+   workspace decision (fresh / resume / evacuated), cleared artifacts, backlog
+   count.
+
 ### 0. Figures (optional) — `patent-figures-clean` / figures-prep
 
-If no `input/figures/fig-*.png` but raw source exists → run figures stage.
+If no `input/figures/fig-*.png` but raw source exists → run figures stage. Bootstrap
+step 4 has already cleared stale figures, so a surviving `fig-*.png` set is
+identity-valid for the current patent; never skip on presence alone before bootstrap.
 
 ### 1. Understand (required) — `patent-understand` / patent-reader
 
@@ -115,6 +175,14 @@ Follow **Owner checkpoint protocol (STOP/CONFIRM)** above. This instance:
 
 **Forbidden on hard checkpoints:** invoking design (or any next stage) in the same turn
 as ASK; writing the confirm file without an Owner utterance (except `--yes`).
+
+**Owner interaction records** (adjacent to this checkpoint; does not alter the protocol):
+
+- Owner answers given at the checkpoint are appended by the orchestrator to
+  `handoff/00-understand/open-questions.md` as
+  `**Owner answer (YYYY-MM-DD):** …` blocks.
+- A re-run of understand invalidates: delete `understand-confirmed.md` and regenerate
+  the 01-design compat copies; the checkpoint must then be passed again.
 
 Profile **`understand-only`**: after confirm (or soft continue), stop; do not design.
 

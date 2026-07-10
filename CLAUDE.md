@@ -34,7 +34,7 @@ Full matrix: `.claude/skills/_shared/references/scoring-rubric.md`.
 - **`draft`**: understand → design → compose → review (single-clean); no audit/polish/promo  
 - **`--yes`**: skip owner checkpoints (unattended only)
 
-Inputs: `input/patent.md`, `input/figures/` or `figures-raw/`, optional `essay-context.md`.
+Inputs: `input/patent.md`, `input/figures/` or `figures-raw/`, optional `essay-context.md`. Provisioned by **Run bootstrap** (argument → `input/patent.md`, stale-workspace reset, `handoff/run-manifest.md`).
 
 ## Stage graph (names, not phase numbers)
 
