@@ -260,10 +260,19 @@ Surface-only 윤문; zero-new gate findings.
 
 ```
 python3 .claude/skills/_shared/scripts/check_run.py --handoff handoff \
-  --threshold <threshold> --self-audit <on|off>
+  --threshold <threshold> --self-audit <on|off> \
+  --acceptance <single-clean|double-clean> --owner-confirm <required|yes-flag|off>
 ```
 
-Must PASS before archive. Never edit artifacts to satisfy it.
+Profile → flags (`contracts/stages/verify.yaml`):
+
+| Profile | `--acceptance` | `--owner-confirm` |
+|---------|----------------|-------------------|
+| `publish` | `double-clean` | `required` (`--yes` run ⇒ `yes-flag`) |
+| `draft` / `wire` | `single-clean` | `off` |
+
+`--require-understand` is on by default; disable it only to re-verify a legacy
+`essays/` archive. Must PASS before archive. Never edit artifacts to satisfy it.
 
 ### 8. Archive
 

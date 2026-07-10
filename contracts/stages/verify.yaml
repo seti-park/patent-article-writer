@@ -27,11 +27,8 @@ must_not_write:
 #     --threshold <pass|revise-recommended>
 #     --self-audit <on|off>  (from profile / --self-audit flag)
 #
-# patent-essay SKILL §7 currently documents:
-#   check_run.py --handoff handoff --threshold <t> --self-audit <on|off>
-# Flag names --acceptance / --owner-confirm / --require-understand are the
-# contracted mapping (audit); implementers must align check_run CLI or map
-# equivalently (see LANE-REPORT notes if CLI lags).
+# All flags above are implemented by check_run.py (RUN-005 acceptance, RUN-010
+# owner confirm, RUN-011 understand outputs, RUN-012 patent hash lock).
 
 required_outputs: []   # pass/fail only; no new artifacts
 
