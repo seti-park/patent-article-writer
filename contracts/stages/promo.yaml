@@ -1,0 +1,45 @@
+# Stage contract: promo
+# Post-archive share copy. Digests the shelf; never edits the essay.
+
+id: promo
+skill: promo-composer
+agent: promo-composer
+writes: essays/<id>/promo/
+
+may_read:
+  - essays/<id>/essay-final.md
+  - essays/<id>/publication-package/**
+  - essays/<id>/owner-briefing.md
+  - essays/<id>/README.md
+  - essays/<id>/handoff/02-compose/thesis-trace.md
+  - essays/<id>/promo/**                 # prior pack for overwrite bumps
+  - .claude/skills/promo-composer/**
+  - .claude/skills/voice-canon-lookup/** # optional opening/closing only
+  - .claude/skills/_shared/references/working-dialogue-voice.md
+  - .claude/skills/_shared/scripts/banned_terms.txt
+
+must_not_read:
+  - input/patent.md                      # safe-claims: no re-fetch / no patent
+  - handoff/01-design/fact-check-log.md  # only essay/briefing/publication facts
+
+must_not_write:
+  - essays/<id>/essay-final.md
+  - essays/<id>/publication-package/**
+  - essays/<id>/owner-briefing.md
+  - handoff/**
+  # only permitted write: essays/<id>/promo/promo-pack.md
+
+required_outputs:
+  - essays/<id>/promo/promo-pack.md
+
+rules:
+  - "Essay is FINAL; never edit anything under essays/<id>/ except promo-pack.md."
+  - "Safe-claims: every factual phrase traces to essay-final / publication.md / owner-briefing only. Missing fact → drop, never fetch."
+  - "Attachments: publication-package/ images only; cover-5x2.png default."
+  - "model: inherit for posting copy (never pin down)."
+  - "Standalone profile promo-only: positional arg is existing essays/<id>/ id."
+
+preconditions:
+  - essays/<id>/essay-final.md exists
+  - essays/<id>/publication-package/publication.md exists
+  - run accepted (double-clean or explicit CAP HIT ship)

@@ -6,6 +6,22 @@ skill: thesis-architect
 agent: design-architect
 handoff: handoff/01-design/
 
+# Entry precondition (CD-03a): understand complete + confirmed (or --yes).
+# Confirm-file validity = patent-essay SKILL "Owner checkpoint protocol" /
+# contracts/stages/understand.yaml owner_checkpoint.validity.
+entry_requires:
+  required_outputs_from_understand:
+    - handoff/00-understand/invention-summary.md
+    - handoff/00-understand/owner-study-pack.md
+    - handoff/00-understand/owner-briefing.md
+    - handoff/00-understand/figure-primer.md
+    - handoff/00-understand/open-questions.md
+  confirm: >
+    VALID handoff/00-understand/understand-confirmed.md
+    (status: confirmed; by: owner | orchestrator-yes-flag; real date;
+    patent matches current input/patent.md)
+    OR recorded --yes (orchestrator wrote confirm with by: orchestrator-yes-flag).
+
 may_read:
   - handoff/00-understand/**
   - handoff/01-design/invention-summary.md   # compat copy from understand

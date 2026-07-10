@@ -7,6 +7,8 @@ agent: prose-polish
 
 # prose-polish (윤문)
 
+**Contract:** `contracts/stages/polish.yaml`
+
 Phase 3.7. The pipeline's passes defend accuracy, structure, and energy; this pass defends
 the GENERAL READER's ear (owner decision 2026-07-05: 대중 독자를 위한 문장·표현 다듬기).
 It runs when the text is already true and well-argued, and makes it easier to read without

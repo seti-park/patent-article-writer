@@ -7,6 +7,8 @@ agent: essay-composer
 
 # essay-en-composer
 
+**Contract:** `contracts/stages/compose.yaml`
+
 Phase 2 Compose's drafting stage. Reads the Phase 1 handoff bundle and produces the essay draft.
 
 ```

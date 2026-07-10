@@ -1,0 +1,43 @@
+# Stage contract: verify
+# Mechanical completeness before archive. Never edit artifacts to satisfy checks.
+
+id: verify
+# orchestrator-inline; no forked skill/agent
+scripts:
+  - .claude/skills/_shared/scripts/check_run.py
+  - .claude/skills/_shared/scripts/run_gates.py
+
+may_read:
+  - handoff/**
+  - input/patent.md
+  - input/figures/**
+
+must_not_write:
+  - "any artifact"   # verify is read-only; never patch artifacts to green the checker
+
+# Invocations (orchestrator). Profile → flag mapping:
+#
+#   publish:
+#     check_run ... --acceptance double-clean --owner-confirm required
+#     (--yes runs: --owner-confirm yes-flag)
+#   draft / wire:
+#     check_run ... --acceptance single-clean --owner-confirm off
+#   all:
+#     --require-understand on by default
+#     --threshold <pass|revise-recommended>
+#     --self-audit <on|off>  (from profile / --self-audit flag)
+#
+# patent-essay SKILL §7 currently documents:
+#   check_run.py --handoff handoff --threshold <t> --self-audit <on|off>
+# Flag names --acceptance / --owner-confirm / --require-understand are the
+# contracted mapping (audit); implementers must align check_run CLI or map
+# equivalently (see LANE-REPORT notes if CLI lags).
+
+required_outputs: []   # pass/fail only; no new artifacts
+
+exit_condition: check_run PASS (exit 0) before archive
+
+rules:
+  - "Must PASS before archive (invariant 9)."
+  - "Never edit artifacts to satisfy check_run."
+  - "Acceptance shape: publish double-clean; draft/wire single-clean; CAP HIT ship is the explicit exception (score-history notes: CAP HIT)."

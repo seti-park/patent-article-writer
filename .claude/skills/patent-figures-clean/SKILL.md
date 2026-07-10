@@ -16,6 +16,8 @@ agent: figures-prep
 
 # patent-figures-clean — Phase 0 (Layer 1)
 
+**Contract:** `contracts/stages/figures.yaml`
+
 Raw patent figures are hostile inputs: multi-page TIFFs, one sheet holding six panels,
 filenames that say `US12345678-20260224-D00003.tif` while the pixels say "FIG. 5", scanner
 margins, and 4000-px pages that waste every downstream token. This skill normalizes all of

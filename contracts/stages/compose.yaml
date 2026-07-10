@@ -1,0 +1,42 @@
+# Stage contract: compose
+# Draft from design handoff only. Never raw patent (invariant 3).
+
+id: compose
+skill: essay-en-composer
+agent: essay-composer
+handoff: handoff/02-compose/
+
+may_read:
+  - handoff/01-design/**
+  - handoff/00-understand/**           # Quotable spans / frozen model only
+  - input/figures/**
+  - handoff-template/02-compose/**
+  - .claude/skills/essay-en-composer/**
+  - .claude/skills/voice-canon-lookup/**
+  - .claude/skills/_shared/references/deliverable-voice-rules.md
+  - .claude/skills/_shared/references/anti-ai-writing.md
+  - .claude/skills/_shared/references/caption-roles.md
+  - .claude/skills/_shared/references/reader-profile.md
+  - .claude/skills/_shared/references/reader-energy.md
+  - .claude/skills/_shared/references/working-dialogue-voice.md
+  # revision mode also reads:
+  - handoff/03-edit/edit-log.round-*.md
+  - handoff/03-edit/gate-result.round-*.json
+
+must_not_read:
+  - input/patent.md                    # invariant 3 — Quotable spans only
+  - .claude/skills/editorial-review/** # no review self-grading
+
+required_outputs:
+  - handoff/02-compose/essay-draft.md
+  - handoff/02-compose/figures-rationale.md
+  - handoff/02-compose/thesis-trace.md
+  - handoff/02-compose/publication.md
+
+# Revision mode (orchestrator-invoked): dispositions every medium+ finding →
+# handoff/02-compose/revision-response.round-N.md (composer-owned; check_run path).
+
+rules:
+  - "Inside pipeline: strict-execution only; gap-stops raise OWNER_QUESTION."
+  - "Fact introduction beyond invention-summary Quotable spans + fact-check-log external facts is forbidden."
+  - "thesis-trace.md declares <=3 signature lines (or explicit none)."

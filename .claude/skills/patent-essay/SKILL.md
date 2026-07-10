@@ -267,16 +267,26 @@ Must PASS before archive. Never edit artifacts to satisfy it.
 
 ### 8. Archive
 
-- `runs/<essay-id>/` — full round evidence  
-- `essays/<essay-id>/` — shelf: essay-final, owner-briefing, **owner-study-pack**, patent.md,
-  figures, publication-package, promo, score-history, gate-result, README, handoff tree
-  (migration: full handoff still allowed under essays/ until slim-archive lands)
+`id` ≡ `run_id` (glossary / `handoff/run-manifest.md`). Contract: `contracts/stages/archive.yaml`.
 
-Copy from understand:
+- `runs/<id>/` — full round evidence  
+- `essays/<id>/` — shelf (assemble all of the following)
 
-- `owner-study-pack.md` → `essays/<id>/owner-study-pack.md`
-- `owner-briefing.md` → `essays/<id>/owner-briefing.md`
-- `patent.md` snapshot from input
+**Assemble (imperative):**
+
+1. Copy `handoff/03-edit/essay-final.md` → `essays/<id>/essay-final.md`.
+2. Copy from understand: `owner-study-pack.md`, `owner-briefing.md` → `essays/<id>/`.
+3. Snapshot `input/patent.md` → `essays/<id>/patent.md` (sha256 must match run-manifest).
+4. Place figures under `essays/<id>/figures/` and into `publication-package/` as needed.
+5. Copy `handoff/02-compose/publication.md` → `essays/<id>/publication-package/publication.md`.
+6. Author `essays/<id>/publication-package/posting-checklist.md` (title, cover alt, body alts, paste source).
+7. **Cover (required):** generate `essays/<id>/publication-package/cover-5x2.png` via
+   `python tools/make_header.py ... --out essays/<id>/publication-package/cover-5x2.png`
+   (see `tools/header-style.md`; `make_header.py` is the contracted producer).
+8. Copy score-history, gate-result, README; leave `promo/` for the promo stage.
+9. **Migration:** full `handoff/` tree under `essays/<id>/handoff/` is still allowed until
+   slim-archive lands — remove when that contract is added; new runs after that date must not
+   copy the full tree.
 
 ### 9. Promo (publish) — `promo-composer`
 

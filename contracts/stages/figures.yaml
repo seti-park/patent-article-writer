@@ -1,0 +1,47 @@
+# Stage contract: figures
+# Optional Phase 0. Raw drop → cleaned fig-NN.png + vision-verified manifest.
+# Exit: identity-valid input/figures/ ready for understand (bootstrap step 4).
+
+id: figures
+skill: patent-figures-clean
+agent: figures-prep
+# no handoff/ tree — writes under input/figures/
+
+may_read:
+  - input/figures-raw/**
+  - input/figures-work/**
+  - input/patent.md            # patent id for manifest header only
+  - .claude/skills/patent-figures-clean/**
+
+must_not_write:
+  - handoff/**
+  - essays/**
+  - thesis-spine.md
+  - essay-draft.md
+
+required_outputs:
+  - input/figures/fig-*.png              # cleaned, vision-verified canonical names
+  - input/figures/figures-manifest.md    # must include header line: patent: <id>
+  # figures-index list (one integer per line). Design/understand copy to
+  # handoff/01-design/figures-index.txt for gates. Path at this stage is the
+  # list the skill emits; no single canonical filename is fixed in the skill.
+
+optional: true   # skip only if fig-*.png survived bootstrap identity check
+
+gates_before_exit:
+  # Vision-verification loop (agent, mandatory — not a script):
+  # re-Read every input/figures/fig-*.png; visible FIG. N label must match
+  # filename; trim must not cut a reference numeral; text readable at size.
+  # Fix and repeat until clean before emitting the manifest.
+  - description: >
+      vision verification loop — label ↔ filename agreement on every final
+      fig-*.png (patent-figures-clean SKILL.md step 5)
+
+exit_to: understand
+# Bootstrap clears stale figures (manifest missing or patent: mismatch) before
+# this stage; a surviving fig-*.png set is identity-valid for the current patent.
+
+rules:
+  - "Never name a file from its source filename — read the image."
+  - "scripts/clean_figures.py moves pixels; agent assigns names and verifies."
+  - "Cover composition (5:2 header) is NOT this stage — tools/make_header.py."

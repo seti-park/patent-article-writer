@@ -7,6 +7,8 @@ agent: editorial-reviewer
 
 # editorial-review
 
+**Contract:** `contracts/stages/review_loop.yaml`
+
 Phase 3 Edit's mandatory inferential review. Six passes. Structured feedback YAML output.
 
 ```
