@@ -1,0 +1,138 @@
+{
+  "passed": true,
+  "gates": [
+    {
+      "gate": "emdash",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "anchors",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "quotes",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "sources",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "banned",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "structure",
+      "passed": true,
+      "findings": [
+        {
+          "check_id": "STRUCT-004",
+          "severity": "warn",
+          "message": "rule-of-three: 4 'A, B, and C' triad(s) detected",
+          "location": "line 31 (first)"
+        }
+      ]
+    },
+    {
+      "gate": "figure_use",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "meta",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "stub",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "cashtag",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "dupe",
+      "passed": true,
+      "findings": [
+        {
+          "check_id": "DUPE-001",
+          "severity": "warn",
+          "message": "repeated 5-word phrase 'down to the individual memory' occurs 2 times in prose",
+          "location": "prose token #82"
+        },
+        {
+          "check_id": "DUPE-001",
+          "severity": "warn",
+          "message": "repeated 5-word phrase 'to the individual memory cell' occurs 2 times in prose",
+          "location": "prose token #83"
+        }
+      ]
+    },
+    {
+      "gate": "typography",
+      "passed": true,
+      "findings": [
+        {
+          "check_id": "LONGSENT-001",
+          "severity": "warn",
+          "message": "sentence runs 37 words (target ~15-25)",
+          "location": "sentence: Each product's mantissa shifts onto the block's la..."
+        },
+        {
+          "check_id": "LONGSENT-001",
+          "severity": "warn",
+          "message": "sentence runs 38 words (target ~15-25)",
+          "location": "sentence: The macro finds the largest exponent among the 32 ..."
+        },
+        {
+          "check_id": "LONGSENT-001",
+          "severity": "warn",
+          "message": "sentence runs 72 words (target ~15-25)",
+          "location": "sentence: The point of the shuffle is what the adder tree is..."
+        },
+        {
+          "check_id": "LONGSENT-001",
+          "severity": "warn",
+          "message": "sentence runs 43 words (target ~15-25)",
+          "location": "sentence: For the replacement itself, the document describes..."
+        },
+        {
+          "check_id": "LONGSENT-001",
+          "severity": "warn",
+          "message": "sentence runs 44 words (target ~15-25)",
+          "location": "sentence: One name carries press-reported history: Bloomberg..."
+        },
+        {
+          "check_id": "LONGSENT-001",
+          "severity": "warn",
+          "message": "sentence runs 41 words (target ~15-25)",
+          "location": "sentence: \"               \" is literal engineering, and this..."
+        },
+        {
+          "check_id": "LONGSENT-001",
+          "severity": "warn",
+          "message": "sentence runs 36 words (target ~15-25)",
+          "location": "sentence: One guard belongs to this patent specifically: not..."
+        }
+      ]
+    },
+    {
+      "gate": "hedge",
+      "passed": true,
+      "findings": []
+    },
+    {
+      "gate": "surface",
+      "passed": true,
+      "findings": []
+    }
+  ]
+}

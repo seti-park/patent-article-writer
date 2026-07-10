@@ -1,0 +1,20 @@
+# Fact-Check Log
+
+## External facts
+
+| Fact ID | Claim | Source URL | Tier | Sources category |
+|---|---|---|---|---|
+| openai-broadcom-10gw-2025-10-13 | OpenAI and Broadcom announced (2025-10-13) a strategic collaboration to deploy 10 gigawatts of OpenAI-designed AI accelerators; rack deployments targeted to start in the second half of 2026 and complete by end of 2029. | https://openai.com/index/openai-and-broadcom-announce-strategic-collaboration/ | tier-1 | Official statements |
+| openai-broadcom-jalapeno-2026-06-24 | OpenAI and Broadcom unveiled their first custom chip, "Jalapeño," an LLM-optimized inference processor (2026-06-24), co-developed to tape-out in about nine months, aiming for initial deployment by end of 2026. | https://openai.com/index/openai-broadcom-jalapeno-inference-chip/ (corroborating: https://www.cnbc.com/2026/06/24/openai-and-broadcom-reveal-jalapeno-first-ai-chip-in-partnership.html) | tier-1 (corroborated tier-3) | Official statements |
+| allegrucci-apple-rain-2024-06 | Inventor Jean-Didier Allegrucci spent ~17 years at Apple in SoC engineering (senior manager to senior director, 30+ processors for iPhone/Mac/iPad/Watch) and was hired by Rain AI, an in-memory-compute chip startup, as head of hardware in June 2024. | https://www.bloomberg.com/news/articles/2024-06-28/sam-altman-backed-rain-ai-hires-apple-chip-vet-to-lead-hardware (corroborating: https://www.tomshardware.com/tech-industry/artificial-intelligence/sam-altman-backed-ai-processor-venture-hires-ex-apple-engineer-to-lead-hardware-development) | tier-3 | News & media |
+| rain-ai-sale-openai-talks | Rain AI (Sam Altman-backed, compute-in-memory focus) explored a sale after a failed ~$150M Series B; OpenAI reportedly interviewed Rain employees as a top contender for the team. A COMPLETED acquisition is NOT verified. | https://finance.yahoo.com/news/sam-altmans-150m-ai-chip-123106283.html | tier-4 | News & media |
+| ocp-mx-spec-2023-09 | The OCP Microscaling Formats (MX) v1.0 specification (September 2023, by AMD, Arm, Intel, Meta, Microsoft, NVIDIA, Qualcomm) standardized block floating-point data formats MXFP8/MXFP6/MXFP4/MXINT8: 32-element blocks sharing one scaling factor. | https://www.opencompute.org/documents/ocp-microscaling-formats-mx-v1-0-spec-final-pdf (announcement: https://www.opencompute.org/blog/amd-arm-intel-meta-microsoft-nvidia-and-qualcomm-standardize-next-generation-narrow-precision-data-formats-for-ai) | tier-2 | Technical specs |
+| nvidia-fp4-fp6-blackwell | Nvidia tensor cores have supported FP8 since the Hopper generation; FP4 and FP6 support arrived with Blackwell (industry-baseline color for "GPUs already handle these formats"). | https://fprox.substack.com/p/ocp-mx-scaling-formats (secondary; verify against Nvidia's Blackwell documentation at compose time if quoted) | tier-3 | Technical specs |
+
+## Notes
+
+- `rain-ai-sale-openai-talks` is tier-4 and must be labeled press-reported wherever used; it is NOT load-bearing for the spine. The spine's timeline claim rests only on the document's own priority date + the tier-1 Broadcom announcement date.
+- Do not use any external fact to assert (a) where the inventors were employed on the provisional date 2024-11-22, or (b) that Jalapeño or any Broadcom co-developed chip implements this application's claims. No source establishes either.
+- Announcement date note: the OpenAI/Broadcom press release is dated 2025-10-13; some coverage carries 2025-10-14 datelines. Use 2025-10-13 (tier-1 source) and "about eleven months" for the gap to 2024-11-22.
+- `nvidia-fp4-fp6-blackwell` is color only; if the essay quotes a specific Nvidia capability, re-verify against a tier-1/2 Nvidia document at compose time.
+- Web summaries of this publication list a sixth inventor (Mohammed Elneanaei Abdelmoneem Fouda) not present on the input/patent.md cover page. The run's source of truth is input/patent.md (five inventors). Do not import the sixth name; if inventor count becomes load-bearing, re-verify against the USPTO record.
