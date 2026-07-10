@@ -16,7 +16,9 @@ checks for orphans in the other direction.
 
 Context keys consumed:
   - figure_selection_text (str, optional): text of figure-selection.md. The
-    figure numbers found here form the "selected" set.
+    selected set is taken from the "## Selected figures" section only (up to
+    the next H2); if that heading is absent, the whole file is scanned
+    (legacy bare-list fallback).
 
 Figure numbers are parsed from any of: "fig-07", "FIG. 7", "Figure 7", "Fig 7"
 (case-insensitive), N an integer.
@@ -40,6 +42,30 @@ GATE_ID = "figure_use"
 # \b word boundary after the digits, making "FIG. 4B" invisible and falsely
 # orphaning figure 4 (ledger: figure-token-regex-blindspot, 3 recurrences).
 FIG_RE = re.compile(r"\bfig(?:ure|\.|-)?\s*0*(\d+)[a-z]?\b", re.IGNORECASE)
+# The selected set must come ONLY from the "## Selected figures" section, not from any
+# later section ("Reviewed but NOT selected", "Paired-figure relationships (acknowledged)",
+# "Figure relationships") that also names the dropped figures.
+# Ledger: figuse-selection-scope-overread / figure-selection-parse-overreach
+# (2026-07-05-figuse-selection-scope-promote).
+_SEL_HEADING_RE = re.compile(r"^##\s+Selected figures\s*$", re.IGNORECASE | re.MULTILINE)
+_NEXT_H2_RE = re.compile(r"^##\s+", re.MULTILINE)
+
+
+def _selected_region(text):
+    """Substring from the '## Selected figures' heading to the next '## ' heading.
+
+    If that heading is absent (legacy/bare-list selection), return the whole text so
+    behavior is unchanged for un-sectioned inputs. Section-name-agnostic for the
+    dropped-figure region: it stops at ANY next H2, whatever it is called.
+    """
+    if not text:
+        return text or ""
+    m = _SEL_HEADING_RE.search(text)
+    if not m:
+        return text
+    start = m.end()
+    nxt = _NEXT_H2_RE.search(text, start)
+    return text[start:nxt.start()] if nxt else text[start:]
 
 
 def _figure_numbers(text):
@@ -61,7 +87,9 @@ def check(draft_text: str, context: dict) -> dict:
         })
         return {"gate": GATE_ID, "passed": True, "findings": findings}
 
-    selected = _figure_numbers(selection_text)
+    # Only "## Selected figures" defines the selected set; later sections name dropped
+    # figures and must not be counted as selected (else they false-orphan).
+    selected = _figure_numbers(_selected_region(selection_text))
     used = _figure_numbers(draft_text)
 
     # FIGUSE-001: selected but never used (orphan).

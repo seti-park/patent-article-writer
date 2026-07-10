@@ -1,0 +1,5 @@
+{
+  "gate_pass": true,
+  "must_not_contain_check_ids": ["FIGUSE-001"],
+  "mode": "essay"
+}

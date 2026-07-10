@@ -32,12 +32,17 @@ Context keys consumed:
 
 Checks:
   QUOTE-000 (warn): no patent_text or no invention_summary_text provided --
-                    verbatim check skipped.
+                    verbatim check skipped (warn-only; cannot verify without
+                    the patent).
   QUOTE-001 (fail): a quote recorded as verbatim in the invention-summary does
                     not appear in the patent text (fabricated or mutated span).
-  QUOTE-002 (warn): invention-summary provided but zero extractable quotes
-                    (allowed edge case, but worth a look -- Phase 2 then has no
-                    citable spans).
+  QUOTE-002 (fail|warn): target text yields zero extractable quote anchors.
+                    FAIL when patent_text is available AND anchors are required
+                    (invention-summary always; essay/draft when mode is essay,
+                    the default). WARN only when mode is wire (anchors optional)
+                    or when the severity would otherwise be fail but we still
+                    surface the gap. Invoked without a patent → QUOTE-000, not
+                    this rule (vacuous pass closed — GATE-05/HARNESS-02).
 """
 
 import argparse
@@ -115,14 +120,21 @@ def check(draft_text: str, context: dict) -> dict:
 
     quotes = _extract_quotes(summary)
     if not quotes:
+        # Vacuous zero-anchor pass is closed when anchors are required and the
+        # patent is available so a match could have been verified (GATE-05).
+        # mode=wire keeps warn (anchors optional). No patent → QUOTE-000 above.
+        mode = (context.get("mode") or "essay").strip().lower()
+        requires_anchors = mode != "wire"
+        sev = "fail" if requires_anchors else "warn"
         findings.append({
             "check_id": "QUOTE-002",
-            "severity": "warn",
+            "severity": sev,
             "message": "invention-summary contains no extractable Quotable spans "
                        "or Quote anchor table rows (Phase 2 has nothing to cite)",
             "location": "invention-summary",
         })
-        return {"gate": GATE_ID, "passed": True, "findings": findings}
+        passed = not any(f["severity"] == "fail" for f in findings)
+        return {"gate": GATE_ID, "passed": passed, "findings": findings}
 
     patent_norm = _normalize(patent)
     for anchor, quote, source in quotes:

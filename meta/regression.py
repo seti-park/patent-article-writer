@@ -14,7 +14,10 @@ A proposal that breaks (1) or worsens any fixture in (2) must be rejected.
 Each fixture is a directory meta/fixtures/<name>/ containing:
   - expect.json     : {"gate_pass": true|false,
                        "must_not_contain_check_ids": ["FIGUSE-001", ...],   # optional
-                       "must_contain_check_ids": ["SOURCES-002", ...]}      # optional
+                       "must_contain_check_ids": ["SOURCES-002", ...],      # optional
+                       "mode": "essay"|"wire",                             # optional (default essay)
+                       "profile": "...",                                   # optional (ignored by gates)
+                       "acceptance": "single-clean"|"double-clean"}        # optional (reserved)
   - draft.md        : the essay draft to run gates over
   - invention-summary.md   (optional context)
   - figures-index.txt      (optional, ints one per line)
@@ -62,7 +65,15 @@ def _run_fixture(name):
     expect = json.loads(_load(os.path.join(fdir, "expect.json")))
     draft = _load(os.path.join(fdir, "draft.md"))
 
-    ctx = {"mode": "essay"}
+    # Fixture ctx flexibility (HARNESS-03): mode/profile/acceptance may be
+    # declared in expect.json; absent keys keep prior defaults (mode=essay).
+    ctx = {
+        "mode": expect.get("mode", "essay"),
+    }
+    if "profile" in expect:
+        ctx["profile"] = expect["profile"]
+    if "acceptance" in expect:
+        ctx["acceptance"] = expect["acceptance"]
     inv = os.path.join(fdir, "invention-summary.md")
     if os.path.exists(inv):
         ctx["invention_summary_text"] = _load(inv)
