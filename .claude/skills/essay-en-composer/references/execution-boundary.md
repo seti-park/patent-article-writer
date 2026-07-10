@@ -35,11 +35,16 @@ This means a blueprint gap is detected. Action:
 
 1. Stop composition
 2. Identify the gap specifically: "Section 3 needs fact about <X>, but facts_locked has only <Y>"
-3. Return to user with specific gap
-4. User decides:
-   - Revise blueprint (return to essay-architect)
-   - Abandon current attempt
-   - Add admission round to fill gap
+3. End the final message with the structured relay (orchestrator runs Owner checkpoint protocol):
+
+```
+OWNER_QUESTION: <specific gap + what decision is needed>
+FILES: <relevant handoff paths>
+DEFAULT: <optional safe answer; omit if no safe default>
+```
+
+4. Owner (via orchestrator) decides: revise blueprint (return to design), abandon attempt,
+   or fill the gap upstream. Under `--yes`, a missing `DEFAULT:` aborts the run.
 
 Never improvise to work around a gap. This is the central discipline of the plan-execute split.
 
@@ -80,19 +85,19 @@ Five recurring failure modes during composition. All resolve by stopping rather 
 
 Composition reveals need for a fact not in `facts_locked`.
 
-→ Stop. Return the specific gap to user. Do not improvise around it. See "If forbidden action seems necessary" above.
+→ Stop. Raise `OWNER_QUESTION` with the specific gap. Do not improvise around it. See "If forbidden action seems necessary" above.
 
 ### FM2. Voice canon constraint too rigid
 
 Referenced canon examples don't fit the section.
 
-→ Stop. Return to essay-architect for revision (additional or different canon reference).
+→ Stop. Raise `OWNER_QUESTION` proposing design revision (additional or different canon reference).
 
 ### FM3. Word target unachievable
 
 Section cannot expand without padding, or cannot fit within ±20% without omitting required content.
 
-→ Stop. Return for blueprint revision (adjust `word_target` or restructure section).
+→ Stop. Raise `OWNER_QUESTION` proposing blueprint revision (adjust `word_target` or restructure section).
 
 ### FM4. Annotation overhead
 

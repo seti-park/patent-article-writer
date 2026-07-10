@@ -41,6 +41,12 @@ to run `patent-understand` first. Do not silently extract a new summary unless t
 orchestrator explicitly passes `repair-understand` (then write Revision notes and prefer
 re-running understand).
 
+**Understand confirm (CD-03 residual):** if `handoff/00-understand/understand-confirmed.md`
+is absent or its `status:` is not `confirmed` → **STOP** and return
+`STOPPED: understand_confirm not satisfied`. Exception: soft profiles — when the
+orchestrator passes `owner_confirm: soft` in the fork instruction, proceed (soft path
+never writes a confirm file; RUN-010 is the verify-time backstop only).
+
 ## Process
 
 ### 0. Load frozen model

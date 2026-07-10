@@ -25,8 +25,8 @@ may_read:
   - .claude/skills/_shared/references/reader-profile.md
 
 must_not_read:
-  - .claude/skills/voice-canon-lookup/**  # voice fencing
-  - .claude/skills/_shared/references/voice-profile.md
+  - .claude/skills/voice-canon-lookup/**  # voice fencing (includes references/voice-profile.md)
+
 
 # Per round N (orchestrator):
 # 1. run_gates.py → gate-result.round-N.json

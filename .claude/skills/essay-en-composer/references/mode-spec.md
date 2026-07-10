@@ -80,6 +80,13 @@ Owner may explicitly shift mode mid-essay (direct/Owner invocation only). Pipeli
 
 Surface the shift proposal explicitly. Owner decides (direct) or orchestrator relays `OWNER_QUESTION` (pipeline): shift, abandon attempt, or return to design.
 
-**Inside the pipeline (forked):** do not elicit mid-session. End with
-`OWNER_QUESTION: <question>` + `FILES: <paths>` so the orchestrator runs the Owner
-checkpoint protocol and re-invokes the worker with the answer.
+**Inside the pipeline (forked):** do not elicit mid-session. End with:
+
+```
+OWNER_QUESTION: <question>
+FILES: <paths>
+DEFAULT: <answer>    # optional; omit if no safe default
+```
+
+so the orchestrator runs the Owner checkpoint protocol and re-invokes the worker with
+the answer (or aborts under `--yes` when `DEFAULT:` is absent).

@@ -3,7 +3,7 @@
 Defines how the orchestrator decides PASS/FAIL for the Compose↔Edit loop. Two layers,
 by design:
 
-1. **Deterministic gates** (mechanical, hard pass/fail) — `_shared/scripts/run_gates.py`.
+1. **Deterministic gates** (mechanical, hard pass/fail) — `.claude/skills/_shared/scripts/run_gates.py`.
 2. **Qualitative editorial assessment** — `editorial-review`'s 7-pass review, expressed as a
    **severity model** (`overall_assessment`), not an arbitrary 0–100 number. This mirrors the
    real `editorial-review/references/feedback-format.md` so the loop and the editor speak the
@@ -67,7 +67,7 @@ the rest warn. Their judgment complement is **pass-7** (below).
 Invocation (orchestrator):
 
 ```
-python _shared/scripts/run_gates.py \
+python3 .claude/skills/_shared/scripts/run_gates.py \
   --draft handoff/02-compose/essay-draft.md \
   --invention-summary handoff/01-design/invention-summary.md \
   --figures handoff/01-design/figures-index.txt \
@@ -158,7 +158,7 @@ ACCEPTED  ⇔  two consecutive CLEAN rounds from independently spawned reviewers
   `findings` back into `essay-en-composer` (revision mode; every medium+ finding gets a
   disposition in `revision-response.round-N.md`) and re-scores with a fresh reviewer. At the
   cap, reaching max without acceptance is an owner checkpoint (`cap_hit`): ship the **last
-  draft** only (never a "best round" selection), with an explicit `CAP HIT` row in
+  draft** only (never pick among earlier rounds by score), with an explicit `CAP HIT` row in
   `score-history.md` and unresolved findings surfaced. Hard stop unless `--yes` (then ship
   last draft and continue).
 - **Run-completeness:** before archiving, `_shared/scripts/check_run.py` must pass — it

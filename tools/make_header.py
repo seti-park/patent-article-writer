@@ -9,14 +9,16 @@ the title block text and the patent figure(s):
       --title "The Deleted Dome" \
       --subtitle "Tesla's patent runs a wiper across the bare camera lens" \
       --figure input/figures/fig-1.png \
-      --out runs/<essay-id>/header-branded.png \
+      --out essays/<id>/publication-package/cover-5x2.png \
       [--figure second.png]          # stacks figures vertically in the panel
       [--avatar cat.jpg]             # round profile stamp next to the series tag
       [--series "SETI . PATENT ESSAYIST"]
 
 Figures are band-stripped (sheet "FIG. N" caption + corner tag removed) and
 multiply-blended onto the paper background so the line art prints on the card
-instead of sitting in a white box. Output: 3000x1200 PNG (exactly 5:2).
+instead of sitting in a white box. Output: 3000x1200 PNG (exactly 5:2; see
+tools/header-style.md). Contracted cover path:
+essays/<id>/publication-package/cover-5x2.png.
 """
 import argparse
 

@@ -50,9 +50,10 @@ Every owner checkpoint is a PROCEDURE, not a state. When the orchestrator reache
    CURRENT patent exists, continue to the next stage without re-asking; otherwise
    run RENDER→ASK→STOP again.
 
-Soft checkpoints (`draft`/`wire` profiles): RENDER and ASK are still mandatory;
-STOP is waived — the orchestrator may proceed in the same turn after rendering,
-noting "soft checkpoint: continuing; reply to override".
+Hardness is a property of the **checkpoint instance × profile**, not of the profile
+alone. Soft checkpoints: RENDER and ASK are still mandatory; STOP is waived — the
+orchestrator may proceed in the same turn after rendering, noting "soft checkpoint:
+continuing; reply to override" in the run report.
 
 Confirm-file validity (all required):
 - `status: confirmed`
@@ -60,9 +61,15 @@ Confirm-file validity (all required):
 - `date:` is a real date (placeholder `<YYYY-MM-DD>` ⇒ INVALID)
 - `patent:` matches the identifier of the current `input/patent.md`
 
-Checkpoint instances: `understand_confirm` (hard on publish/understand-only),
-`cap_hit` (hard unless `--yes`), worker-raised `OWNER_QUESTION` relays (hardness
-follows the raising stage's profile), design title-lead override (soft).
+Checkpoint instances (hardness × profile):
+
+| Checkpoint | publish / understand-only | draft / wire |
+|---|---|---|
+| `understand_confirm` | hard | soft |
+| `cap_hit` | hard unless `--yes` | hard unless `--yes` |
+| `bootstrap_input_conflict` | hard unless `--yes` | hard unless `--yes` |
+| `design_title_lead` | soft | soft |
+| worker `OWNER_QUESTION` | hard unless `--yes` | soft |
 
 ## Model allocation
 
@@ -83,7 +90,18 @@ Before any stage worker or figures check. Orchestrator-inline (no forked agent).
      asking the Owner for the document text/file or explicit fetch authorization
      (name the source).
    - If `input/patent.md` already exists **and** differs from the argument's
-     document ⇒ hard STOP/CONFIRM (Owner checkpoint protocol) before overwriting.
+     document ⇒ hard STOP/CONFIRM (`bootstrap_input_conflict`; Owner checkpoint
+     protocol) before overwriting. Inline checkpoint (no stage contract):
+
+     **RENDER:**
+     - old patent identifier + sha256 of current `input/patent.md`
+     - new patent identifier + sha256 of the argument document
+
+     **ASK (verbatim):**
+     > Overwrite `input/patent.md` with the new document?
+
+     Hard unless `--yes`. On affirmative (or `--yes`), proceed with overwrite;
+     otherwise abort the run without touching `input/patent.md`.
 
 2. **Identify** — extract patent identifier (publication/application number) +
    title; echo both in the entry report.
@@ -184,15 +202,19 @@ as ASK; writing the confirm file without an Owner utterance (except `--yes`).
 - A re-run of understand invalidates: delete `understand-confirmed.md` and regenerate
   the 01-design compat copies; the checkpoint must then be passed again.
 
-Profile **`understand-only`**: after confirm (or soft continue), stop; do not design.
+Profile **`understand-only`**: after hard confirm, stop; do not design.
 
 ### 2. Design — `thesis-architect` / design-architect
 
-Only after understand. Consumes frozen `00-understand/` (and 01-design compat copies).
+Only after understand. Entry confirm: VALID confirm file, or recorded `--yes`, or
+(profile `owner_confirm: soft`) RENDER+ASK performed this run with a soft-checkpoint note
+in the run report — soft never writes a confirm file (`contracts/stages/design.yaml`
+`entry_requires.confirm`). Consumes frozen `00-understand/` (and 01-design compat copies).
 Must **not** recreate invention-summary from scratch. Surfaces title-lead candidates for
-Owner override (soft checkpoint: RENDER candidates + ASK; STOP waived). May update
-briefing section ⑤ only (promo link) with a Revision note. Cascade pauses that need an
-Owner decision use the **OWNER_QUESTION relay** (below).
+Owner override (`design_title_lead` soft checkpoint on every profile: RENDER candidates +
+ASK per stage contract; STOP waived). May update briefing section ⑤ only (promo link)
+with a Revision note. Cascade pauses that need an Owner decision use the
+**OWNER_QUESTION relay** (below).
 
 ### 3. Compose — `essay-en-composer` / essay-composer
 
@@ -236,7 +258,7 @@ Reaching `max_revision` without acceptance is an owner checkpoint:
 2. **ASK** — "ship last draft as-is, revise once more with narrowed scope, or stop?"
 3. **STOP** — hard unless `--yes`. With `--yes`: ship the **last draft**, append a
    score-history row with `notes: CAP HIT`.
-4. What ships on cap: the **LAST draft** only (never a "best round" selection).
+4. What ships on cap: the **LAST draft** only (never pick among earlier rounds by score).
 5. Downstream after a cap-accepted ship: `self_audit` and later stages still run on
    `publish`.
 
@@ -255,8 +277,8 @@ Surface-only 윤문; zero-new gate findings.
 
 1. Polish worker returns a changed-sentence list and marks `drift-check PENDING` in its
    final message (worker does **not** spawn the verifier).
-2. Orchestrator forks `grounding-verifier` on old/new pairs. Any `MEANING-CHANGED` ⇒
-   re-fork polish to revert that sentence; re-run gates as needed.
+2. Orchestrator forks `grounding-verifier` on old/new pairs. Any `MEANING-CHANGED` **or**
+   `PROTECTED-TOUCHED` ⇒ re-fork polish to revert that sentence; re-run gates as needed.
 
 ### 7. Verify
 
@@ -314,15 +336,18 @@ Any forked worker that needs an Owner decision ends its final message with:
 ```
 OWNER_QUESTION: <question>
 FILES: <paths>
+DEFAULT: <answer>    # optional
 ```
 
 The orchestrator treats this as a checkpoint instance of the Owner checkpoint protocol:
 
 1. **RENDER** — the worker's named files (content inline) + the question text.
 2. **ASK** — the question (and options if the worker supplied them).
-3. **STOP** — hard/soft per profile and `--yes` (same rules as other checkpoints).
-4. After Owner reply (or `--yes` with a recorded default), re-invoke the worker with the
-   answer.
+3. **STOP** — hard/soft per checkpoint instance × profile (see table above) and `--yes`.
+4. After Owner reply, re-invoke the worker with the answer.
+5. **`--yes` rule:** if the worker supplied a `DEFAULT:` line, proceed with that answer
+   and record the fact in the run report. If no `DEFAULT:` line is present, **abort the
+   run with a report** — unattended runs never guess.
 
 Covers: compose gap-stops, design cascade pauses, mode-shift proposals. In-pipeline
 compose does not elicit mid-session; it raises `OWNER_QUESTION` instead.

@@ -2,6 +2,7 @@
 # Source of truth for what runs. Orchestrator interprets this; CLAUDE.md only summarizes.
 # The per-profile `stages:` list is the ONLY execution list. Flags below it are derived
 # summaries; on any disagreement `stages:` wins.
+# owner_confirm domain: hard | soft | false
 
 name: patent-article-writer
 version: 2
@@ -69,7 +70,7 @@ profiles:
   understand-only:
     description: Freeze patent triad for Owner study; no angle, no essay.
     stages: [bootstrap, figures, understand]
-    owner_confirm: true
+    owner_confirm: hard
     self_audit: false
     polish: false
     promo: false

@@ -15,7 +15,7 @@ Use these terms in all live skills and operator docs. Do not invent synonyms mid
 | **surface** | Render the artifact's CONTENT inline in the assistant response; naming a path is not surfacing. |
 | **checkpoint** | A PROCEDURE (RENDER→ASK→STOP→RECORD→RESUME), not a state. See patent-essay SKILL.md "Owner checkpoint protocol". |
 | **confirm file** | Disk record written only after Owner affirmative (or `--yes`); validity rules in the protocol. |
-| **OWNER_QUESTION** | Structured block a forked worker emits to request an Owner decision; orchestrator relays it as a checkpoint instance. |
+| **OWNER_QUESTION** | Structured block a forked worker emits to request an Owner decision; orchestrator relays it as a checkpoint instance. Shape: `OWNER_QUESTION:` / `FILES:` / optional `DEFAULT:`. Under `--yes`, a missing `DEFAULT:` aborts the run (no guessing); a present `DEFAULT:` is used and recorded in the run report. |
 
 ## Run identity
 

@@ -6,7 +6,7 @@ skill: thesis-architect
 agent: design-architect
 handoff: handoff/01-design/
 
-# Entry precondition (CD-03a): understand complete + confirmed (or --yes).
+# Entry precondition (CD-03a): understand complete + confirmed (or --yes or soft).
 # Confirm-file validity = patent-essay SKILL "Owner checkpoint protocol" /
 # contracts/stages/understand.yaml owner_checkpoint.validity.
 entry_requires:
@@ -20,7 +20,10 @@ entry_requires:
     VALID handoff/00-understand/understand-confirmed.md
     (status: confirmed; by: owner | orchestrator-yes-flag; real date;
     patent matches current input/patent.md)
-    OR recorded --yes (orchestrator wrote confirm with by: orchestrator-yes-flag).
+    OR recorded --yes (orchestrator wrote confirm with by: orchestrator-yes-flag)
+    OR profile owner_confirm is soft AND orchestrator performed RENDER+ASK this run
+    (evidence: soft-checkpoint note in the run report per Owner checkpoint protocol;
+    soft path never writes a confirm file).
 
 may_read:
   - handoff/00-understand/**
@@ -56,11 +59,18 @@ must_not_recreate:
   - invention-summary.md   # edit only via Revision note if understand was wrong; prefer re-run understand
 
 owner_checkpoint:
-  id: design_title_pick
+  id: design_title_lead
   surfaces:
     - handoff/01-design/title-lead-candidates.md
     - handoff/01-design/thesis-candidates.md
-  soft: true
+  soft: true   # soft on every profile (STOP waived; RENDER+ASK mandatory)
+  # Protocol: .claude/skills/patent-essay/SKILL.md "Owner checkpoint protocol".
+  question: >
+    Accept the recommended title/lead candidate, pick another from the list,
+    or supply your own?
+  render:   # RENDER step — print INLINE to the Owner, in this order:
+    - title/lead candidates (inline), each with its rationale one-liner
+    - the file's recommended: line
 
 rules:
   - Consume understand triad; do not invent a new mechanism story.

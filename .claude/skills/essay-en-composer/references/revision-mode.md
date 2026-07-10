@@ -61,5 +61,5 @@ through the loop is a real fix.
 
 If revision rounds hit `max_revision` without acceptance, the orchestrator runs the
 `cap_hit` owner checkpoint (patent-essay SKILL.md). What ships on cap: the **last draft**
-only (not a "best round" selection). A score-history row records `notes: CAP HIT`. Hard
+only (not a preferred earlier round). A score-history row records `notes: CAP HIT`. Hard
 stop unless `--yes` (then ship last draft and continue downstream stages on publish).

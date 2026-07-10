@@ -1,5 +1,6 @@
 # Stage contract: self_audit
 # Post-acceptance blind pass (publish). Raises the bar only; never lowers it.
+# Naming + may_read follow the agents (adversarial-reader, grounding-verifier).
 
 id: self_audit
 # no single skill — orchestrator spawns agent forks
@@ -17,10 +18,13 @@ may_read:
   - handoff/02-compose/thesis-trace.md
   - handoff/01-design/invention-summary.md
   - handoff/01-design/thesis-spine.md
+  - handoff/01-design/fact-check-log.md   # grounding-verifier external-fact checks
   - handoff/00-understand/**
   - input/patent.md
   - input/figures/**
   - .claude/skills/editorial-review/references/pass-7-adversarial-reader.md
+  - .claude/skills/_shared/references/reader-profile.md   # adversarial personas
+  - .claude/skills/_shared/scripts/**                     # gate_quotes / gate_anchors
 
 must_not_read:
   # fresh context: no commitment to prior approvals
@@ -28,9 +32,12 @@ must_not_read:
   - .claude/skills/voice-canon-lookup/**
 
 required_outputs:
-  # naming from live archives / architecture CURRENT.md
-  - handoff/03-edit/selfaudit-round-N-*.md   # per-reader + grounding artifacts
-  - handoff/03-edit/revision-notes.md        # deltas origin: self-post-accept
+  # orchestrator names the path; agent defaults below (see .claude/agents/*)
+  - handoff/03-edit/selfaudit-round-N-reader-A.md   # adversarial-reader (persona A)
+  - handoff/03-edit/selfaudit-round-N-reader-B.md   # adversarial-reader (persona B)
+  - handoff/03-edit/grounding-check-round-N.md      # grounding-verifier
+  - handoff/03-edit/selfaudit-round-N-coldreader.md # cold reader (checklist-FREE)
+  - handoff/03-edit/revision-notes.md               # deltas origin: self-post-accept
   # multi-vote applied fixes may also produce:
   # handoff/02-compose/revision-response.selfaudit-round-N.md
 
