@@ -1,5 +1,7 @@
 # Feedback format
 
+<!-- Findings re-enter the composer as positive precision targets, never prohibitions — docs/architecture/comprehension-loop.md §5.1 + invariant 6. -->
+
 Referenced by editorial-review SKILL.md. Defines structured feedback YAML output.
 
 ## Schema
@@ -49,6 +51,27 @@ findings:
 - `severity_under_default_posture` (posture-lens transparency)
 - `finding` (specific observation)
 - `recommendation` (what action to take)
+
+## Composer-facing remediation — positive precision targets
+
+Meta-rule: a finding names **what is true positively to write**. The composer reads this
+text in revision mode; a prohibition re-plants the frame it forbids
+(`docs/architecture/comprehension-loop.md` §5.1 / invariant 6). Detectors
+(`gate_hedge`, SURF-007, pass-6 6G, pass-7) still name patterns on the detection side —
+that wording is isolated and post-compose. The `recommendation` field the composer reads
+must state a **positive precision target**, never a ban list.
+
+Canonical reframes for hedge-class findings:
+
+| Class | `recommendation` states (positive target) | Never write |
+|---|---|---|
+| **over-hedge (6G)** | state each bound once at its precise claim anchor; lead the close with its affirmative commitment | "remove hedging / banned phrases: …" |
+| **steelman-overweight (pass-7 / SURF-007)** | give the affirmative core at least equal sentence weight; anchor the concession to one specific claim / baseline / causal fact | "cut the steelman / stop elaborating" |
+| **generic safe-harbor verdict** | commit the verdict to what the evidence and claim scope support, at the anchor | "delete the disclaimer" |
+
+Intent is preserved: the bound still lands once; the steelman ratio still holds; the
+verdict still commits only to what evidence and claim scope support. Only the framing of
+the instruction changes.
 
 ## Optional fields
 
@@ -243,7 +266,8 @@ findings:
 ## Notes
 
 - Severity is the most consequential field. Review carefully.
-- Recommendations should be specific and actionable.
+- Recommendations should be specific, actionable, and — for hedge-class findings — positive
+  precision targets (see above), never prohibitions the composer will re-prime.
 - The `quote` field helps caller locate finding quickly.
 - Empty passes (no findings) must still appear in output (failure-mode mitigation against editorial inertia).
 - `severity_under_default_posture` transparency lets the orchestrator (and Owner via

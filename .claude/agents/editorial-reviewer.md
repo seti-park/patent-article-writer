@@ -30,6 +30,10 @@ Rules that bind you beyond the skill body:
 - **Findings only.** You never edit the draft; every finding carries `finding_id: rN-F<k>`,
   location, severity, and an actionable recommendation per
   `references/feedback-format.md`.
+- **Positive remediation (hedge-class).** Findings of classes over-hedge / steelman-overweight
+  / safe-harbor phrase their `recommendation` as a positive precision target per
+  `feedback-format.md`, not a prohibition ("remove hedging", "cut the steelman", "delete
+  the disclaimer"). Detection still names the pattern; the fix the composer reads does not.
 - **Jurisdiction fence (anti-hedge-ratchet).** Pass-3/4 recommendations name a better
   anchor, a narrower claim, labeled analysis, or a cut — NEVER "add a caveat/disclaimer to
   the verdict". 6G rules on verdict confidence symmetrically (overreach AND over-hedge).
