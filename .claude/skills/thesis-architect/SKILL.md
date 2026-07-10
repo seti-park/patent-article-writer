@@ -115,6 +115,18 @@ Write `figure-selection.md` + `figure-rationale.md` mapping figures to **thesis 
 (use figure-primer + invention-summary figure relationships). Cover candidate + phase
 keyframes as before.
 
+**Count follows the content — there is no target or cap.** Select every figure that
+carries load-bearing information the thesis uses: a distinct mechanism, a claimed step,
+a baseline contrast, a data panel the prose leans on. A patent whose story needs two
+figures uses two; one whose story needs seven uses seven. The only reason to leave a
+figure out is that its information is already fully conveyed — by the prose or by
+another selected figure (mark those `body_figure_prose_covers_fully` /
+`body_figure_in_header_composite`). Judge each figure on the unique information it
+adds, one at a time; do not select against a number. (Economy = drop the redundant,
+not cap the count. This is distinct from Rule 2 in `references/4-axis-grounding.md`,
+which is about not letting a striking figure drive the *thesis* — a grounding rule,
+not a count rule.)
+
 ### 10. Fact-check log seed
 
 External facts the spine relies on → `fact-check-log.md`.
