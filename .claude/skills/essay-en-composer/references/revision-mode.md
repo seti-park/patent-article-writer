@@ -56,3 +56,10 @@ publication.md are re-emitted, and the response file exists. The orchestrator th
 gates and spawns a FRESH reviewer for round N+1 — the reviewer will verify each `applied`
 disposition actually landed, so cosmetic compliance is wasted effort: the cheapest path
 through the loop is a real fix.
+
+## CAP HIT (orchestrator; not composer)
+
+If revision rounds hit `max_revision` without acceptance, the orchestrator runs the
+`cap_hit` owner checkpoint (patent-essay SKILL.md). What ships on cap: the **last draft**
+only (not a "best round" selection). A score-history row records `notes: CAP HIT`. Hard
+stop unless `--yes` (then ship last draft and continue downstream stages on publish).

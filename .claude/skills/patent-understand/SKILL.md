@@ -130,6 +130,7 @@ Canonical originals remain under `00-understand/`.
 - essay drafting or voice-canon  
 - Investor verdict language, stock claims, “reader should”  
 - Treating `essay-context.md` as the mechanism story (it may list questions only)
+- Writing `understand-confirmed.md` (orchestrator only, via Owner checkpoint protocol)
 
 ## Pre / post
 
@@ -140,7 +141,8 @@ Canonical originals remain under `00-understand/`.
 - All `required_outputs` in `contracts/stages/understand.yaml` exist  
 - gate_quotes PASS on summary, briefing, study pack  
 - Compat copies present under `01-design/`  
-- Final orchestrator message: 한 줄 triad + path to study pack + open-questions count  
+- Return value to orchestrator (NOT shown to Owner as-is): 한 줄 triad + path to study pack + open-questions count  
+- The orchestrator then runs the understand_confirm checkpoint (renders study-pack triad + open-questions INLINE to the Owner — paths alone never satisfy the protocol).
 
 ## References
 

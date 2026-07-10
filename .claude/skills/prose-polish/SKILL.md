@@ -60,11 +60,13 @@ FORBIDDEN, no exceptions:
 4. Bump `draft_version` in the frontmatter.
 5. Re-run the full gate suite with the run's context files: must stay PASS with zero new
    findings (warns included). A polish that wakes a gate gets reverted, not argued with.
-6. Spawn (or request) a **drift verification** by a grounding-verifier-class instrument
-   (pinned cheap model): every changed sentence checked old-vs-new for meaning
-   preservation, protected-surface integrity (numbers, dates, names, anchors, quotes,
-   certainty verbs), and signature-line byte-identity. Any `MEANING-CHANGED` or
-   `PROTECTED-TOUCHED` verdict → revert that edit and re-run step 5.
+6. **Drift check (two-step; AUD-W7).** Produce the changed-sentence list (from
+   polish-notes) and return `drift-check PENDING` to the orchestrator. Do **not** spawn
+   the verifier yourself. The orchestrator forks a grounding-verifier-class instrument
+   (pinned cheap model) on every old/new pair: meaning preservation, protected-surface
+   integrity (numbers, dates, names, anchors, quotes, certainty verbs), signature-line
+   byte-identity. Any `MEANING-CHANGED` or `PROTECTED-TOUCHED` ⇒ orchestrator re-forks
+   polish to revert that sentence and re-run step 5.
 7. Re-strip `publication.md` (strip_publication.py) and sync the posting-checklist word
    count. On archived essays, log the round in score-history.md and revision-notes.md
    (`origin: polish`).

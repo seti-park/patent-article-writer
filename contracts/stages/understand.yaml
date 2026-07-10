@@ -28,6 +28,7 @@ must_not_write:
   - thesis-candidates.md
   - title-lead-candidates.md
   - essay-draft.md
+  - understand-confirmed.md
 
 required_outputs:
   - handoff/00-understand/invention-summary.md
@@ -37,7 +38,8 @@ required_outputs:
   - handoff/00-understand/open-questions.md
 
 optional_outputs:
-  - handoff/00-understand/understand-confirmed.md   # written by Owner or orchestrator after confirm
+  # written only via the Owner checkpoint protocol (orchestrator after Owner's affirmative reply, or --yes)
+  - handoff/00-understand/understand-confirmed.md
 
 # Compatibility copies (orchestrator may symlink/copy for design + gates that still
 # look under 01-design during migration):
@@ -75,6 +77,19 @@ owner_checkpoint:
     Can you restate Problem, Solution (incl. claim scope), and Benefits without
     reopening the full patent? If yes, confirm. If no, edit open-questions or
     request re-run of understand.
+  # Protocol: .claude/skills/patent-essay/SKILL.md "Owner checkpoint protocol".
+  # The understand WORKER never writes the confirm file (see must_not_write).
+  render:   # RENDER step — print INLINE to the Owner, in this order:
+    - owner-study-pack.md "한 줄" line, then a 2-4 sentence summary of each of
+      Problem / Solution / Benefits (Korean, from the study pack)
+    - open-questions.md in full
+    - the five output paths (study pack, briefing, invention-summary,
+      figure-primer, open-questions)
+  validity: # confirm file counts only if ALL hold
+    - "status: confirmed"
+    - "by: owner | orchestrator-yes-flag"
+    - "date is a real date (no placeholder)"
+    - "patent matches current input/patent.md identifier"
 
 north_star: |
   Owner and pipeline share one frozen patent model:

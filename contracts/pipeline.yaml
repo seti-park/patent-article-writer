@@ -14,7 +14,7 @@ stages:
     skill: patent-understand
     agent: patent-reader
     required: true
-    human_checkpoint: understand_confirm   # hard on publish unless --yes
+    human_checkpoint: understand_confirm   # procedure: patent-essay SKILL.md "Owner checkpoint protocol"
 
   - id: design
     skill: thesis-architect

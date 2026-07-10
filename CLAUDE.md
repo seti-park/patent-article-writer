@@ -43,6 +43,8 @@ figures? → understand → [owner confirm] → design → compose ⇄ review_lo
          → self_audit? → polish? → verify → archive → promo? → retro?
 ```
 
+`[owner confirm]` = hard STOP/CONFIRM checkpoint; `?` = optional stage
+
 | Stage | Skill / agent | Job |
 |-------|----------------|-----|
 | `figures` | patent-figures-clean / figures-prep | raw drop → fig-NN.png |
@@ -64,7 +66,7 @@ Profiles and required files: `contracts/pipeline.yaml`, `contracts/stages/`.
 2. **Double-clean on `publish`** — one clean round is a hypothesis  
 3. **Composer never reads raw patent** — only Quotable spans from understand/design  
 4. **Understand before design** — no thesis candidates until triad artifacts exist  
-5. **Owner confirm on `publish`** — unless `--yes`  
+5. **Owner confirm on `publish`** — via the Owner checkpoint protocol (STOP/CONFIRM) in the orchestrator runbook; unless `--yes`  
 6. **Grounding fix priority** — anchor → narrow → label → cut (never “add a hedge”)  
 7. **Meta-loop is propose-only** — humans apply after `meta/regression.py`  
 
