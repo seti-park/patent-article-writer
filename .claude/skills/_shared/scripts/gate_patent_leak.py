@@ -148,47 +148,43 @@ def _char_spans_for_tokens(text, tokens):
     return tokens, spans
 
 
-def _find_maximal_shared_ngrams(draft_tokens, patent_token_set_join, patent_tokens):
-    """Find maximal n-grams (n >= MIN) in draft that appear in patent.
+def _find_maximal_shared_ngrams(draft_tokens, _unused, patent_tokens):
+    """Find maximal n-grams (n >= MIN) in draft that appear verbatim in patent.
 
     Returns list of (start_idx, end_idx_exclusive, tokens_slice).
-    Maximal = not extendable left or right while remaining a patent match.
+
+    Efficient: index only the FIXED-length (MIN) windows of the patent into a
+    set — O(P) entries, not the O(P^2) suffix explosion the naive version built
+    (which is O(P^3) once each suffix is joined to a string, and hangs on a
+    real patent). A draft position whose MIN-gram is in that set is a candidate;
+    the match is then greedily extended while the growing gram remains a
+    CONTIGUOUS substring of the patent token string (so two unrelated patent
+    locations can never be stitched into one false n-gram).
     """
-    if not draft_tokens or not patent_tokens:
+    n = len(draft_tokens)
+    P = len(patent_tokens)
+    if n < MIN_NGRAM_WORDS or P < MIN_NGRAM_WORDS:
         return []
-    # Sliding window over patent for membership of n-gram strings.
-    patent_ngrams = set()
-    pt = patent_tokens
-    # Precompute all patent n-grams of length >= MIN for membership tests.
-    # For long patents this is O(P * avg_len); patents are tens of KB — fine.
-    for i in range(len(pt)):
-        # Build incrementally from MIN length upward for each start.
-        if i + MIN_NGRAM_WORDS > len(pt):
-            break
-        # Store all suffixes from this start of length >= MIN
-        acc = []
-        for j in range(i, len(pt)):
-            acc.append(pt[j])
-            if len(acc) >= MIN_NGRAM_WORDS:
-                patent_ngrams.add(" ".join(acc))
+    patent_windows = set()
+    for k in range(P - MIN_NGRAM_WORDS + 1):
+        patent_windows.add(" ".join(patent_tokens[k:k + MIN_NGRAM_WORDS]))
+    # Space-fenced patent string for contiguous-substring extension checks.
+    patent_str = " " + " ".join(patent_tokens) + " "
 
     matches = []
-    n = len(draft_tokens)
     i = 0
-    while i < n:
-        if i + MIN_NGRAM_WORDS > n:
-            break
-        # Grow the longest match starting at i.
-        longest_end = None
-        for end in range(i + MIN_NGRAM_WORDS, n + 1):
-            key = " ".join(draft_tokens[i:end])
-            if key in patent_ngrams:
-                longest_end = end
-            else:
-                break
-        if longest_end is not None:
-            matches.append((i, longest_end, draft_tokens[i:longest_end]))
-            i = longest_end  # non-overlapping maximal scan
+    while i <= n - MIN_NGRAM_WORDS:
+        base = " ".join(draft_tokens[i:i + MIN_NGRAM_WORDS])
+        if base in patent_windows:
+            end = i + MIN_NGRAM_WORDS
+            while end < n:
+                cand = " " + " ".join(draft_tokens[i:end + 1]) + " "
+                if cand in patent_str:
+                    end += 1
+                else:
+                    break
+            matches.append((i, end, draft_tokens[i:end]))
+            i = end  # non-overlapping maximal scan
         else:
             i += 1
     return matches
