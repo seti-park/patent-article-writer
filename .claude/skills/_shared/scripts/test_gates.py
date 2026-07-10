@@ -624,6 +624,41 @@ class TestQuotes(unittest.TestCase):
         self.assertTrue(r["passed"])  # wire: anchors optional → warn only
         self.assertTrue(_has(r, "QUOTE-002"))
 
+    def test_fabricated_quote_with_trailing_gloss_fails(self):
+        # H5: trailing gloss after closing quote must not skip the line.
+        summary = (
+            "**Quotable spans:**\n"
+            '- `[0016]`: "this fabricated span is not in the patent at all" (gloss)\n'
+        )
+        r = gate_quotes.check("", {"invention_summary_text": summary,
+                                   "patent_text": self.PATENT})
+        self.assertFalse(r["passed"])
+        self.assertTrue(_has(r, "QUOTE-001"))
+
+    def test_verbatim_quote_with_trailing_gloss_passes(self):
+        summary = (
+            "**Quotable spans:**\n"
+            '- `[0016]`: "The vision sensor provides pre-impact prediction to the '
+            'airbag controller" (owner note)\n'
+        )
+        r = gate_quotes.check("", {"invention_summary_text": summary,
+                                   "patent_text": self.PATENT})
+        self.assertTrue(r["passed"], r["findings"])
+        self.assertFalse(_has(r, "QUOTE-001"))
+
+    def test_span_line_without_closing_quote_not_extracted(self):
+        # Boundary: malformed line with no closing quote is not a quote to check.
+        summary = (
+            "**Quotable spans:**\n"
+            '- `[0016]`: "unterminated span without close\n'
+        )
+        r = gate_quotes.check("", {"invention_summary_text": summary,
+                                   "patent_text": self.PATENT,
+                                   "mode": "essay"})
+        # No extractable quote → QUOTE-002 (zero anchors), not a silent pass of fabrications.
+        self.assertFalse(r["passed"])
+        self.assertTrue(_has(r, "QUOTE-002"))
+
 
 class TestHedge(unittest.TestCase):
     def _draft(self, verdict, firm=False, limits=""):
@@ -876,8 +911,29 @@ class TestCheckRun(unittest.TestCase):
         "  - finding_id: r1-F1\n    pass: pass-3-fact-paraphrase\n"
         "    location: s3\n    severity: high\n    finding: \"drift\"\n"
     )
+    # Self-declared pass while medium+ findings remain (RUN-014).
+    DIRTY_PASS_LOG = (
+        "overall_assessment: pass\n\nfindings:\n"
+        "  - finding_id: r1-F1\n    pass: pass-3-fact-paraphrase\n"
+        "    location: s3\n    severity: high\n    finding: \"still broken\"\n"
+    )
     GATE_PASS = '{"passed": true, "gates": []}'
     GATE_FAIL = '{"passed": false, "gates": [{"findings": [{"check_id": "BANNED-001", "severity": "fail"}]}]}'
+    # Minimal essay-final that passes run_gates with empty/optional context
+    # (RUN-015 recheck default-on must not invent failures on compliant fixtures).
+    CLEAN_ESSAY = (
+        "# Title\n\n"
+        "Body text here about the rotor mechanism under load.\n\n"
+        "# Sources\n"
+        "- US9999999B2, Fixture Co.\n"
+    )
+    # Fails BANNED-001 (delve) so a lying gate-result.round-K.json is catchable.
+    DIRTY_ESSAY = (
+        "# Title\n\n"
+        "We delve into the rotor mechanism under load carefully.\n\n"
+        "# Sources\n"
+        "- US9999999B2, Fixture Co.\n"
+    )
     PATENT_ID = "US9999999B2"
 
     def setUp(self):
@@ -904,10 +960,22 @@ class TestCheckRun(unittest.TestCase):
             fh.write(text)
 
     def _legacy(self, **kwargs):
-        """check() with RUN-010/011 off — isolates pre-existing rules."""
-        opts = dict(owner_confirm="off", require_understand=False)
+        """check() with RUN-010/011/015 off — isolates pre-existing rules."""
+        opts = dict(owner_confirm="off", require_understand=False,
+                    recheck_gates=False)
         opts.update(kwargs)
         return check_run.check(self.root, **opts)
+
+    def _write_cap_confirmed(self, round_n, by="owner", status="confirmed",
+                             date="2026-07-10", notes='"ship at cap"'):
+        self._w("03-edit/cap-confirmed.md",
+                "# cap-confirmed\n\n"
+                "- **status**: %s\n"
+                "- **by**: %s\n"
+                "- **date**: %s\n"
+                "- **round**: %s\n"
+                "- **notes**: %s\n"
+                % (status, by, date, round_n, notes))
 
     def _write_owner_briefing(self, text=None):
         os.makedirs(os.path.join(self.root, "01-design"), exist_ok=True)
@@ -921,7 +989,9 @@ class TestCheckRun(unittest.TestCase):
         if not os.path.exists(inv):
             self._w("01-design/invention-summary.md",
                     "# Invention Summary\n\n## Metadata\n- **Patent ID**: %s\n\n"
-                    "## Layer 1\nFixture mechanism for check_run tests.\n"
+                    "## Layer 1\nFixture mechanism for check_run tests.\n\n"
+                    "## Quotable spans\n"
+                    '- `[0001]`: "sample verbatim line for fixture"\n'
                     % self.PATENT_ID)
 
     def _write_understand_complete(self, confirmed=True, by="owner",
@@ -930,7 +1000,10 @@ class TestCheckRun(unittest.TestCase):
         os.makedirs(os.path.join(self.root, "00-understand"), exist_ok=True)
         self._w("00-understand/invention-summary.md",
                 "# Invention Summary\n\n## Metadata\n- **Patent ID**: %s\n\n"
-                "## Layer 1\nFixture mechanism.\n" % self.PATENT_ID)
+                "## Layer 1\nFixture mechanism.\n\n"
+                "## Quotable spans\n"
+                '- `[0001]`: "sample verbatim line for fixture"\n'
+                % self.PATENT_ID)
         self._w("00-understand/owner-study-pack.md",
                 "# Owner Study Pack\n\n## 1. Problem\n\n"
                 '**근거 (verbatim):**\n- `[0001]`: "sample verbatim line for fixture"\n')
@@ -961,7 +1034,7 @@ class TestCheckRun(unittest.TestCase):
         self._w("03-edit/edit-log.round-3.md", self.CLEAN_LOG)
         self._w("03-edit/gate-result.round-3.json", self.GATE_PASS)
         self._w("02-compose/revision-response.round-2.md", "# Revision response\n(no medium+ findings)\n")
-        self._w("03-edit/essay-final.md", "# Final\n")
+        self._w("03-edit/essay-final.md", self.CLEAN_ESSAY)
         self._w("03-edit/revision-notes.md", "## delta\n- self-audit fix\n")
         if with_briefing:
             self._write_owner_briefing()
@@ -976,7 +1049,7 @@ class TestCheckRun(unittest.TestCase):
     def test_single_pass_promotion_fails_double_clean(self):
         self._w("03-edit/edit-log.round-1.md", self.CLEAN_LOG)
         self._w("03-edit/gate-result.round-1.json", self.GATE_PASS)
-        self._w("03-edit/essay-final.md", "# Final\n")
+        self._w("03-edit/essay-final.md", self.CLEAN_ESSAY)
         self._w("03-edit/revision-notes.md", "self-audit: no unresolved findings\n")
         self._write_owner_briefing()
         self._write_understand_complete()
@@ -987,7 +1060,7 @@ class TestCheckRun(unittest.TestCase):
     def test_single_clean_acceptance_passes_k1(self):
         self._w("03-edit/edit-log.round-1.md", self.CLEAN_LOG)
         self._w("03-edit/gate-result.round-1.json", self.GATE_PASS)
-        self._w("03-edit/essay-final.md", "# Final\n")
+        self._w("03-edit/essay-final.md", self.CLEAN_ESSAY)
         self._w("03-edit/revision-notes.md", "self-audit: no unresolved findings\n")
         self._write_owner_briefing()
         self._write_understand_complete()
@@ -998,7 +1071,7 @@ class TestCheckRun(unittest.TestCase):
     def test_single_clean_rejects_dirty_round(self):
         self._w("03-edit/edit-log.round-1.md", self.FAIL_LOG)
         self._w("03-edit/gate-result.round-1.json", self.GATE_PASS)
-        self._w("03-edit/essay-final.md", "# Final\n")
+        self._w("03-edit/essay-final.md", self.CLEAN_ESSAY)
         self._w("03-edit/revision-notes.md", "self-audit: no unresolved findings\n")
         self._write_owner_briefing()
         self._write_understand_complete()
@@ -1009,7 +1082,7 @@ class TestCheckRun(unittest.TestCase):
     def test_single_clean_rejects_failed_gates(self):
         self._w("03-edit/edit-log.round-1.md", self.CLEAN_LOG)
         self._w("03-edit/gate-result.round-1.json", self.GATE_FAIL)
-        self._w("03-edit/essay-final.md", "# Final\n")
+        self._w("03-edit/essay-final.md", self.CLEAN_ESSAY)
         self._w("03-edit/revision-notes.md", "self-audit: no unresolved findings\n")
         self._write_owner_briefing()
         self._write_understand_complete()
@@ -1038,6 +1111,8 @@ class TestCheckRun(unittest.TestCase):
         self.assertTrue(_has(r, "RUN-004"))
 
     def test_cap_hit_promotion_warns_but_passes(self):
+        # Authorized CAP HIT: score-history + valid cap-confirmed for K=2.
+        # (Prior version encoded the broken no-authorizer path; RUN-013 now fires.)
         self._w("03-edit/edit-log.round-1.md", self.FAIL_LOG)
         self._w("03-edit/gate-result.round-1.json", self.GATE_PASS)
         self._w("02-compose/revision-response.round-1.md", "## r1-F1\n- disposition: applied\n")
@@ -1046,14 +1121,16 @@ class TestCheckRun(unittest.TestCase):
                 "  - finding_id: r2-F1\n    pass: pass-3\n    severity: high\n"
                 "    finding: \"r1-F1 persists\"\n")
         self._w("03-edit/gate-result.round-2.json", self.GATE_PASS)
-        self._w("03-edit/essay-final.md", "# Final\n")
+        self._w("03-edit/essay-final.md", self.CLEAN_ESSAY)
         self._w("03-edit/score-history.md", "| 2 | ... |\nCAP HIT at max-iter; best round shipped.\n")
         self._w("03-edit/revision-notes.md", "self-audit: no unresolved findings\n")
+        self._write_cap_confirmed(2)
         self._write_owner_briefing()
         self._write_understand_complete()
         r = check_run.check(self.root)
         self.assertTrue(r["passed"], r["findings"])
         self.assertTrue(_has(r, "RUN-006"))
+        self.assertFalse(_has(r, "RUN-013"))
 
     def test_missing_self_audit_fails(self):
         self._accepted_double_clean()
@@ -1094,7 +1171,7 @@ class TestCheckRun(unittest.TestCase):
                 "```yaml\noverall_assessment: pass\nround_type: confirmation\n\n"
                 "findings:\n  - pass: carried\n    finding: \"no findings\"\n```\n")
         self._w("03-edit/gate-result.round-2.json", self.GATE_PASS)
-        self._w("03-edit/essay-final.md", "# Final\n")
+        self._w("03-edit/essay-final.md", self.CLEAN_ESSAY)
         self._w("03-edit/revision-notes.md", "self-audit: no unresolved findings\n")
         self._write_owner_briefing()
         self._write_understand_complete()
@@ -1237,7 +1314,7 @@ class TestCheckRun(unittest.TestCase):
                 "overall_assessment: revise-recommended\n\nfindings:\n"
                 "  - pass: carried\n    finding: \"still soft\"\n")
         self._w("03-edit/gate-result.round-2.json", self.GATE_PASS)
-        self._w("03-edit/essay-final.md", "# Final\n")
+        self._w("03-edit/essay-final.md", self.CLEAN_ESSAY)
         self._w("03-edit/revision-notes.md", "self-audit: no unresolved findings\n")
         self._write_owner_briefing()
         self._write_understand_complete()
@@ -1285,11 +1362,16 @@ class TestCheckRun(unittest.TestCase):
 
     def test_run010_off_skips(self):
         self._accepted_double_clean(with_understand=False)
-        # five files for RUN-011 off path; no confirm file
+        # five files for RUN-011 off path; no confirm file. Invention-summary
+        # must still carry a Quotable span so RUN-015 recheck does not invent
+        # QUOTE-002 noise on this RUN-010-focused fixture.
         os.makedirs(os.path.join(self.root, "00-understand"), exist_ok=True)
-        for name in ("invention-summary.md", "owner-study-pack.md",
-                     "owner-briefing.md", "figure-primer.md", "open-questions.md"):
+        for name in ("owner-study-pack.md", "owner-briefing.md",
+                     "figure-primer.md", "open-questions.md"):
             self._w("00-understand/" + name, "# ok\nbody\n")
+        self._w("00-understand/invention-summary.md",
+                "# Invention Summary\n\n## Quotable spans\n"
+                '- `[0001]`: "sample verbatim line for fixture"\n')
         self._write_owner_briefing()
         r = check_run.check(self.root, owner_confirm="off", require_understand=False)
         self.assertTrue(r["passed"], r["findings"])
@@ -1514,6 +1596,204 @@ class TestCheckRun(unittest.TestCase):
         r = check_run.check(self.root)
         self.assertFalse(r["passed"])
         self.assertTrue(_has(r, "RUN-012"))
+
+    # --- RUN-013 CAP HIT authorizer ----------------------------------------
+
+    def _cap_hit_tree(self, with_cap_confirm=False, cap_round=2):
+        self._w("03-edit/edit-log.round-1.md", self.FAIL_LOG)
+        self._w("03-edit/gate-result.round-1.json", self.GATE_PASS)
+        self._w("02-compose/revision-response.round-1.md",
+                "## r1-F1\n- disposition: applied\n")
+        self._w("03-edit/edit-log.round-2.md",
+                "overall_assessment: revise-required\n\nfindings:\n"
+                "  - finding_id: r2-F1\n    pass: pass-3\n    severity: high\n"
+                "    finding: \"r1-F1 persists\"\n")
+        self._w("03-edit/gate-result.round-2.json", self.GATE_PASS)
+        self._w("03-edit/essay-final.md", self.CLEAN_ESSAY)
+        self._w("03-edit/score-history.md",
+                "| 2 | ... |\nCAP HIT at max-iter; best round shipped.\n")
+        self._w("03-edit/revision-notes.md",
+                "self-audit: no unresolved findings\n")
+        self._write_owner_briefing()
+        self._write_understand_complete()
+        if with_cap_confirm:
+            self._write_cap_confirmed(cap_round)
+
+    def test_run013_unauthorized_cap_hit_fails(self):
+        self._cap_hit_tree(with_cap_confirm=False)
+        r = check_run.check(self.root, owner_confirm="required")
+        self.assertFalse(r["passed"])
+        self.assertTrue(_has(r, "RUN-013"), r["findings"])
+
+    def test_run013_authorized_cap_hit_no_run013(self):
+        self._cap_hit_tree(with_cap_confirm=True, cap_round=2)
+        r = check_run.check(self.root, owner_confirm="required")
+        self.assertTrue(r["passed"], r["findings"])
+        self.assertFalse(_has(r, "RUN-013"))
+        self.assertTrue(_has(r, "RUN-006"))
+
+    def test_run013_wrong_round_fails(self):
+        self._cap_hit_tree(with_cap_confirm=True, cap_round=1)  # K=2
+        r = check_run.check(self.root, owner_confirm="required")
+        self.assertFalse(r["passed"])
+        self.assertTrue(_has(r, "RUN-013"), r["findings"])
+        msgs = [f["message"] for f in r["findings"] if f["check_id"] == "RUN-013"]
+        self.assertTrue(any("round" in m.lower() for m in msgs), msgs)
+
+    def test_run013_owner_confirm_off_skips(self):
+        self._cap_hit_tree(with_cap_confirm=False)
+        r = check_run.check(self.root, owner_confirm="off",
+                           require_understand=False)
+        self.assertFalse(_has(r, "RUN-013"), r["findings"])
+
+    def test_run013_owner_notes_required(self):
+        self._cap_hit_tree(with_cap_confirm=False)
+        self._w("03-edit/cap-confirmed.md",
+                "# cap-confirmed\n\n"
+                "- **status**: confirmed\n"
+                "- **by**: owner\n"
+                "- **date**: 2026-07-10\n"
+                "- **round**: 2\n"
+                "- **notes**:\n")
+        r = check_run.check(self.root, owner_confirm="required")
+        self.assertFalse(r["passed"])
+        self.assertTrue(_has(r, "RUN-013"))
+        msgs = [f["message"] for f in r["findings"] if f["check_id"] == "RUN-013"]
+        self.assertTrue(any("notes" in m.lower() for m in msgs), msgs)
+
+    # --- RUN-014 self-declared clean with findings -------------------------
+
+    def test_run014_dirty_pass_fails(self):
+        self._w("03-edit/edit-log.round-1.md", self.DIRTY_PASS_LOG)
+        self._w("03-edit/gate-result.round-1.json", self.GATE_PASS)
+        r = self._legacy()
+        self.assertFalse(r["passed"])
+        self.assertTrue(_has(r, "RUN-014"), r["findings"])
+
+    def test_run014_clean_pass_no_finding(self):
+        self._w("03-edit/edit-log.round-1.md", self.CLEAN_LOG)
+        self._w("03-edit/gate-result.round-1.json", self.GATE_PASS)
+        r = self._legacy()
+        self.assertTrue(r["passed"], r["findings"])
+        self.assertFalse(_has(r, "RUN-014"))
+
+    def test_run014_revise_with_findings_no_run014(self):
+        # Honest dirty assessment is not RUN-014 (that is RUN-005 territory
+        # when promoted).
+        self._w("03-edit/edit-log.round-1.md", self.FAIL_LOG)
+        self._w("03-edit/gate-result.round-1.json", self.GATE_PASS)
+        r = self._legacy()
+        self.assertFalse(_has(r, "RUN-014"), r["findings"])
+
+    # --- RUN-015 gate recheck on accepted essay ----------------------------
+
+    def test_run015_lying_gate_json_fails(self):
+        self._accepted_double_clean()
+        self._w("03-edit/essay-final.md", self.DIRTY_ESSAY)  # BANNED-001
+        # Last round JSON still claims passed=true
+        self._w("03-edit/gate-result.round-3.json", self.GATE_PASS)
+        r = check_run.check(self.root, recheck_gates=True)
+        self.assertFalse(r["passed"])
+        self.assertTrue(_has(r, "RUN-015"), r["findings"])
+
+    def test_run015_consistent_tree_no_finding(self):
+        self._accepted_double_clean()
+        r = check_run.check(self.root, recheck_gates=True)
+        self.assertTrue(r["passed"], r["findings"])
+        self.assertFalse(_has(r, "RUN-015"))
+
+    def test_run015_no_recheck_flag_skips(self):
+        self._accepted_double_clean()
+        self._w("03-edit/essay-final.md", self.DIRTY_ESSAY)
+        self._w("03-edit/gate-result.round-3.json", self.GATE_PASS)
+        r = check_run.check(self.root, recheck_gates=False)
+        self.assertFalse(_has(r, "RUN-015"), r["findings"])
+        # Still may fail other rules? DIRTY essay alone isn't a RUN-00x fail.
+        # Without recheck, lying JSON is invisible → pass on that dimension.
+        self.assertTrue(r["passed"], r["findings"])
+
+
+class TestPatentLeak(unittest.TestCase):
+    """LEAK-001: draft must not paste raw patent outside Quotable spans."""
+
+    PATENT = (
+        "The present invention provides a novel rotor assembly that includes a "
+        "plurality of blades arranged in a circumferential pattern around a "
+        "central hub structure for improved airflow management under high load.\n"
+    )
+    SPAN = (
+        "a novel rotor assembly that includes a plurality of blades arranged "
+        "in a circumferential pattern around a central hub"
+    )
+
+    def test_leak_raw_paragraph_fails(self):
+        import gate_patent_leak
+        draft = (
+            "# Title\n\n"
+            + self.PATENT
+            + "\n# Sources\n- US1\n"
+        )
+        summary = "# Invention Summary\n\nNo quotable spans listed.\n"
+        r = gate_patent_leak.check(draft, {
+            "patent_text": self.PATENT,
+            "invention_summary_text": summary,
+        })
+        self.assertFalse(r["passed"])
+        self.assertTrue(_has(r, "LEAK-001"), r["findings"])
+
+    def test_covered_span_quote_passes(self):
+        import gate_patent_leak
+        draft = (
+            "# Title\n\n"
+            'As recorded in the summary, "%s".\n\n'
+            "# Sources\n- US1\n"
+        ) % self.SPAN
+        summary = (
+            "# Invention Summary\n\n"
+            '- `[0001]`: "%s"\n'
+        ) % self.SPAN
+        r = gate_patent_leak.check(draft, {
+            "patent_text": self.PATENT,
+            "invention_summary_text": summary,
+        })
+        self.assertTrue(r["passed"], r["findings"])
+        self.assertFalse(_has(r, "LEAK-001"))
+
+    def test_missing_context_warn_skip(self):
+        import gate_patent_leak
+        draft = "# Title\n\n" + self.PATENT + "\n# Sources\n- US1\n"
+        r = gate_patent_leak.check(draft, {})
+        self.assertTrue(r["passed"])  # warn-skip, not vacuous fail
+        self.assertTrue(_has(r, "LEAK-000"))
+        self.assertFalse(_has(r, "LEAK-001"))
+
+    def test_registered_in_run_gates(self):
+        names = [m.GATE_ID if hasattr(m, "GATE_ID") else m.__name__
+                 for m in run_gates.GATES]
+        self.assertIn("patent_leak", names)
+
+    def test_run_gates_only_runs_leak_with_both_context(self):
+        """Absent patent/summary → LEAK-000 warn, no LEAK-001; both present → can fire."""
+        draft = (
+            "# Title\n\n"
+            + self.PATENT
+            + "\n# Sources\n- US1\n"
+        )
+        overall, results = run_gates.run_all(draft, {"mode": "essay"})
+        leak = next(r for r in results if r["gate"] == "patent_leak")
+        self.assertTrue(any(f["check_id"] == "LEAK-000" for f in leak["findings"]))
+        self.assertFalse(any(f["check_id"] == "LEAK-001" for f in leak["findings"]))
+
+        summary = "# Invention Summary\n\nNo quotable spans.\n"
+        overall2, results2 = run_gates.run_all(draft, {
+            "mode": "essay",
+            "patent_text": self.PATENT,
+            "invention_summary_text": summary,
+        })
+        leak2 = next(r for r in results2 if r["gate"] == "patent_leak")
+        self.assertFalse(leak2["passed"])
+        self.assertTrue(any(f["check_id"] == "LEAK-001" for f in leak2["findings"]))
+        self.assertFalse(overall2)
 
 
 class TestStripPublication(unittest.TestCase):

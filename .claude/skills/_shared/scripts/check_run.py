@@ -16,23 +16,27 @@ Artifact contract (written by the orchestrator each round N = 1..K):
                                                another round)
   handoff/03-edit/essay-final.md               promotion target (acceptance only)
   handoff/03-edit/score-history.md             must contain "CAP HIT" if promoted at cap
+  handoff/03-edit/cap-confirmed.md             CAP HIT authorizer (RUN-013)
   handoff/03-edit/revision-notes.md            self-audit deltas (essay mode)
   handoff/01-design/owner-briefing.md          Phase-1 Korean owner briefing --
                                                one-time, not per-round (RUN-008)
   handoff/00-understand/understand-confirmed.md  owner (or --yes) confirm (RUN-010)
-  handoff/run-manifest.md                      optional run bootstrap (RUN-012)
+  handoff/run-manifest.md                      run bootstrap + patent lock (RUN-012)
 
 Checks:
   RUN-001 (fail): round artifacts missing or non-contiguous (edit-log/gate-result
-                  for rounds 1..K; revision-response for rounds 1..K-1) -- UNLESS
+                  for rounds 1..K; revision-response for rounds 1..K-1, and for
+                  round K when essay-final.md exists — the accepted/promoted
+                  round's medium+ findings must also be dispositioned) -- UNLESS
                   round N -> N+1 is a confirmation transition (see below), which
                   by spec takes no revision and so has no response to trace.
   RUN-002 (fail): an edit-log has no parsable overall_assessment, or a gate
                   result JSON is unreadable.
   RUN-003 (fail): a medium/high/critical finding in round N has no disposition
                   block in revision-response.round-N.md, or a failing gate
-                  check_id has none (rounds followed by another round only;
-                  skipped entirely across a confirmation transition).
+                  check_id has none (rounds followed by another round, PLUS the
+                  final round K when essay-final.md exists; skipped entirely
+                  across a confirmation transition).
   RUN-004 (fail): a medium+ finding_id from round N-1 is never mentioned in
                   round N's edit-log (silently dropped instead of ruled on).
                   Runs across every transition, confirmation or not.
@@ -43,9 +47,11 @@ Checks:
                   a fresh review confirms it —
                   --acceptance single-clean: K>=1 and the last round is clean
                   (still fails if the sole/last round is dirty or gates failed);
-                  UNLESS score-history.md declares "CAP HIT" (explicit
-                  ship-best-round decision, surfaced to the user).
-  RUN-006 (warn): promoted via CAP HIT (informational — unresolved findings ship).
+                  UNLESS score-history.md declares "CAP HIT" (explicit last-draft
+                  ship-on-cap decision, surfaced to the user; requires RUN-013
+                  authorizer when owner-confirm is not off).
+  RUN-006 (warn): promoted via CAP HIT (informational — last draft ships with
+                  unresolved findings).
   RUN-007 (fail): --self-audit on and essay-final.md exists, but
                   revision-notes.md is missing or has neither a "## delta"
                   block nor an explicit no-findings statement.
@@ -63,21 +69,38 @@ Checks:
                   missing or INVALID (status confirmed; by ∈ {owner,
                   orchestrator-yes-flag}; real YYYY-MM-DD date not placeholder;
                   patent matches run patent id). yes-flag mode additionally
-                  requires by: orchestrator-yes-flag.
+                  requires by: orchestrator-yes-flag. When no run-side patent id
+                  is derivable: FAIL under --require-understand (default);
+                  WARN (RUN-000) only under --no-require-understand.
   RUN-011 (fail): --require-understand is on (default) and the five understand
                   required_outputs are not all present and non-empty under
                   handoff/00-understand/ (invention-summary, owner-study-pack,
                   owner-briefing, figure-primer, open-questions). Replaces the
                   legacy warn-and-pass bypass. --no-require-understand is for
                   legacy archive re-verification only.
-  RUN-012 (fail): handoff/run-manifest.md exists and its patent_sha256 does not
-                  equal sha256(input/patent.md), or essays/<id>/patent.md
-                  snapshot (when present) does not hash-match. Manifest absent
-                  → skip with a warn line (RUN-000).
+  RUN-012 (fail): handoff/run-manifest.md patent_sha256 does not equal
+                  sha256(input/patent.md), or essays/<id>/patent.md snapshot
+                  (when present) does not hash-match. When --owner-confirm is
+                  not off AND the run is design-or-beyond, the manifest MUST
+                  exist and validate (absent → FAIL). When owner-confirm is off
+                  (or run is pre-design), manifest absent → RUN-000 warn skip.
+  RUN-013 (fail): score-history.md declares CAP HIT but handoff/03-edit/
+                  cap-confirmed.md is missing or INVALID for the capped round
+                  (status confirmed; by ∈ {owner, orchestrator-yes-flag}; real
+                  YYYY-MM-DD date; round: equals K; notes required when by:
+                  owner). Skipped when --owner-confirm off (same gate as RUN-010).
+  RUN-014 (fail): a round's edit-log declares any medium+ finding (via
+                  _findings_with_severity) yet carries overall_assessment: pass
+                  (self-declared clean while findings remain).
+  RUN-015 (fail): essay-final.md exists and --recheck-gates is on (default):
+                  recomputed run_gates.run_all() verdict on essay-final disagrees
+                  with the accepted round K's gate-result.round-K.json. Missing
+                  required context files → RUN-000 warn and skip (do not fail on
+                  absence). Disable with --no-recheck-gates.
   RUN-000 (warn): informational skips (incl. a confirmation transition, below;
-                  run-manifest absent → RUN-012 skipped; confirm patent set
-                  but no run-side patent id derivable → patent-match clause
-                  skipped for legacy archive re-verification).
+                  run-manifest absent when owner-confirm off; confirm patent
+                  unverifiable under --no-require-understand; RUN-015 context
+                  missing).
 
 Confirmation-transition model (2026-07-03-check-run-confirmation-round-model
 proposal + its 2026-07-04 amendment + 2026-07-06 veto):
@@ -107,6 +130,7 @@ Usage:
                [--acceptance single-clean|double-clean]
                [--owner-confirm required|yes-flag|off]
                [--require-understand | --no-require-understand]
+               [--recheck-gates | --no-recheck-gates]
                [--json]
 Exit code 0 iff no fail-severity finding.
 """
@@ -132,7 +156,7 @@ ROUND_TYPE_REVISION_RE = re.compile(r"^\s*round_type:\s*revision", re.M | re.I)
 CONFIRMATION_PHRASE_RE = re.compile(r"confirmation\s+round", re.I)
 FINDING_BLOCK_LOOKAHEAD = 6  # lines searched after `finding_id:` for a plain `severity:`
 
-# understand-confirmed.md field parsers
+# Confirm-file field parsers (shared by understand-confirmed.md + cap-confirmed.md).
 # Horizontal whitespace only ([^\S\n]) so empty fields cannot swallow the
 # following line's leading "-" under re.M (WS-B follow-up 2).
 CONFIRM_STATUS_RE = re.compile(
@@ -143,10 +167,14 @@ CONFIRM_DATE_RE = re.compile(
     r"^[^\S\n]*-[^\S\n]*\*\*date\*\*[^\S\n]*:[^\S\n]*(\S+)", re.M | re.I)
 CONFIRM_PATENT_RE = re.compile(
     r"^[^\S\n]*-[^\S\n]*\*\*patent\*\*[^\S\n]*:[^\S\n]*(\S+)", re.M | re.I)
+CONFIRM_ROUND_RE = re.compile(
+    r"^[^\S\n]*-[^\S\n]*\*\*round\*\*[^\S\n]*:[^\S\n]*(\S+)", re.M | re.I)
 CONFIRM_NOTES_RE = re.compile(
     r"^[^\S\n]*-[^\S\n]*\*\*notes\*\*[^\S\n]*:[^\S\n]*(.+)$", re.M | re.I)
 REAL_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 PLACEHOLDER_DATE_RE = re.compile(r"^<[^>]+>$")
+
+MEDIUM_PLUS = frozenset({"medium", "high", "critical", "unspecified"})
 
 # run-manifest.md — same horizontal-only whitespace (empty values must not
 # absorb the next line via \s matching \n under re.M).
@@ -322,24 +350,35 @@ def _is_confirmation_transition(edit_dir, score_path, next_round):
     return False
 
 
-def _validate_understand_confirmed(text, patent_ids, owner_confirm_mode):
-    """Return (ok: bool, message: str, warn: str|None).
+def _validate_confirm_file(text, owner_confirm_mode, *,
+                           patent_ids=None, require_patent=False,
+                           expected_round=None):
+    """Shared confirm-file field validator (understand-confirmed + cap-confirmed).
 
-    patent_ids is a list of acceptable run-side ids. Empty patent_ids with a
-    non-empty confirm patent cannot perform the match clause: ok stays True and
-    warn carries a RUN-000 message for the caller (legacy archive re-verification
-    has no input/). Empty/missing confirm patent is always a fail.
+    Always checks: status == confirmed; by ∈ {owner, orchestrator-yes-flag};
+    real YYYY-MM-DD date (not placeholder); notes required when by: owner.
+    Horizontal-whitespace-only field parsers ([^\\S\\n]) so empty values cannot
+    swallow the next line under re.M.
+
+    Extra clauses (callers select):
+      require_patent=True  → patent field required; match against patent_ids
+                             (empty patent_ids → ok with RUN-000-style warn).
+      expected_round=N     → round field required and must equal N (CAP HIT).
+
+    Returns (ok: bool, message: str, warn: str|None).
     """
     status_m = CONFIRM_STATUS_RE.search(text)
     by_m = CONFIRM_BY_RE.search(text)
     date_m = CONFIRM_DATE_RE.search(text)
     patent_m = CONFIRM_PATENT_RE.search(text)
+    round_m = CONFIRM_ROUND_RE.search(text)
     notes_m = CONFIRM_NOTES_RE.search(text)
 
     status = status_m.group(1).strip().lower() if status_m else ""
     by = by_m.group(1).strip() if by_m else ""
     date = date_m.group(1).strip() if date_m else ""
     patent = patent_m.group(1).strip() if patent_m else ""
+    round_val = round_m.group(1).strip() if round_m else ""
     notes = notes_m.group(1).strip() if notes_m else ""
 
     if status != "confirmed":
@@ -350,24 +389,86 @@ def _validate_understand_confirmed(text, patent_ids, owner_confirm_mode):
         return False, "owner-confirm=yes-flag requires by: orchestrator-yes-flag (got %r)" % by, None
     if not date or PLACEHOLDER_DATE_RE.match(date) or not REAL_DATE_RE.match(date):
         return False, "date is %r (need real YYYY-MM-DD, not placeholder)" % (date or "missing"), None
-    if not patent:
-        return False, "patent field missing", None
+
     warn = None
-    if not patent_ids:
-        warn = (
-            "confirm patent %s unverifiable — no input/patent.md and no "
-            "run-manifest patent id" % patent
-        )
-    elif not any(_patent_ids_match(patent, pid) for pid in patent_ids):
-        return False, "patent %r does not match run patent id(s) %s" % (patent, patent_ids), None
+    if require_patent:
+        if not patent:
+            return False, "patent field missing", None
+        patent_ids = patent_ids or []
+        if not patent_ids:
+            warn = (
+                "confirm patent %s unverifiable — no input/patent.md and no "
+                "run-manifest patent id" % patent
+            )
+        elif not any(_patent_ids_match(patent, pid) for pid in patent_ids):
+            return False, "patent %r does not match run patent id(s) %s" % (
+                patent, patent_ids), None
+
+    if expected_round is not None:
+        if not round_val:
+            return False, "round field missing", None
+        try:
+            got = int(round_val)
+        except ValueError:
+            return False, "round is %r (need integer equal to capped round %s)" % (
+                round_val, expected_round), None
+        if got != int(expected_round):
+            return False, "round is %r (need capped round %s)" % (
+                round_val, expected_round), None
+
     if by == "owner" and not notes.strip().strip('"').strip("'"):
         return False, "notes required when by: owner", None
     return True, "ok", warn
 
 
+def _validate_understand_confirmed(text, patent_ids, owner_confirm_mode):
+    """Return (ok, message, warn) for understand-confirmed.md (patent clause on)."""
+    return _validate_confirm_file(
+        text, owner_confirm_mode,
+        patent_ids=patent_ids, require_patent=True)
+
+
+def _validate_cap_confirmed(text, owner_confirm_mode, capped_round):
+    """Return (ok, message, warn) for cap-confirmed.md (round clause on)."""
+    return _validate_confirm_file(
+        text, owner_confirm_mode, expected_round=capped_round)
+
+
+def _build_recheck_context(run_root, handoff_dir):
+    """Assemble run_gates context from whatever files exist under the run.
+
+    Never fails on absence — missing optional inputs simply omit keys so
+    individual gates warn-skip rather than inventing a vacuous pass claim.
+    """
+    ctx = {"mode": "essay"}
+    design_dir = os.path.join(handoff_dir, "01-design")
+    understand_dir = os.path.join(handoff_dir, "00-understand")
+
+    inv = None
+    for candidate in (
+        os.path.join(understand_dir, "invention-summary.md"),
+        os.path.join(design_dir, "invention-summary.md"),
+    ):
+        if os.path.exists(candidate) and os.path.getsize(candidate) > 0:
+            inv = candidate
+            break
+    if inv:
+        ctx["invention_summary_text"] = _read(inv)
+
+    patent_path = os.path.join(run_root, "input", "patent.md")
+    if os.path.exists(patent_path) and os.path.getsize(patent_path) > 0:
+        ctx["patent_text"] = _read(patent_path)
+
+    fig_sel = os.path.join(design_dir, "figure-selection.md")
+    if os.path.exists(fig_sel) and os.path.getsize(fig_sel) > 0:
+        ctx["figure_selection_text"] = _read(fig_sel)
+
+    return ctx
+
+
 def check(handoff_dir, threshold="pass", self_audit="on",
           acceptance="double-clean", owner_confirm="required",
-          require_understand=True):
+          require_understand=True, recheck_gates=True):
     findings = []
     edit_dir = os.path.join(handoff_dir, "03-edit")
     compose_dir = os.path.join(handoff_dir, "02-compose")
@@ -412,6 +513,17 @@ def check(handoff_dir, threshold="pass", self_audit="on",
         else:
             assessments[n] = m.group(1).strip()
         round_findings[n] = _findings_with_severity(text)
+
+        # RUN-014: self-declared clean (overall_assessment: pass) while the
+        # same log still declares medium+ findings via _findings_with_severity.
+        if assessments.get(n) == "pass":
+            dirty = [fid for fid, sev in round_findings[n]
+                     if sev in MEDIUM_PLUS]
+            if dirty:
+                add("RUN-014", "fail",
+                    "edit-log.round-%d.md declares overall_assessment: pass "
+                    "but still lists medium+ finding(s): %s"
+                    % (n, ", ".join(dirty)), log_path)
 
         if not os.path.exists(gate_path):
             add("RUN-001", "fail", "gate-result.round-%d.json missing" % n, edit_dir)
@@ -586,6 +698,28 @@ def check(handoff_dir, threshold="pass", self_audit="on",
                 "promoted via CAP HIT — unresolved findings ship; surface them to the user",
                 score_path)
 
+        # RUN-013: CAP HIT authorizer (same owner-confirm gate as RUN-010).
+        # Fires when score-history declares CAP HIT and owner-confirm is not off;
+        # cap-confirmed.md must validate for capped round K.
+        if cap_hit and owner_confirm != "off":
+            cap_path = os.path.join(edit_dir, "cap-confirmed.md")
+            if not os.path.exists(cap_path):
+                add("RUN-013", "fail",
+                    "score-history.md declares CAP HIT but cap-confirmed.md is "
+                    "missing under handoff/03-edit/ (CAP HIT requires explicit "
+                    "owner/orchestrator authorizer for round %d; use "
+                    "--owner-confirm off only for legacy archive re-verification)"
+                    % K, edit_dir)
+            else:
+                ok, msg, warn = _validate_cap_confirmed(
+                    _read(cap_path), owner_confirm, K)
+                if not ok:
+                    add("RUN-013", "fail",
+                        "cap-confirmed.md invalid for capped round %d: %s"
+                        % (K, msg), cap_path)
+                if warn:
+                    add("RUN-000", "warn", warn, cap_path)
+
         if self_audit == "on":
             notes_path = os.path.join(edit_dir, "revision-notes.md")
             if not os.path.exists(notes_path):
@@ -653,6 +787,38 @@ def check(handoff_dir, threshold="pass", self_audit="on",
                         "legacy layout: no handoff/00-understand/ (pre understand-first); "
                         "01-design invention-summary accepted (--no-require-understand)",
                         design_dir)
+
+        # RUN-015: recompute gates on essay-final; must agree with round-K JSON.
+        if recheck_gates:
+            gate_path_k = os.path.join(edit_dir, "gate-result.round-%d.json" % K)
+            if not os.path.exists(gate_path_k):
+                add("RUN-000", "warn",
+                    "RUN-015 gate recheck skipped — gate-result.round-%d.json missing"
+                    % K, edit_dir)
+            elif K not in gates_passed:
+                add("RUN-000", "warn",
+                    "RUN-015 gate recheck skipped — gate-result.round-%d.json "
+                    "unreadable" % K, edit_dir)
+            else:
+                try:
+                    import run_gates as _run_gates
+                except ImportError:
+                    add("RUN-000", "warn",
+                        "RUN-015 gate recheck skipped — run_gates import failed",
+                        edit_dir)
+                else:
+                    draft_text = _read(final_path)
+                    ctx = _build_recheck_context(run_root, handoff_dir)
+                    recomputed, _gate_results = _run_gates.run_all(draft_text, ctx)
+                    recorded = bool(gates_passed[K])
+                    if bool(recomputed) != recorded:
+                        add("RUN-015", "fail",
+                            "recomputed run_gates verdict on essay-final.md is %s "
+                            "but gate-result.round-%d.json recorded passed=%s "
+                            "(accepted-round gate claim disagrees with live recheck)"
+                            % ("PASS" if recomputed else "FAIL", K,
+                               "true" if recorded else "false"),
+                            final_path)
     else:
         add("RUN-000", "warn",
             "essay-final.md not present — acceptance checks skipped (run in progress?)",
@@ -693,6 +859,12 @@ def main(argv=None):
     p.add_argument("--no-require-understand", dest="require_understand",
                    action="store_false",
                    help="disable RUN-011 (legacy archive re-verification only)")
+    p.add_argument("--recheck-gates", dest="recheck_gates",
+                   action="store_true", default=True,
+                   help="recompute run_gates on essay-final (RUN-015; default on)")
+    p.add_argument("--no-recheck-gates", dest="recheck_gates",
+                   action="store_false",
+                   help="skip RUN-015 live gate recheck on essay-final")
     p.add_argument("--json", action="store_true")
     args = p.parse_args(argv)
 
@@ -703,6 +875,7 @@ def main(argv=None):
         acceptance=args.acceptance,
         owner_confirm=args.owner_confirm,
         require_understand=args.require_understand,
+        recheck_gates=args.recheck_gates,
     )
     if args.json:
         print(json.dumps(result, indent=2))
