@@ -339,3 +339,46 @@ the "optimize the downstream instructions" win the idea started from.
 6. Fences enforced by review only in P1 (no new gate): `comprehension-notes.md` carries no
    claims; the quiz stays on triad facts. The mechanical claim-lint and the RUN-010
    `comprehension:` assertion are P2.
+
+### P2 scope (locked interface) — IN IMPLEMENTATION (started 2026-07-11)
+
+Adds keyed grading, the claim-scope hard STOP (locked §4.3), the mechanical backstop, and
+the positive claim-scope explanation-prior (the §5.1 root lever). These interfaces are
+FROZEN so the concurrent workstreams (quiz+loop / checker / feedback) interlock:
+
+**IF-1 — `comprehension:` confirm-field value set (frozen).** P2 replaces P1's placeholder
+`captured` with graded values:
+```
+comprehension: demonstrated | self-asserted | skipped-unattended | risk-accepted
+```
+- `demonstrated` — every mandatory aspect (Problem / Solution·claim-scope / Benefits /
+  Boundary) answered correctly within two tries.
+- `self-asserted` — Owner used the general opt-out ("confirm without the quiz"). NOT
+  available for claim scope.
+- `skipped-unattended` — `--yes` or `--comprehension-check off`.
+- `risk-accepted` — the claim-scope item was missed twice and the Owner explicitly accepted
+  the risk; `notes:` MUST then contain the verbatim string `claim-scope risk accepted by owner`.
+
+**IF-2 — `comprehension-quiz.md` (frozen format).** Worker-produced keyed bank per §4.1:
+per item `question:` / `options:` (A–…) / `key:` / `aspect:` (one of
+`problem|claim-scope|benefits|boundary`) / `rationale:` (quotes the study-pack span). ≥1 item
+per aspect; the `claim-scope` item is mandatory.
+
+**IF-3 — RUN-010 comprehension assertion (frozen predicate).** On a design-or-beyond publish
+run with `--comprehension-check on`, `understand-confirmed.md` must carry a `comprehension:`
+field whose value is in IF-1; `risk-accepted` additionally requires the `notes:` string of
+IF-1; `skipped-unattended` is valid only under `--yes`/`off`. Absent/invalid ⇒ FAIL. This is
+the mechanical backstop the pass predicate (§4.3) needs.
+
+**IF-4 — claim-scope explanation-prior (positive framing, §5.1).** On the claim-scope item —
+whether demonstrated first try, taught-then-correct, or risk-accepted — the loop writes a
+`comprehension-notes.md` "claim-scope framing" entry as a **positive** seed: the precise
+claimed-vs-described contrast to lead with, phrased affirmatively (never "avoid overclaiming").
+The scope facts stay in `invention-summary`; the note carries only the framing.
+
+**Feedback reframe (bundled with P2).** When a detector (`gate_hedge`, pass-6 6G, `SURF-007`,
+pass-7) fires, the finding that re-enters the composer's revision context is expressed as a
+**positive precision target** ("state this bound at its claim anchor"; "give the affirmative
+core equal weight, anchor the concession to one specific claim fact"), never as "cut the
+hedge" or an enumeration of banned phrases (which re-plants the frame per §5.1 / invariant 6).
+Touches `feedback-format.md`, `revision-mode.md`, `editorial-reviewer.md`.
