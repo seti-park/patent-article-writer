@@ -450,3 +450,17 @@ clean_passes:
 # draft (draft_version 4) may be promoted to essay-final.md, subject to check_run.py confirming
 # the loop shape (contiguous round artifacts, disposition coverage, id continuity).
 ```
+
+## 2026-07-10 post-accept revision (origin: owner-directed, drafted by Grok 4.5)
+- EDIT 1 essay-final.md: gloss von Neumann bottleneck after [0133]
+- EDIT 2 essay-final.md: first-use gloss on dot products
+- EDIT 3 essay-final.md: FIG. 1 caption story-then-labels
+- EDIT 4 essay-final.md: bit-width ceiling sizing so-what [0202]
+- EDIT 5 essay-final.md: dequantization job-first with [0005]
+- EDIT 6 essay-final.md: split synthesizable adder-tree sentence
+- EDIT 7 essay-final.md: first-use gloss on independent claims
+- EDIT 8 essay-final.md: gloss multiplexer tree and adders
+- EDIT 9 owner-briefing.md: claim 29 independent-claim completeness
+- EDIT 10 owner-briefing.md: section 3 scannable bullets
+- EDIT 11 owner-briefing.md: INT35/INT5 plain-Korean gloss
+- EDIT 12 edit-log.md: provenance append for this revision
