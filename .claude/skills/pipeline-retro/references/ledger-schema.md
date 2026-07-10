@@ -37,8 +37,8 @@ the meta-loop scores recurrence over.
 | `pass` | editorial pass name, or `null` for gate / incident records |
 | `check_id` | gate `check_id` (e.g. `FIGUSE-001`), or `null` for editorial / incident records |
 | `severity` | `critical/high/medium/low` (editorial) or `fail/warn` (gate) or `none` (empty-pass) |
-| `goal` | north-star goal threatened: `1 / 2 / 3 / 4a / 4b` (from the matrix); process failures may use `all` |
-| `root_cause_stage` | `design / compose / edit / gate / canon / orchestrator / promo` |
+| `goal` | north-star goal threatened: `1 / 2 / 3 / 4a / 4b / 5` (from the matrix); process failures may use `all`. Historical records may carry `?` (unclassified) or omit the field — tolerated in default validation, flagged by `validate_ledger.py --strict` |
+| `root_cause_stage` | `design / compose / edit / gate / canon / orchestrator / promo / tooling / architecture`. **Compound stages are legal** — write them `+`-separated with the primary stage first (e.g. `design + compose`); `validate_ledger.py --strict` checks each component. Absent/`?` = unclassified (tolerated in default, flagged in strict) |
 | `root_cause_artifact` | the file/script that should have prevented it (attribution-table) |
 | `pattern_tag` | stable slug grouping recurring classes (the recurrence key) |
 | `finding` | the observation (verbatim from edit-log / notes) |

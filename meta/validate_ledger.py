@@ -73,6 +73,20 @@ SEVERITY_ENUM = frozenset({
     "none",
 })
 
+# goal / root_cause_stage are checked only under --strict (historical records
+# carry '?' / absent values that are tolerated by default). See ledger-schema.md.
+GOAL_ENUM = frozenset({"1", "2", "3", "4a", "4b", "5", "all"})
+STAGE_ENUM = frozenset({
+    "design", "compose", "edit", "gate", "canon",
+    "orchestrator", "promo", "tooling", "architecture",
+})
+UNCLASSIFIED = frozenset({"?", "", None})
+
+
+def _stage_components(stage):
+    """Compound stages are '+'-separated (primary first); check each component."""
+    return [c.strip() for c in str(stage).replace(",", "+").split("+") if c.strip()]
+
 DEFAULT_LEDGER = os.path.join(os.path.dirname(os.path.abspath(__file__)), "findings-ledger.jsonl")
 
 
@@ -84,8 +98,14 @@ def effective_origin(rec):
     return o
 
 
-def validate_record(rec, line_no):
-    """Return a list of violation strings for one record."""
+def validate_record(rec, line_no, strict=False):
+    """Return a list of violation strings for one record.
+
+    strict=True additionally enforces goal ∈ GOAL_ENUM and each
+    root_cause_stage component ∈ STAGE_ENUM, and rejects unclassified
+    ('?' / absent) goal/stage — so NEW records must be classified while the
+    historical backlog is tolerated by the default (non-strict) pass.
+    """
     errs = []
     if not isinstance(rec, dict):
         return ["line %d: record is not a JSON object" % line_no]
@@ -125,11 +145,31 @@ def validate_record(rec, line_no):
             % (line_no, sev, ", ".join(sorted(SEVERITY_ENUM)))
         )
 
+    if strict:
+        goal = rec.get("goal")
+        if goal in UNCLASSIFIED:
+            errs.append("line %d: unclassified goal %r (strict)" % (line_no, goal))
+        elif goal not in GOAL_ENUM:
+            errs.append(
+                "line %d: invalid goal %r (allowed: %s)"
+                % (line_no, goal, ", ".join(sorted(GOAL_ENUM)))
+            )
+        stage = rec.get("root_cause_stage")
+        if stage in UNCLASSIFIED:
+            errs.append("line %d: unclassified root_cause_stage %r (strict)" % (line_no, stage))
+        else:
+            for comp in _stage_components(stage):
+                if comp not in STAGE_ENUM:
+                    errs.append(
+                        "line %d: invalid root_cause_stage component %r in %r (allowed: %s)"
+                        % (line_no, comp, stage, ", ".join(sorted(STAGE_ENUM)))
+                    )
+
     # iter may be null; pass/check_id may be null — no further constraints
     return errs
 
 
-def validate_ledger(path):
+def validate_ledger(path, strict=False):
     """Validate a JSONL ledger file. Returns (ok: bool, messages: list[str])."""
     if not os.path.exists(path):
         return True, ["note: ledger not found at %s — nothing to validate (exit 0)" % path]
@@ -148,7 +188,7 @@ def validate_ledger(path):
             except json.JSONDecodeError as e:
                 errors.append("line %d: JSON decode error: %s" % (i, e))
                 continue
-            errors.extend(validate_record(rec, i))
+            errors.extend(validate_record(rec, i, strict=strict))
 
     if errors:
         messages.extend(errors)
@@ -259,9 +299,24 @@ def _selftest():
     ok3, msgs3 = validate_ledger(missing)
     assert ok3 and any("note:" in m for m in msgs3)
 
+    # strict: compound stage passes; goal 5 / all pass; tooling passes
+    assert validate_record(dict(_GOOD_WITH_ORIGIN, root_cause_stage="design + compose"), 1, strict=True) == []
+    assert validate_record(dict(_GOOD_WITH_ORIGIN, goal="5"), 1, strict=True) == []
+    assert validate_record(dict(_GOOD_ABSENT_ORIGIN, root_cause_stage="tooling"), 1, strict=True) == []
+    # strict: '?' goal and unclassified stage are violations; default tolerates them
+    unc = dict(_GOOD_WITH_ORIGIN, goal="?", root_cause_stage=None)
+    assert validate_record(unc, 1, strict=False) == []
+    bad_strict = validate_record(unc, 1, strict=True)
+    assert any("unclassified goal" in e for e in bad_strict), bad_strict
+    assert any("unclassified root_cause_stage" in e for e in bad_strict), bad_strict
+    # strict: a genuinely invalid stage component fails
+    assert any("invalid root_cause_stage component" in e
+               for e in validate_record(dict(_GOOD_WITH_ORIGIN, root_cause_stage="design + bogus"), 1, strict=True))
+
     print(
         "selftest OK: absent-origin=inner-loop, enums, required keys, "
-        "missing-file note, good/bad file-level verified"
+        "missing-file note, good/bad file-level, strict goal/stage (compound + "
+        "unclassified) verified"
     )
     return 0
 
@@ -271,12 +326,16 @@ def main(argv=None):
     p.add_argument("path", nargs="?", default=DEFAULT_LEDGER,
                    help="path to findings-ledger.jsonl (default: meta/findings-ledger.jsonl)")
     p.add_argument("--selftest", action="store_true")
+    p.add_argument("--strict", action="store_true",
+                   help="also enforce goal/root_cause_stage enums and reject "
+                        "unclassified ('?'/absent) — for gating NEW records or "
+                        "auditing the historical backlog")
     args = p.parse_args(argv)
 
     if args.selftest:
         return _selftest()
 
-    ok, messages = validate_ledger(args.path)
+    ok, messages = validate_ledger(args.path, strict=args.strict)
     for m in messages:
         print(m)
     return 0 if ok else 1

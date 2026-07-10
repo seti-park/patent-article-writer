@@ -1,7 +1,7 @@
 ---
 proposal_id: 2026-07-06-check-run-confirmation-transition-veto
 created: 2026-07-06T17:30:00Z
-status: proposed  # first isolation; latent (no false-pass this run) but structural masking risk on a mandatory completeness check
+status: applied  # commit eee7b23 (WS-B) — veto (revision-response present ⇒ not a confirmation round) shipped with fixtures
 lever: gate-strengthen
 goal: "all"
 root_cause_stage: gate
