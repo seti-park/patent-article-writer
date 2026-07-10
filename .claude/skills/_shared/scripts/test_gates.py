@@ -950,6 +950,23 @@ class TestCheckRun(unittest.TestCase):
         with open(patent_path, "w", encoding="utf-8") as fh:
             fh.write("# %s — Fixture Patent\n\n[0001] sample verbatim line for fixture\n"
                      % self.PATENT_ID)
+        # Real runs always carry a run-manifest (bootstrap writes it). A
+        # design-or-beyond run under owner-confirm cannot skip the patent lock
+        # by omitting it (RUN-012), so the compliant baseline includes one; the
+        # absent-manifest tests remove it explicitly.
+        self._write_manifest()
+
+    def _write_manifest(self):
+        import hashlib
+        patent_path = os.path.join(self.run_root, "input", "patent.md")
+        h = hashlib.sha256(open(patent_path, "rb").read()).hexdigest()
+        self._w("run-manifest.md",
+                "# run-manifest\n\n"
+                "- **run_id**: fixture-run\n"
+                "- **patent**: %s\n"
+                "- **patent_sha256**: %s\n"
+                "- **profile**: publish\n"
+                "- **started**: 2026-07-10\n" % (self.PATENT_ID, h))
 
     def _w(self, rel, text):
         path = os.path.join(self.root, rel)
@@ -1389,13 +1406,27 @@ class TestCheckRun(unittest.TestCase):
         self.assertTrue(r2["passed"], r2["findings"])
 
     def test_run010_confirm_patent_unverifiable_warns(self):
-        """Confirm patent set but no run-side id → no RUN-010 fail; RUN-000 warn."""
+        """Confirm patent set but no run-side id derivable → no RUN-010 fail;
+        RUN-000 warn. The manifest stays hash-consistent with input/patent.md
+        (so RUN-012 is satisfied), but neither the manifest nor the patent text
+        yields a patent number, so the patent-match clause cannot run."""
+        import hashlib
         self._accepted_double_clean(with_understand=False)
+        # Rewrite input/patent.md to id-less text and a manifest with no
+        # `patent:` field, kept hash-consistent so RUN-012 passes.
         patent_path = os.path.join(self.run_root, "input", "patent.md")
-        os.unlink(patent_path)
+        with open(patent_path, "w", encoding="utf-8") as fh:
+            fh.write("# Fixture Patent\n\nno recognizable publication number here\n")
+        h = hashlib.sha256(open(patent_path, "rb").read()).hexdigest()
+        self._w("run-manifest.md",
+                "# run-manifest\n\n- **run_id**: fixture-run\n"
+                "- **patent_sha256**: %s\n- **profile**: publish\n"
+                "- **started**: 2026-07-10\n" % h)
         self._write_understand_complete(patent="US1234567B2")
-        r = check_run.check(self.root, owner_confirm="required")
+        r = check_run.check(self.root, owner_confirm="required",
+                            recheck_gates=False)  # isolate RUN-010 softening
         self.assertFalse(_has(r, "RUN-010"), r["findings"])
+        self.assertFalse(_has(r, "RUN-012"), r["findings"])
         self.assertTrue(r["passed"], r["findings"])
         msgs = [f["message"] for f in r["findings"] if f["check_id"] == "RUN-000"]
         self.assertTrue(
@@ -1560,28 +1591,40 @@ class TestCheckRun(unittest.TestCase):
 
     # --- RUN-012 patent hash -----------------------------------------------
 
-    def test_run012_absent_manifest_warns(self):
+    def test_run012_absent_manifest_fails_when_owner_confirm_on(self):
+        # A design-or-beyond run under owner-confirm cannot silence the patent
+        # lock by deleting run-manifest.md: absent manifest is a hard fail.
         self._accepted_double_clean()
-        r = check_run.check(self.root)
-        self.assertTrue(r["passed"], r["findings"])
+        os.remove(os.path.join(self.root, "run-manifest.md"))
+        r = check_run.check(self.root)  # default owner_confirm="required"
+        self.assertFalse(r["passed"], r["findings"])
+        self.assertTrue(_has(r, "RUN-012"))
+
+    def test_run012_absent_manifest_warns_on_legacy_reverify(self):
+        # Legacy archive re-verification (owner_confirm off) keeps the warn path.
+        self._accepted_double_clean()
+        os.remove(os.path.join(self.root, "run-manifest.md"))
+        r = check_run.check(self.root, owner_confirm="off")
         msgs = [f["message"] for f in r["findings"] if f["check_id"] == "RUN-000"]
         self.assertTrue(any("run-manifest" in m for m in msgs), msgs)
 
     def test_run012_match_passes(self):
-        import hashlib
-        patent_path = os.path.join(self.run_root, "input", "patent.md")
-        h = hashlib.sha256(open(patent_path, "rb").read()).hexdigest()
+        # setUp already wrote a matching manifest; a compliant tree passes clean.
         self._accepted_double_clean()
-        self._w("run-manifest.md",
-                "# run-manifest\n\n"
-                "- **run_id**: fixture-run\n"
-                "- **patent**: %s\n"
-                "- **patent_sha256**: %s\n"
-                "- **profile**: publish\n"
-                "- **started**: 2026-07-10\n" % (self.PATENT_ID, h))
         r = check_run.check(self.root)
         self.assertTrue(r["passed"], r["findings"])
         self.assertFalse(_has(r, "RUN-012"))
+
+    def test_run012_mismatch_fails(self):
+        self._accepted_double_clean()
+        self._w("run-manifest.md",
+                "# run-manifest\n\n- **run_id**: fixture-run\n"
+                "- **patent**: %s\n- **patent_sha256**: %s\n"
+                "- **profile**: publish\n- **started**: 2026-07-10\n"
+                % (self.PATENT_ID, "0" * 64))
+        r = check_run.check(self.root)
+        self.assertFalse(r["passed"], r["findings"])
+        self.assertTrue(_has(r, "RUN-012"))
 
     def test_run012_mismatch_fails(self):
         self._accepted_double_clean()

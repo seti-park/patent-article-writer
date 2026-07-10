@@ -633,6 +633,15 @@ def check(handoff_dir, threshold="pass", self_audit="on",
                                 "essays/%s/patent.md sha256=%s does not match "
                                 "input/patent.md=%s" % (run_id, snap_hash, actual),
                                 snap)
+    elif owner_confirm != "off" and design_or_beyond:
+        # A design-or-beyond run under owner-confirm cannot silence the patent
+        # lock by deleting its manifest: absent manifest is a hard fail here.
+        # Legacy re-verification (owner_confirm off) still takes the warn path.
+        add("RUN-012", "fail",
+            "handoff/run-manifest.md absent — patent hash lock cannot be "
+            "verified for a design-or-beyond run (delete-to-skip is not allowed; "
+            "use --owner-confirm off only to re-verify a legacy archive)",
+            handoff_dir)
     else:
         add("RUN-000", "warn",
             "handoff/run-manifest.md absent — patent hash lock (RUN-012) skipped",
