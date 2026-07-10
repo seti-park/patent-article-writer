@@ -11,8 +11,8 @@ the meta-loop scores recurrence over.
   "essay_id": "044-tesla-rcm-vindication",
   "iter": 2,
   "run_timestamp": "2026-06-09T10:00:00Z",
-  "source": "editorial | gate | human-revision",
-  "origin": "inner-loop | human-post-accept",
+  "source": "editorial | gate | human-revision | self-audit | incident | retro",
+  "origin": "inner-loop | self-audit | human-post-accept | polish | self-post-accept | orchestration-protocol",
   "pass": "pass-3-fact-paraphrase",
   "check_id": null,
   "severity": "high",
@@ -22,7 +22,8 @@ the meta-loop scores recurrence over.
   "pattern_tag": "paraphrase-accidental-drift",
   "finding": "Prose uses 'complements'; source verbatim is 'supplements'.",
   "recommendation": "Re-anchor to source verbatim.",
-  "status": "open"
+  "status": "open",
+  "finding_id": null
 }
 ```
 
@@ -31,18 +32,33 @@ the meta-loop scores recurrence over.
 | `essay_id` | the run's essay id |
 | `iter` | inner-loop iteration the finding came from |
 | `run_timestamp` | ISO-8601 |
-| `source` | `editorial` (edit-log), `gate` (gate-result.json), or `human-revision` (revision-notes.md) |
-| `origin` | `inner-loop` (default) or `human-post-accept` (revision-delta channel — edits a human made AFTER the loop returned pass) |
-| `pass` | editorial pass name, or `null` for gate records |
-| `check_id` | gate `check_id` (e.g. `FIGUSE-001`), or `null` for editorial records |
-| `severity` | `critical/high/medium/low` (editorial) or `fail/warn` (gate) |
-| `goal` | north-star goal threatened: `1 / 2 / 3 / 4a / 4b` (from the matrix) |
-| `root_cause_stage` | `design / compose / edit / gate / canon` |
+| `source` | `editorial` (edit-log), `gate` (gate-result.json), `human-revision` / `self-audit` (revision-notes.md), `incident` (orchestration/process failures), or `retro` (meta-loop / empty-pass markers) |
+| `origin` | provenance class (see Origin enum). **Records without `origin` are read as `inner-loop`** — do not rewrite historical entries; the ledger is append-only |
+| `pass` | editorial pass name, or `null` for gate / incident records |
+| `check_id` | gate `check_id` (e.g. `FIGUSE-001`), or `null` for editorial / incident records |
+| `severity` | `critical/high/medium/low` (editorial) or `fail/warn` (gate) or `none` (empty-pass) |
+| `goal` | north-star goal threatened: `1 / 2 / 3 / 4a / 4b / 5` (from the matrix); process failures may use `all`. Historical records may carry `?` (unclassified) or omit the field — tolerated in default validation, flagged by `validate_ledger.py --strict` |
+| `root_cause_stage` | `design / compose / edit / gate / canon / orchestrator / promo / tooling / architecture`. **Compound stages are legal** — write them `+`-separated with the primary stage first (e.g. `design + compose`); `validate_ledger.py --strict` checks each component. Absent/`?` = unclassified (tolerated in default, flagged in strict) |
 | `root_cause_artifact` | the file/script that should have prevented it (attribution-table) |
 | `pattern_tag` | stable slug grouping recurring classes (the recurrence key) |
-| `finding` | the observation (verbatim from edit-log) |
-| `recommendation` | the editor/gate recommendation |
-| `status` | `open / watch / proposed / resolved / escalated` |
+| `finding` | the observation (verbatim from edit-log / notes) |
+| `recommendation` | the editor/gate/incident recommendation |
+| `status` | `open / watch / proposed / resolved / escalated / none` (`none` = empty-pass marker only) |
+| `finding_id` | optional stable id from the source block (e.g. `r1-F2`, `SA-delta-9`); may be absent |
+
+## Origin enum
+
+| Value | Meaning |
+|-------|---------|
+| `inner-loop` | Compose↔Edit editorial / gate findings (default when `origin` is absent) |
+| `self-audit` | autonomous adversarial self-audit channel (source typically `self-audit`) |
+| `human-post-accept` | revision-delta: a human edit after the loop returned pass |
+| `polish` | prose-polish (윤문) surface pass findings |
+| `self-post-accept` | self-audit loop caught it adversarially post-accept (no human in the loop) |
+| `orchestration-protocol` | process failures: checkpoint-skipped, stage-order violations, confirm-file misuse — not content failures |
+
+**Absent-origin rule:** readers (and `meta/validate_ledger.py`) treat a missing `origin` field as
+`inner-loop`. Never backfill historical ledger lines.
 
 ## Recurrence key
 
@@ -51,14 +67,46 @@ reaches `RECUR_THRESHOLD` (default 3) the class is eligible for a `recommended a
 Empty-pass "no findings" records carry `severity: none` and never contribute to recurrence —
 they exist only to prove a pass ran and to avoid mistaking silence for absence.
 
-## Revision-delta channel (human-post-accept records)
+Keep `origin` distinct when interpreting recurrence: a recurring `human-post-accept` class →
+extend coverage; an `inner-loop` class → tune a pass; an `orchestration-protocol` class →
+tighten checkpoint / stage-order protocol (orchestrator artifact), not an editorial pass.
 
-Records with `source: human-revision` / `origin: human-post-accept` come from
-`handoff/03-edit/revision-notes.md` via `meta/normalize_revision_notes.py` — the editorial
-blind-spots a human catches AFTER the loop says pass. They are tagged distinctly so recurrence
-over them is not conflated with loop-visible findings: a recurring `human-post-accept` class
-signals **extend coverage** (a new gate/pass), where a recurring `inner-loop` class signals
-**tune an existing one**.
+## Revision-notes block schema (delta + incident)
+
+`handoff/03-edit/revision-notes.md` (and ad-hoc notes on aborted runs) feed the ledger via
+`meta/normalize_revision_notes.py`. Per-block keys (each on one line):
+
+| Key | Required | Notes |
+|-----|----------|-------|
+| `class` | yes | pattern_tag / incident class |
+| `round` | no | revision or audit round label |
+| `before` | no | prior text (delta); omit or short for incidents |
+| `after` | no | new text (delta); omit or short for incidents |
+| `rationale` | no | why the edit / what failed |
+| `goal` | no | overrides CLASS_MAP goal when set |
+| `origin` | no | per-block provenance; overrides CLI `--origin` default for that block |
+| `finding_id` | no | stable id preserved onto the ledger record |
+
+Block headings:
+
+- `## delta` — content edit (post-accept human, self-audit, polish, etc.)
+- `## incident` — process / orchestration failure on **any** run (completed or aborted)
+
+CLI `--origin` / `--source` remain **default-only fallbacks** when a block omits `origin`.
+
+## Revision-delta channel (human-post-accept / self-post-accept)
+
+Records with `source: human-revision` / `origin: human-post-accept` (or self-audit /
+self-post-accept) come from revision-notes via the normalizer — editorial blind-spots caught
+AFTER the loop says pass. They are tagged distinctly so recurrence over them is not conflated
+with loop-visible findings.
+
+## Incident channel (orchestration-protocol)
+
+`## incident` blocks capture process failures that never produce an archived essay or
+edit-log finding: e.g. owner confirm skipped, design started before understand-confirmed,
+confirm-file backdated. Source is `incident`; origin is typically `orchestration-protocol`.
+Usable on aborted runs — no archive required.
 
 ## Append discipline
 

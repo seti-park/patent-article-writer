@@ -16,31 +16,42 @@ Artifact contract (written by the orchestrator each round N = 1..K):
                                                another round)
   handoff/03-edit/essay-final.md               promotion target (acceptance only)
   handoff/03-edit/score-history.md             must contain "CAP HIT" if promoted at cap
+  handoff/03-edit/cap-confirmed.md             CAP HIT authorizer (RUN-013)
   handoff/03-edit/revision-notes.md            self-audit deltas (essay mode)
   handoff/01-design/owner-briefing.md          Phase-1 Korean owner briefing --
                                                one-time, not per-round (RUN-008)
+  handoff/00-understand/understand-confirmed.md  owner (or --yes) confirm (RUN-010)
+  handoff/run-manifest.md                      run bootstrap + patent lock (RUN-012)
 
 Checks:
   RUN-001 (fail): round artifacts missing or non-contiguous (edit-log/gate-result
-                  for rounds 1..K; revision-response for rounds 1..K-1) -- UNLESS
+                  for rounds 1..K; revision-response for rounds 1..K-1, and for
+                  round K when essay-final.md exists — the accepted/promoted
+                  round's medium+ findings must also be dispositioned) -- UNLESS
                   round N -> N+1 is a confirmation transition (see below), which
                   by spec takes no revision and so has no response to trace.
   RUN-002 (fail): an edit-log has no parsable overall_assessment, or a gate
                   result JSON is unreadable.
   RUN-003 (fail): a medium/high/critical finding in round N has no disposition
                   block in revision-response.round-N.md, or a failing gate
-                  check_id has none (rounds followed by another round only;
-                  skipped entirely across a confirmation transition).
+                  check_id has none (rounds followed by another round, PLUS the
+                  final round K when essay-final.md exists; skipped entirely
+                  across a confirmation transition).
   RUN-004 (fail): a medium+ finding_id from round N-1 is never mentioned in
                   round N's edit-log (silently dropped instead of ruled on).
                   Runs across every transition, confirmation or not.
   RUN-005 (fail): essay-final.md exists but the acceptance rule is not met:
-                  the LAST TWO rounds must both be clean (assessment acceptable
-                  per --threshold AND gates passed) — a round-1 pass is a
-                  hypothesis, not a verdict, until a fresh review confirms it —
-                  UNLESS score-history.md declares "CAP HIT" (explicit
-                  ship-best-round decision, surfaced to the user).
-  RUN-006 (warn): promoted via CAP HIT (informational — unresolved findings ship).
+                  --acceptance double-clean (default): the LAST TWO rounds must
+                  both be clean (assessment acceptable per --threshold AND gates
+                  passed) — a round-1 pass is a hypothesis, not a verdict, until
+                  a fresh review confirms it —
+                  --acceptance single-clean: K>=1 and the last round is clean
+                  (still fails if the sole/last round is dirty or gates failed);
+                  UNLESS score-history.md declares "CAP HIT" (explicit last-draft
+                  ship-on-cap decision, surfaced to the user; requires RUN-013
+                  authorizer when owner-confirm is not off).
+  RUN-006 (warn): promoted via CAP HIT (informational — last draft ships with
+                  unresolved findings).
   RUN-007 (fail): --self-audit on and essay-final.md exists, but
                   revision-notes.md is missing or has neither a "## delta"
                   block nor an explicit no-findings statement.
@@ -50,17 +61,69 @@ Checks:
   RUN-009 (fail): essay-final.md exists but handoff/00-understand/ is missing the
                   understand triad (owner-study-pack.md empty/missing, or
                   invention-summary.md missing). Understand-first control plane.
-  RUN-000 (warn): informational skips (incl. a confirmation transition, below).
+                  (Legacy no-00-understand path still warns when
+                  --no-require-understand; with --require-understand, RUN-011
+                  covers the five required_outputs hard fail.)
+  RUN-010 (fail): --owner-confirm is not off, the run has design output or
+                  beyond, and handoff/00-understand/understand-confirmed.md is
+                  missing or INVALID (status confirmed; by ∈ {owner,
+                  orchestrator-yes-flag}; real YYYY-MM-DD date not placeholder;
+                  patent matches run patent id). yes-flag mode additionally
+                  requires by: orchestrator-yes-flag. When no run-side patent id
+                  is derivable: FAIL under --require-understand (default);
+                  WARN (RUN-000) only under --no-require-understand.
+  RUN-010b (fail, comprehension sub-rule of RUN-010; IF-3): when
+                  --comprehension-check is on (default), understand-confirmed.md
+                  MUST carry comprehension: ∈ {demonstrated, self-asserted,
+                  skipped-unattended, risk-accepted}. risk-accepted additionally
+                  requires notes: to contain the verbatim substring
+                  "claim-scope risk accepted by owner". skipped-unattended is
+                  valid only under owner-confirm=yes-flag (or when
+                  --comprehension-check is off, which skips this sub-rule).
+                  Missing/out-of-set/invalid ⇒ FAIL (check_id RUN-010; message
+                  names the comprehension field).
+  RUN-011 (fail): --require-understand is on (default) and the five understand
+                  required_outputs are not all present and non-empty under
+                  handoff/00-understand/ (invention-summary, owner-study-pack,
+                  owner-briefing, figure-primer, open-questions). Replaces the
+                  legacy warn-and-pass bypass. --no-require-understand is for
+                  legacy archive re-verification only.
+  RUN-012 (fail): handoff/run-manifest.md patent_sha256 does not equal
+                  sha256(input/patent.md), or essays/<id>/patent.md snapshot
+                  (when present) does not hash-match. When --owner-confirm is
+                  not off AND the run is design-or-beyond, the manifest MUST
+                  exist and validate (absent → FAIL). When owner-confirm is off
+                  (or run is pre-design), manifest absent → RUN-000 warn skip.
+  RUN-013 (fail): score-history.md declares CAP HIT but handoff/03-edit/
+                  cap-confirmed.md is missing or INVALID for the capped round
+                  (status confirmed; by ∈ {owner, orchestrator-yes-flag}; real
+                  YYYY-MM-DD date; round: equals K; notes required when by:
+                  owner). Skipped when --owner-confirm off (same gate as RUN-010).
+  RUN-014 (fail): a round's edit-log declares any medium+ finding (via
+                  _findings_with_severity) yet carries overall_assessment: pass
+                  (self-declared clean while findings remain).
+  RUN-015 (fail): essay-final.md exists and --recheck-gates is on (default):
+                  recomputed run_gates.run_all() verdict on essay-final disagrees
+                  with the accepted round K's gate-result.round-K.json. Missing
+                  required context files → RUN-000 warn and skip (do not fail on
+                  absence). Disable with --no-recheck-gates.
+  RUN-000 (warn): informational skips (incl. a confirmation transition, below;
+                  run-manifest absent when owner-confirm off; confirm patent
+                  unverifiable under --no-require-understand; RUN-015 context
+                  missing).
 
 Confirmation-transition model (2026-07-03-check-run-confirmation-round-model
-proposal + its 2026-07-04 amendment): the loop spec runs a confirmation round
-N+1 with no revision in between on the first CLEAN(N). Round N -> N+1 is a
-confirmation transition when edit-log.round-(N+1).md declares
-`round_type: confirmation` (anywhere in the file) or contains the phrase
-"confirmation round" in its first 40 lines, or score-history.md's row for
-round N+1 labels it "confirmation". Across such a transition, RUN-001/RUN-003
-never require a revision-response.round-N.md (there was no revision); RUN-004
-id-continuity still runs against round N+1's log regardless.
+proposal + its 2026-07-04 amendment + 2026-07-06 veto):
+  Prefer explicit markers, then fall back to the phrase/score-history heuristic.
+  Detected (any one positive signal, then veto may demote):
+    1. edit-log.round-<next_round>.md declares `round_type: confirmation`
+    2. That file's first 40 lines contain the phrase "confirmation round"
+    3. score-history.md's row for round N+1 labels it "confirmation" (incl.
+       round_type column)
+  VETO (2026-07-06): a round N that already has revision-response.round-N.md
+  can NEVER count as a confirmation transition into N+1, regardless of markers.
+  Across a (non-vetoed) confirmation transition, RUN-001/RUN-003 never require
+  a revision-response; RUN-004 id-continuity still runs.
 
 Severity harvesting (`_findings_with_severity`) only counts a finding_id as
 THIS round's own finding when a plain `severity:` line follows it within a
@@ -73,12 +136,19 @@ etched-us20240378175).
 
 Usage:
   check_run.py [--handoff handoff] [--threshold pass|revise-recommended]
-               [--self-audit on|off] [--json]
+               [--self-audit on|off]
+               [--acceptance single-clean|double-clean]
+               [--owner-confirm required|yes-flag|off]
+               [--comprehension-check on|off]
+               [--require-understand | --no-require-understand]
+               [--recheck-gates | --no-recheck-gates]
+               [--json]
 Exit code 0 iff no fail-severity finding.
 """
 
 import argparse
 import glob
+import hashlib
 import json
 import os
 import re
@@ -93,18 +163,144 @@ NO_FINDINGS_RE = re.compile(r"self-audit[^\n]*no[^\n]*finding", re.I)
 
 # Confirmation-transition signals (2026-07-03-check-run-confirmation-round-model).
 ROUND_TYPE_CONFIRMATION_RE = re.compile(r"^\s*round_type:\s*confirmation", re.M | re.I)
+ROUND_TYPE_REVISION_RE = re.compile(r"^\s*round_type:\s*revision", re.M | re.I)
 CONFIRMATION_PHRASE_RE = re.compile(r"confirmation\s+round", re.I)
 FINDING_BLOCK_LOOKAHEAD = 6  # lines searched after `finding_id:` for a plain `severity:`
+
+# Confirm-file field parsers (shared by understand-confirmed.md + cap-confirmed.md).
+# Horizontal whitespace only ([^\S\n]) so empty fields cannot swallow the
+# following line's leading "-" under re.M (WS-B follow-up 2).
+CONFIRM_STATUS_RE = re.compile(
+    r"^[^\S\n]*-[^\S\n]*\*\*status\*\*[^\S\n]*:[^\S\n]*(\S+)", re.M | re.I)
+CONFIRM_BY_RE = re.compile(
+    r"^[^\S\n]*-[^\S\n]*\*\*by\*\*[^\S\n]*:[^\S\n]*(\S+)", re.M | re.I)
+CONFIRM_DATE_RE = re.compile(
+    r"^[^\S\n]*-[^\S\n]*\*\*date\*\*[^\S\n]*:[^\S\n]*(\S+)", re.M | re.I)
+CONFIRM_PATENT_RE = re.compile(
+    r"^[^\S\n]*-[^\S\n]*\*\*patent\*\*[^\S\n]*:[^\S\n]*(\S+)", re.M | re.I)
+CONFIRM_ROUND_RE = re.compile(
+    r"^[^\S\n]*-[^\S\n]*\*\*round\*\*[^\S\n]*:[^\S\n]*(\S+)", re.M | re.I)
+CONFIRM_NOTES_RE = re.compile(
+    r"^[^\S\n]*-[^\S\n]*\*\*notes\*\*[^\S\n]*:[^\S\n]*(.+)$", re.M | re.I)
+CONFIRM_COMPREHENSION_RE = re.compile(
+    r"^[^\S\n]*-[^\S\n]*\*\*comprehension\*\*[^\S\n]*:[^\S\n]*(\S+)", re.M | re.I)
+REAL_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+PLACEHOLDER_DATE_RE = re.compile(r"^<[^>]+>$")
+
+MEDIUM_PLUS = frozenset({"medium", "high", "critical", "unspecified"})
+
+# IF-1 / IF-3 comprehension confirm-field (comprehension-loop.md §11 P2)
+VALID_COMPREHENSION = frozenset({
+    "demonstrated",
+    "self-asserted",
+    "skipped-unattended",
+    "risk-accepted",
+})
+RISK_ACCEPTED_NOTES_SUBSTRING = "claim-scope risk accepted by owner"
+
+# run-manifest.md — same horizontal-only whitespace (empty values must not
+# absorb the next line via \s matching \n under re.M).
+MANIFEST_FIELD_RE = re.compile(
+    r"^[^\S\n]*-[^\S\n]*\*\*(\w+)\*\*[^\S\n]*:[^\S\n]*(.+?)[^\S\n]*$", re.M)
+
+# Patent identifier patterns in input/patent.md (publication / application numbers)
+PATENT_ID_PATTERNS = [
+    re.compile(r"\b(US\s*\d{4}/\d{6,}\s*[A-Z]\d?)\b", re.I),
+    re.compile(r"\b(US\d{10,11}[A-Z]\d?)\b", re.I),
+    re.compile(r"\b(US\s*\d{1,2},?\d{3},?\d{3}\s*[A-Z]\d?)\b", re.I),
+    re.compile(r"\b(US\d{7,8}[A-Z]\d?)\b", re.I),
+    re.compile(r"\b((?:EP|WO|CN|JP|KR)\s*\d[\d/\s,]*[A-Z]?\d?)\b", re.I),
+]
+
+UNDERSTAND_REQUIRED_OUTPUTS = (
+    "invention-summary.md",
+    "owner-study-pack.md",
+    "owner-briefing.md",
+    "figure-primer.md",
+    "open-questions.md",
+)
 
 ACCEPTABLE = {
     "pass": {"pass"},
     "revise-recommended": {"pass", "revise-recommended"},
 }
 
+VALID_CONFIRM_BY = frozenset({"owner", "orchestrator-yes-flag"})
+
 
 def _read(path):
     with open(path, "r", encoding="utf-8") as fh:
         return fh.read()
+
+
+def _sha256_file(path):
+    h = hashlib.sha256()
+    with open(path, "rb") as fh:
+        for chunk in iter(lambda: fh.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _dir_has_content(path):
+    if not os.path.isdir(path):
+        return False
+    return any(name != ".gitkeep" for name in os.listdir(path))
+
+
+def _normalize_patent_id(s):
+    """Collapse whitespace/slashes/commas for loose patent-id equality."""
+    if not s:
+        return ""
+    s = s.strip().strip('"').strip("'")
+    s = re.sub(r"[\s/,]+", "", s)
+    return s.upper()
+
+
+def _patent_ids_match(a, b):
+    """Exact or kind-code-core equality after normalize (no substring arm).
+
+    Kind-code core: US9999999 ≡ US9999999B2. Truncated prefixes do not match
+    (US999 ≉ US9999999B2). Separators are already stripped by normalize.
+    """
+    na, nb = _normalize_patent_id(a), _normalize_patent_id(b)
+    if not na or not nb:
+        return False
+    if na == nb:
+        return True
+    # One may omit kind code suffix (B2/A1)
+    def core(x):
+        return re.sub(r"[A-Z]\d?$", "", x)
+    return core(na) == core(nb)
+
+
+def _derive_patent_id(run_root, handoff_dir):
+    """Best-effort patent identifier from run-manifest and/or input/patent.md."""
+    ids = []
+    manifest_path = os.path.join(handoff_dir, "run-manifest.md")
+    if not os.path.exists(manifest_path):
+        # also accept handoff/../handoff sibling? primary is handoff/run-manifest.md
+        pass
+    if os.path.exists(manifest_path):
+        fields = _parse_manifest(manifest_path)
+        if fields.get("patent"):
+            ids.append(fields["patent"].strip())
+    patent_path = os.path.join(run_root, "input", "patent.md")
+    if os.path.exists(patent_path):
+        text = _read(patent_path)[:8000]
+        for pat in PATENT_ID_PATTERNS:
+            m = pat.search(text)
+            if m:
+                ids.append(re.sub(r"\s+", "", m.group(1)))
+                break
+    return ids
+
+
+def _parse_manifest(path):
+    text = _read(path)
+    fields = {}
+    for m in MANIFEST_FIELD_RE.finditer(text):
+        fields[m.group(1).lower()] = m.group(2).strip()
+    return fields
 
 
 def _findings_with_severity(edit_log_text):
@@ -145,24 +341,29 @@ def _findings_with_severity(edit_log_text):
 def _is_confirmation_transition(edit_dir, score_path, next_round):
     """True when round `next_round` is a confirmation round for its predecessor.
 
-    Per the loop spec, the first CLEAN(N) is followed by a confirmation round
-    N+1 that reviews the SAME draft with no revision in between -- so the N ->
-    N+1 transition has no revision-response to trace and no dispositions to
-    require. Detected (any one signal suffices):
+    Prefer explicit markers, then fall back to the phrase/score-history heuristic
+    (2026-07-03; do not tighten the heuristic alone — veto handles over-fire).
+    Detected (any one signal suffices):
       1. edit-log.round-<next_round>.md declares `round_type: confirmation`
-         anywhere in the file.
+         (explicit `round_type: revision` is a negative signal for that file).
       2. That file's first 40 lines contain the phrase "confirmation round"
-         (case-insensitive).
+         (case-insensitive), only when no explicit round_type: revision.
       3. score-history.md's row for round `next_round` labels it "confirmation".
+    Caller applies the revision-response veto after this returns True.
     """
     log_path = os.path.join(edit_dir, "edit-log.round-%d.md" % next_round)
     if os.path.exists(log_path):
         text = _read(log_path)
         if ROUND_TYPE_CONFIRMATION_RE.search(text):
             return True
-        first_40 = "\n".join(text.splitlines()[:40])
-        if CONFIRMATION_PHRASE_RE.search(first_40):
-            return True
+        if ROUND_TYPE_REVISION_RE.search(text):
+            # Explicit revision marker: do not treat phrase "confirmation round"
+            # elsewhere in the file as making this a confirmation round.
+            pass
+        else:
+            first_40 = "\n".join(text.splitlines()[:40])
+            if CONFIRMATION_PHRASE_RE.search(first_40):
+                return True
     if os.path.exists(score_path):
         for line in _read(score_path).splitlines():
             if re.search(r"\|\s*%d\s*\|" % next_round, line) and re.search(
@@ -171,12 +372,175 @@ def _is_confirmation_transition(edit_dir, score_path, next_round):
     return False
 
 
-def check(handoff_dir, threshold="pass", self_audit="on"):
+def _validate_confirm_file(text, owner_confirm_mode, *,
+                           patent_ids=None, require_patent=False,
+                           expected_round=None):
+    """Shared confirm-file field validator (understand-confirmed + cap-confirmed).
+
+    Always checks: status == confirmed; by ∈ {owner, orchestrator-yes-flag};
+    real YYYY-MM-DD date (not placeholder); notes required when by: owner.
+    Horizontal-whitespace-only field parsers ([^\\S\\n]) so empty values cannot
+    swallow the next line under re.M.
+
+    Extra clauses (callers select):
+      require_patent=True  → patent field required; match against patent_ids
+                             (empty patent_ids → ok with RUN-000-style warn).
+      expected_round=N     → round field required and must equal N (CAP HIT).
+
+    Returns (ok: bool, message: str, warn: str|None).
+    """
+    status_m = CONFIRM_STATUS_RE.search(text)
+    by_m = CONFIRM_BY_RE.search(text)
+    date_m = CONFIRM_DATE_RE.search(text)
+    patent_m = CONFIRM_PATENT_RE.search(text)
+    round_m = CONFIRM_ROUND_RE.search(text)
+    notes_m = CONFIRM_NOTES_RE.search(text)
+
+    status = status_m.group(1).strip().lower() if status_m else ""
+    by = by_m.group(1).strip() if by_m else ""
+    date = date_m.group(1).strip() if date_m else ""
+    patent = patent_m.group(1).strip() if patent_m else ""
+    round_val = round_m.group(1).strip() if round_m else ""
+    notes = notes_m.group(1).strip() if notes_m else ""
+
+    if status != "confirmed":
+        return False, "status is %r (need confirmed)" % (status or "missing"), None
+    if by not in VALID_CONFIRM_BY:
+        return False, "by is %r (need owner or orchestrator-yes-flag)" % (by or "missing"), None
+    if owner_confirm_mode == "yes-flag" and by != "orchestrator-yes-flag":
+        return False, "owner-confirm=yes-flag requires by: orchestrator-yes-flag (got %r)" % by, None
+    if not date or PLACEHOLDER_DATE_RE.match(date) or not REAL_DATE_RE.match(date):
+        return False, "date is %r (need real YYYY-MM-DD, not placeholder)" % (date or "missing"), None
+
+    warn = None
+    if require_patent:
+        if not patent:
+            return False, "patent field missing", None
+        patent_ids = patent_ids or []
+        if not patent_ids:
+            warn = (
+                "confirm patent %s unverifiable — no input/patent.md and no "
+                "run-manifest patent id" % patent
+            )
+        elif not any(_patent_ids_match(patent, pid) for pid in patent_ids):
+            return False, "patent %r does not match run patent id(s) %s" % (
+                patent, patent_ids), None
+
+    if expected_round is not None:
+        if not round_val:
+            return False, "round field missing", None
+        try:
+            got = int(round_val)
+        except ValueError:
+            return False, "round is %r (need integer equal to capped round %s)" % (
+                round_val, expected_round), None
+        if got != int(expected_round):
+            return False, "round is %r (need capped round %s)" % (
+                round_val, expected_round), None
+
+    if by == "owner" and not notes.strip().strip('"').strip("'"):
+        return False, "notes required when by: owner", None
+    return True, "ok", warn
+
+
+def _validate_understand_confirmed(text, patent_ids, owner_confirm_mode,
+                                   comprehension_check=True):
+    """Return (ok, message, warn) for understand-confirmed.md (patent clause on).
+
+    When comprehension_check is True (IF-3 / RUN-010b), also require a
+    comprehension: field ∈ VALID_COMPREHENSION, with risk-accepted notes
+    substring and skipped-unattended mode constraints. When False, the
+    comprehension assertion is skipped entirely.
+    """
+    ok, msg, warn = _validate_confirm_file(
+        text, owner_confirm_mode,
+        patent_ids=patent_ids, require_patent=True)
+    if not ok:
+        return ok, msg, warn
+    if not comprehension_check:
+        return True, "ok", warn
+
+    comp_m = CONFIRM_COMPREHENSION_RE.search(text)
+    if not comp_m:
+        return False, "comprehension field missing", warn
+    comprehension = comp_m.group(1).strip()
+    if comprehension not in VALID_COMPREHENSION:
+        return False, (
+            "comprehension is %r (need demonstrated|self-asserted|"
+            "skipped-unattended|risk-accepted)" % (comprehension or "missing")
+        ), warn
+
+    notes_m = CONFIRM_NOTES_RE.search(text)
+    notes = notes_m.group(1).strip() if notes_m else ""
+
+    if comprehension == "risk-accepted":
+        if RISK_ACCEPTED_NOTES_SUBSTRING not in notes:
+            return False, (
+                "comprehension risk-accepted requires notes to contain "
+                "%r" % RISK_ACCEPTED_NOTES_SUBSTRING
+            ), warn
+
+    if comprehension == "skipped-unattended":
+        # Valid under --yes (yes-flag) or when comprehension_check is off
+        # (already returned above). required + check-on ⇒ FAIL.
+        if owner_confirm_mode != "yes-flag":
+            return False, (
+                "comprehension skipped-unattended only valid under "
+                "owner-confirm=yes-flag (got %r)" % owner_confirm_mode
+            ), warn
+
+    return True, "ok", warn
+
+
+def _validate_cap_confirmed(text, owner_confirm_mode, capped_round):
+    """Return (ok, message, warn) for cap-confirmed.md (round clause on)."""
+    return _validate_confirm_file(
+        text, owner_confirm_mode, expected_round=capped_round)
+
+
+def _build_recheck_context(run_root, handoff_dir):
+    """Assemble run_gates context from whatever files exist under the run.
+
+    Never fails on absence — missing optional inputs simply omit keys so
+    individual gates warn-skip rather than inventing a vacuous pass claim.
+    """
+    ctx = {"mode": "essay"}
+    design_dir = os.path.join(handoff_dir, "01-design")
+    understand_dir = os.path.join(handoff_dir, "00-understand")
+
+    inv = None
+    for candidate in (
+        os.path.join(understand_dir, "invention-summary.md"),
+        os.path.join(design_dir, "invention-summary.md"),
+    ):
+        if os.path.exists(candidate) and os.path.getsize(candidate) > 0:
+            inv = candidate
+            break
+    if inv:
+        ctx["invention_summary_text"] = _read(inv)
+
+    patent_path = os.path.join(run_root, "input", "patent.md")
+    if os.path.exists(patent_path) and os.path.getsize(patent_path) > 0:
+        ctx["patent_text"] = _read(patent_path)
+
+    fig_sel = os.path.join(design_dir, "figure-selection.md")
+    if os.path.exists(fig_sel) and os.path.getsize(fig_sel) > 0:
+        ctx["figure_selection_text"] = _read(fig_sel)
+
+    return ctx
+
+
+def check(handoff_dir, threshold="pass", self_audit="on",
+          acceptance="double-clean", owner_confirm="required",
+          require_understand=True, recheck_gates=True,
+          comprehension_check=True):
     findings = []
     edit_dir = os.path.join(handoff_dir, "03-edit")
     compose_dir = os.path.join(handoff_dir, "02-compose")
     design_dir = os.path.join(handoff_dir, "01-design")
+    understand_dir = os.path.join(handoff_dir, "00-understand")
     score_path = os.path.join(edit_dir, "score-history.md")
+    run_root = os.path.dirname(os.path.abspath(handoff_dir))
 
     def add(check_id, severity, message, location):
         findings.append({"check_id": check_id, "severity": severity,
@@ -215,6 +579,17 @@ def check(handoff_dir, threshold="pass", self_audit="on"):
             assessments[n] = m.group(1).strip()
         round_findings[n] = _findings_with_severity(text)
 
+        # RUN-014: self-declared clean (overall_assessment: pass) while the
+        # same log still declares medium+ findings via _findings_with_severity.
+        if assessments.get(n) == "pass":
+            dirty = [fid for fid, sev in round_findings[n]
+                     if sev in MEDIUM_PLUS]
+            if dirty:
+                add("RUN-014", "fail",
+                    "edit-log.round-%d.md declares overall_assessment: pass "
+                    "but still lists medium+ finding(s): %s"
+                    % (n, ", ".join(dirty)), log_path)
+
         if not os.path.exists(gate_path):
             add("RUN-001", "fail", "gate-result.round-%d.json missing" % n, edit_dir)
         else:
@@ -228,40 +603,50 @@ def check(handoff_dir, threshold="pass", self_audit="on"):
         # UNLESS round n -> n+1 is a confirmation transition (spec: the
         # confirmation round takes no revision, so there is nothing to
         # disposition or trace at this transition).
+        # VETO (2026-07-06): presence of revision-response.round-n.md means a
+        # real revision happened; never treat as confirmation regardless of
+        # markers (proposal: ship veto alone; do not tighten phrase heuristic).
         if n < K:
-            if _is_confirmation_transition(edit_dir, score_path, n + 1):
+            resp_path = os.path.join(compose_dir, "revision-response.round-%d.md" % n)
+            resp_exists = os.path.exists(resp_path)
+            confirmation = _is_confirmation_transition(edit_dir, score_path, n + 1)
+            if resp_exists:
+                if confirmation:
+                    add("RUN-000", "warn",
+                        "round %d -> %d carries BOTH a revision-response and a "
+                        "'confirmation' marker; the revision-response is dispositive "
+                        "(a confirmation round takes no revision) -- treating as a REAL "
+                        "revision and running disposition checks" % (n, n + 1), edit_dir)
+                resp = _read(resp_path)
+                for fid, sev in round_findings.get(n, []):
+                    if sev in ("medium", "high", "critical", "unspecified") and fid not in resp:
+                        add("RUN-003", "fail",
+                            "finding %s (%s) has no disposition in "
+                            "revision-response.round-%d.md" % (fid, sev, n), resp_path)
+                gate_json = gates_passed.get(n)
+                if gate_json is False:
+                    try:
+                        gate_data = json.loads(_read(os.path.join(
+                            edit_dir, "gate-result.round-%d.json" % n)))
+                        failing = {f["check_id"] for g in gate_data.get("gates", [])
+                                   for f in g.get("findings", [])
+                                   if f.get("severity") == "fail"}
+                    except (ValueError, OSError):
+                        failing = set()
+                    for cid in sorted(failing):
+                        if cid not in resp:
+                            add("RUN-003", "fail",
+                                "failing gate %s has no disposition in "
+                                "revision-response.round-%d.md" % (cid, n), resp_path)
+            elif confirmation:
                 add("RUN-000", "warn",
                     "round %d -> %d is a confirmation transition (no revision "
                     "in between); revision-response/disposition requirements "
                     "skipped for this transition" % (n, n + 1), edit_dir)
             else:
-                resp_path = os.path.join(compose_dir, "revision-response.round-%d.md" % n)
-                if not os.path.exists(resp_path):
-                    add("RUN-001", "fail",
-                        "revision-response.round-%d.md missing (round %d was revised "
-                        "without a disposition trace)" % (n, n), compose_dir)
-                else:
-                    resp = _read(resp_path)
-                    for fid, sev in round_findings.get(n, []):
-                        if sev in ("medium", "high", "critical", "unspecified") and fid not in resp:
-                            add("RUN-003", "fail",
-                                "finding %s (%s) has no disposition in "
-                                "revision-response.round-%d.md" % (fid, sev, n), resp_path)
-                    gate_json = gates_passed.get(n)
-                    if gate_json is False:
-                        try:
-                            gate_data = json.loads(_read(os.path.join(
-                                edit_dir, "gate-result.round-%d.json" % n)))
-                            failing = {f["check_id"] for g in gate_data.get("gates", [])
-                                       for f in g.get("findings", [])
-                                       if f.get("severity") == "fail"}
-                        except (ValueError, OSError):
-                            failing = set()
-                        for cid in sorted(failing):
-                            if cid not in resp:
-                                add("RUN-003", "fail",
-                                    "failing gate %s has no disposition in "
-                                    "revision-response.round-%d.md" % (cid, n), resp_path)
+                add("RUN-001", "fail",
+                    "revision-response.round-%d.md missing (round %d was revised "
+                    "without a disposition trace)" % (n, n), compose_dir)
 
         # carried-id rule: every medium+ id from round n-1 must appear in round n's log
         if n > 1:
@@ -272,26 +657,143 @@ def check(handoff_dir, threshold="pass", self_audit="on"):
                         "finding %s (round %d, %s) is never ruled on in round %d's "
                         "edit-log (silently dropped)" % (fid, n - 1, sev, n), log_path)
 
-    # --- acceptance rule ----------------------------------------------------
+    # --- progressed past understand? (design or beyond) -------------------
     final_path = os.path.join(edit_dir, "essay-final.md")
+    design_or_beyond = (
+        os.path.exists(final_path)
+        or _dir_has_content(design_dir)
+        or _dir_has_content(compose_dir)
+    )
+
+    # --- RUN-012: patent hash lock when run-manifest present ---------------
+    manifest_path = os.path.join(handoff_dir, "run-manifest.md")
+    if os.path.exists(manifest_path):
+        fields = _parse_manifest(manifest_path)
+        expected = (fields.get("patent_sha256") or "").strip().lower()
+        patent_path = os.path.join(run_root, "input", "patent.md")
+        if not expected:
+            add("RUN-012", "fail",
+                "run-manifest.md present but patent_sha256 field missing/empty",
+                manifest_path)
+        elif not os.path.exists(patent_path):
+            add("RUN-012", "fail",
+                "run-manifest.md patent_sha256 set but input/patent.md missing",
+                patent_path)
+        else:
+            actual = _sha256_file(patent_path)
+            if actual != expected:
+                add("RUN-012", "fail",
+                    "patent_sha256 mismatch: manifest=%s input/patent.md=%s"
+                    % (expected, actual),
+                    patent_path)
+            else:
+                # essays/<id>/patent.md snapshot if present
+                run_id = (fields.get("run_id") or "").strip()
+                if run_id:
+                    snap = os.path.join(run_root, "essays", run_id, "patent.md")
+                    if os.path.exists(snap):
+                        snap_hash = _sha256_file(snap)
+                        if snap_hash != actual:
+                            add("RUN-012", "fail",
+                                "essays/%s/patent.md sha256=%s does not match "
+                                "input/patent.md=%s" % (run_id, snap_hash, actual),
+                                snap)
+    elif owner_confirm != "off" and design_or_beyond:
+        # A design-or-beyond run under owner-confirm cannot silence the patent
+        # lock by deleting its manifest: absent manifest is a hard fail here.
+        # Legacy re-verification (owner_confirm off) still takes the warn path.
+        add("RUN-012", "fail",
+            "handoff/run-manifest.md absent — patent hash lock cannot be "
+            "verified for a design-or-beyond run (delete-to-skip is not allowed; "
+            "use --owner-confirm off only to re-verify a legacy archive)",
+            handoff_dir)
+    else:
+        add("RUN-000", "warn",
+            "handoff/run-manifest.md absent — patent hash lock (RUN-012) skipped",
+            handoff_dir)
+
+    # --- RUN-010: owner confirm -------------------------------------------
+    if owner_confirm != "off" and design_or_beyond:
+        confirm_path = os.path.join(understand_dir, "understand-confirmed.md")
+        patent_ids = _derive_patent_id(run_root, handoff_dir)
+        if not os.path.exists(confirm_path):
+            add("RUN-010", "fail",
+                "understand-confirmed.md missing under handoff/00-understand/ "
+                "(owner confirm required; use --owner-confirm off only for "
+                "legacy archive re-verification)",
+                understand_dir)
+        else:
+            ok, msg, warn = _validate_understand_confirmed(
+                _read(confirm_path), patent_ids, owner_confirm,
+                comprehension_check=comprehension_check)
+            if not ok:
+                add("RUN-010", "fail",
+                    "understand-confirmed.md invalid: %s" % msg, confirm_path)
+            if warn:
+                add("RUN-000", "warn", warn, confirm_path)
+
+    # --- RUN-011: five understand required_outputs ------------------------
+    if require_understand and design_or_beyond:
+        missing = []
+        for name in UNDERSTAND_REQUIRED_OUTPUTS:
+            path = os.path.join(understand_dir, name)
+            if not os.path.exists(path) or not _read(path).strip():
+                missing.append(name)
+        if missing:
+            add("RUN-011", "fail",
+                "understand required_outputs missing or empty under "
+                "handoff/00-understand/: %s (--no-require-understand for legacy "
+                "archive re-verification only)" % ", ".join(missing),
+                understand_dir)
+
+    # --- acceptance rule ----------------------------------------------------
     if os.path.exists(final_path):
         ok = ACCEPTABLE.get(threshold, {"pass"})
 
         def clean(n):
             return assessments.get(n) in ok and gates_passed.get(n) is True
 
-        double_clean = K >= 2 and clean(K) and clean(K - 1)
+        if acceptance == "single-clean":
+            accepted_clean = K >= 1 and clean(K)
+            accept_desc = "single-clean acceptance (last round clean)"
+        else:
+            accepted_clean = K >= 2 and clean(K) and clean(K - 1)
+            accept_desc = "double-clean acceptance (last two rounds clean)"
+
         cap_hit = os.path.exists(score_path) and bool(CAP_HIT_RE.search(_read(score_path)))
-        if not double_clean and not cap_hit:
+        if not accepted_clean and not cap_hit:
             add("RUN-005", "fail",
-                "essay-final.md promoted without double-clean acceptance (last two "
-                "rounds clean) and without an explicit CAP HIT in score-history.md — "
-                "a single self-graded pass is not acceptance (K=%d, assessments=%s, "
-                "gates=%s)" % (K, assessments, gates_passed), final_path)
-        elif cap_hit and not double_clean:
+                "essay-final.md promoted without %s and without an explicit CAP HIT "
+                "in score-history.md — a single self-graded pass is not acceptance "
+                "under double-clean (K=%d, assessments=%s, gates=%s, "
+                "acceptance=%s)" % (accept_desc, K, assessments, gates_passed,
+                                    acceptance), final_path)
+        elif cap_hit and not accepted_clean:
             add("RUN-006", "warn",
                 "promoted via CAP HIT — unresolved findings ship; surface them to the user",
                 score_path)
+
+        # RUN-013: CAP HIT authorizer (same owner-confirm gate as RUN-010).
+        # Fires when score-history declares CAP HIT and owner-confirm is not off;
+        # cap-confirmed.md must validate for capped round K.
+        if cap_hit and owner_confirm != "off":
+            cap_path = os.path.join(edit_dir, "cap-confirmed.md")
+            if not os.path.exists(cap_path):
+                add("RUN-013", "fail",
+                    "score-history.md declares CAP HIT but cap-confirmed.md is "
+                    "missing under handoff/03-edit/ (CAP HIT requires explicit "
+                    "owner/orchestrator authorizer for round %d; use "
+                    "--owner-confirm off only for legacy archive re-verification)"
+                    % K, edit_dir)
+            else:
+                ok, msg, warn = _validate_cap_confirmed(
+                    _read(cap_path), owner_confirm, K)
+                if not ok:
+                    add("RUN-013", "fail",
+                        "cap-confirmed.md invalid for capped round %d: %s"
+                        % (K, msg), cap_path)
+                if warn:
+                    add("RUN-000", "warn", warn, cap_path)
 
         if self_audit == "on":
             notes_path = os.path.join(edit_dir, "revision-notes.md")
@@ -308,7 +810,6 @@ def check(handoff_dir, threshold="pass", self_audit="on"):
                         notes_path)
 
         # RUN-008: Korean owner briefing (compat: 01-design or 00-understand).
-        understand_dir = os.path.join(handoff_dir, "00-understand")
         briefing_design = os.path.join(design_dir, "owner-briefing.md")
         briefing_understand = os.path.join(understand_dir, "owner-briefing.md")
         briefing_path = None
@@ -323,18 +824,14 @@ def check(handoff_dir, threshold="pass", self_audit="on"):
                 design_dir)
 
         # RUN-009: understand-first triad (study pack + invention-summary).
-        # Legacy archives without 00-understand/ may place study pack only after
-        # migration; if 00-understand exists it must be complete. If it does not
-        # exist, require invention-summary under 01-design (pre-refactor archive)
-        # and emit RUN-000 warn rather than fail — hard-require study pack when
-        # 00-understand is present OR when UNDERSTAND_REQUIRED=1.
+        # With require_understand, RUN-011 already hard-fails the five files;
+        # RUN-009 still checks the triad shape when 00-understand is present.
+        # Legacy archives without 00-understand/: when --no-require-understand,
+        # accept 01-design invention-summary with RUN-000 warn.
         study_pack = os.path.join(understand_dir, "owner-study-pack.md")
         inv_u = os.path.join(understand_dir, "invention-summary.md")
         inv_d = os.path.join(design_dir, "invention-summary.md")
-        understand_present = os.path.isdir(understand_dir) and any(
-            name != ".gitkeep"
-            for name in (os.listdir(understand_dir) if os.path.isdir(understand_dir) else [])
-        )
+        understand_present = _dir_has_content(understand_dir)
         if understand_present:
             if not os.path.exists(study_pack) or not _read(study_pack).strip():
                 add("RUN-009", "fail",
@@ -347,16 +844,56 @@ def check(handoff_dir, threshold="pass", self_audit="on"):
                         "invention-summary.md missing under 00-understand/ and 01-design/",
                         understand_dir)
         else:
-            if not os.path.exists(inv_d) or not _read(inv_d).strip():
-                add("RUN-009", "fail",
-                    "invention-summary.md missing from handoff/01-design/ and no "
-                    "00-understand/ bundle (no frozen patent model)",
-                    design_dir)
+            if require_understand:
+                # RUN-011 already reported the five missing files; still note triad.
+                if not os.path.exists(inv_d) or not _read(inv_d).strip():
+                    add("RUN-009", "fail",
+                        "invention-summary.md missing from handoff/01-design/ and no "
+                        "00-understand/ bundle (no frozen patent model)",
+                        design_dir)
             else:
+                if not os.path.exists(inv_d) or not _read(inv_d).strip():
+                    add("RUN-009", "fail",
+                        "invention-summary.md missing from handoff/01-design/ and no "
+                        "00-understand/ bundle (no frozen patent model)",
+                        design_dir)
+                else:
+                    add("RUN-000", "warn",
+                        "legacy layout: no handoff/00-understand/ (pre understand-first); "
+                        "01-design invention-summary accepted (--no-require-understand)",
+                        design_dir)
+
+        # RUN-015: recompute gates on essay-final; must agree with round-K JSON.
+        if recheck_gates:
+            gate_path_k = os.path.join(edit_dir, "gate-result.round-%d.json" % K)
+            if not os.path.exists(gate_path_k):
                 add("RUN-000", "warn",
-                    "legacy layout: no handoff/00-understand/ (pre understand-first); "
-                    "01-design invention-summary accepted",
-                    design_dir)
+                    "RUN-015 gate recheck skipped — gate-result.round-%d.json missing"
+                    % K, edit_dir)
+            elif K not in gates_passed:
+                add("RUN-000", "warn",
+                    "RUN-015 gate recheck skipped — gate-result.round-%d.json "
+                    "unreadable" % K, edit_dir)
+            else:
+                try:
+                    import run_gates as _run_gates
+                except ImportError:
+                    add("RUN-000", "warn",
+                        "RUN-015 gate recheck skipped — run_gates import failed",
+                        edit_dir)
+                else:
+                    draft_text = _read(final_path)
+                    ctx = _build_recheck_context(run_root, handoff_dir)
+                    recomputed, _gate_results = _run_gates.run_all(draft_text, ctx)
+                    recorded = bool(gates_passed[K])
+                    if bool(recomputed) != recorded:
+                        add("RUN-015", "fail",
+                            "recomputed run_gates verdict on essay-final.md is %s "
+                            "but gate-result.round-%d.json recorded passed=%s "
+                            "(accepted-round gate claim disagrees with live recheck)"
+                            % ("PASS" if recomputed else "FAIL", K,
+                               "true" if recorded else "false"),
+                            final_path)
     else:
         add("RUN-000", "warn",
             "essay-final.md not present — acceptance checks skipped (run in progress?)",
@@ -385,10 +922,41 @@ def main(argv=None):
     p.add_argument("--handoff", default="handoff", help="handoff directory (default: handoff)")
     p.add_argument("--threshold", choices=["pass", "revise-recommended"], default="pass")
     p.add_argument("--self-audit", choices=["on", "off"], default="on")
+    p.add_argument("--acceptance", choices=["single-clean", "double-clean"],
+                   default="double-clean",
+                   help="acceptance rule for RUN-005 (default: double-clean)")
+    p.add_argument("--owner-confirm", choices=["required", "yes-flag", "off"],
+                   default="required",
+                   help="RUN-010 owner-confirm policy (default: required)")
+    p.add_argument("--comprehension-check", choices=["on", "off"],
+                   default="on",
+                   help="RUN-010b IF-3 comprehension field assertion "
+                        "(default: on)")
+    p.add_argument("--require-understand", dest="require_understand",
+                   action="store_true", default=True,
+                   help="require five understand outputs (RUN-011; default on)")
+    p.add_argument("--no-require-understand", dest="require_understand",
+                   action="store_false",
+                   help="disable RUN-011 (legacy archive re-verification only)")
+    p.add_argument("--recheck-gates", dest="recheck_gates",
+                   action="store_true", default=True,
+                   help="recompute run_gates on essay-final (RUN-015; default on)")
+    p.add_argument("--no-recheck-gates", dest="recheck_gates",
+                   action="store_false",
+                   help="skip RUN-015 live gate recheck on essay-final")
     p.add_argument("--json", action="store_true")
     args = p.parse_args(argv)
 
-    result = check(args.handoff, args.threshold, args.self_audit)
+    result = check(
+        args.handoff,
+        threshold=args.threshold,
+        self_audit=args.self_audit,
+        acceptance=args.acceptance,
+        owner_confirm=args.owner_confirm,
+        require_understand=args.require_understand,
+        recheck_gates=args.recheck_gates,
+        comprehension_check=(args.comprehension_check == "on"),
+    )
     if args.json:
         print(json.dumps(result, indent=2))
     else:

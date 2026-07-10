@@ -1,20 +1,29 @@
 # Patent Essay Pipeline — stage graph and profiles
 # Source of truth for what runs. Orchestrator interprets this; CLAUDE.md only summarizes.
+# The per-profile `stages:` list is the ONLY execution list. Flags below it are derived
+# summaries; on any disagreement `stages:` wins.
+# owner_confirm domain: hard | soft | false
 
 name: patent-article-writer
 version: 2
 
 stages:
+  - id: bootstrap
+    # orchestrator-inline; procedure: patent-essay SKILL.md "Run bootstrap"
+
   - id: figures
     skill: patent-figures-clean
     agent: figures-prep
-    optional: true   # skip if input/figures/ already has fig-*.png
+    optional: true   # skip if input/figures/ has fig-*.png that survived bootstrap
+                     # step 4 (identity-checked against the current patent)
 
   - id: understand
     skill: patent-understand
     agent: patent-reader
     required: true
-    human_checkpoint: understand_confirm   # hard on publish unless --yes
+    human_checkpoint: understand_confirm   # procedure: patent-essay SKILL.md "Owner checkpoint protocol"
+    # --comprehension-check: default on for publish/understand-only, off for draft/wire
+    # (forced off under --yes); flag lives in patent-essay SKILL.md Parameters
 
   - id: design
     skill: thesis-architect
@@ -33,6 +42,7 @@ stages:
     # acceptance policy set by profile
 
   - id: self_audit
+    # cold reader = one extra adversarial-reader fork, checklist-FREE (see stages/self_audit.yaml)
     agents: [adversarial-reader, grounding-verifier]
     requires: [review_loop]
 
@@ -61,9 +71,8 @@ stages:
 profiles:
   understand-only:
     description: Freeze patent triad for Owner study; no angle, no essay.
-    stages: [figures, understand]
-    review_loop: null
-    owner_confirm: true
+    stages: [bootstrap, figures, understand]
+    owner_confirm: hard
     self_audit: false
     polish: false
     promo: false
@@ -71,7 +80,7 @@ profiles:
 
   draft:
     description: Fast exploration; single-clean; no audit/polish/promo.
-    stages: [figures, understand, design, compose, review_loop, verify]
+    stages: [bootstrap, figures, understand, design, compose, review_loop, verify]
     review_loop:
       acceptance: single_clean
       max_revision: 2
@@ -82,8 +91,8 @@ profiles:
     retro: false
 
   wire:
-    description: Wire/short mode; self-audit off.
-    stages: [figures, understand, design, compose, review_loop, verify, archive]
+    description: Wire/short mode; self-audit off; retro on (it archives).
+    stages: [bootstrap, figures, understand, design, compose, review_loop, verify, archive, retro]
     review_loop:
       acceptance: single_clean
       max_revision: 3
@@ -91,12 +100,13 @@ profiles:
     self_audit: false
     polish: false
     promo: false
-    retro: true
+    retro: true    # retro requires archive; wire archives — the stages-list omission was the bug
     mode: wire
 
   publish:
     description: Default essay path — full quality graph.
     stages:
+      - bootstrap
       - figures
       - understand
       - design

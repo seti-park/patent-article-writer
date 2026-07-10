@@ -14,7 +14,10 @@ A proposal that breaks (1) or worsens any fixture in (2) must be rejected.
 Each fixture is a directory meta/fixtures/<name>/ containing:
   - expect.json     : {"gate_pass": true|false,
                        "must_not_contain_check_ids": ["FIGUSE-001", ...],   # optional
-                       "must_contain_check_ids": ["SOURCES-002", ...]}      # optional
+                       "must_contain_check_ids": ["SOURCES-002", ...],      # optional
+                       "mode": "essay"|"wire",                             # optional (default essay)
+                       "profile": "...",                                   # optional (ignored by gates)
+                       "acceptance": "single-clean"|"double-clean"}        # optional (reserved)
   - draft.md        : the essay draft to run gates over
   - invention-summary.md   (optional context)
   - figures-index.txt      (optional, ints one per line)
@@ -54,15 +57,82 @@ def _load(path):
         return fh.read()
 
 
-def _run_fixture(name):
+def _fixture_dirs(root, prefix=""):
+    """Yield (display_name, dir) for every directory holding an expect.json,
+    recursing so grouping dirs like fixtures/handoff/ hold no expect.json of
+    their own. A dir with expect.json is a leaf fixture; otherwise recurse."""
+    for d in sorted(os.listdir(root)):
+        full = os.path.join(root, d)
+        if not os.path.isdir(full):
+            continue
+        name = prefix + d
+        if os.path.exists(os.path.join(full, "expect.json")):
+            yield name, full
+        else:
+            for sub in _fixture_dirs(full, name + "/"):
+                yield sub
+
+
+def _run_check_run_fixture(name, fdir, expect):
+    """Run check_run.check() over a materialized handoff/ tree; compare the
+    reported rule-id SET (not a hardcoded inventory) to expect.json.
+    Handles xfail (a rule another lane may not have landed yet)."""
+    import check_run
+    xfail = bool(expect.get("xfail"))
+    result = check_run.check(
+        os.path.join(fdir, "handoff"),
+        threshold=expect.get("threshold", "pass"),
+        self_audit=expect.get("self_audit", "on"),
+        acceptance=expect.get("acceptance", "double-clean"),
+        owner_confirm=expect.get("owner_confirm", "required"),
+        require_understand=expect.get("require_understand", True),
+        recheck_gates=expect.get("recheck_gates", True),
+    )
+    seen = {f["check_id"] for f in result["findings"]}
+    ok = True
+    if "passed" in expect and result["passed"] != expect["passed"]:
+        ok = False
+        print("  %s %s: passed expected %s, got %s (%s)"
+              % ("xfail" if xfail else "FAIL", name, expect["passed"],
+                 result["passed"], ",".join(sorted(seen)) or "none"))
+    for cid in expect.get("must_contain", []):
+        if cid not in seen:
+            ok = False
+            print("  %s %s: expected %s not reported" % ("xfail" if xfail else "FAIL", name, cid))
+    for cid in expect.get("must_not_contain", []):
+        if cid in seen:
+            ok = False
+            print("  %s %s: %s present (must not contain)" % ("xfail" if xfail else "FAIL", name, cid))
+    if ok:
+        print("  ok   %s" % name)
+        return True, False
+    if xfail:
+        print("       ^ xfail: %s" % expect.get("reason", "expected to fail until a pending rule lands"))
+        return True, True   # xfail does not fail the suite
+    return False, False
+
+
+def _run_fixture(name, fdir=None):
     """Run gates over one fixture; compare to expect.json. Return True on pass."""
     import run_gates  # imported here so a broken edit surfaces as a clear failure
 
-    fdir = os.path.join(FIXTURES, name)
+    if fdir is None:
+        fdir = os.path.join(FIXTURES, name)
     expect = json.loads(_load(os.path.join(fdir, "expect.json")))
+    if expect.get("kind") == "check_run":
+        ok, _ = _run_check_run_fixture(name, fdir, expect)
+        return ok
     draft = _load(os.path.join(fdir, "draft.md"))
 
-    ctx = {"mode": "essay"}
+    # Fixture ctx flexibility (HARNESS-03): mode/profile/acceptance may be
+    # declared in expect.json; absent keys keep prior defaults (mode=essay).
+    ctx = {
+        "mode": expect.get("mode", "essay"),
+    }
+    if "profile" in expect:
+        ctx["profile"] = expect["profile"]
+    if "acceptance" in expect:
+        ctx["acceptance"] = expect["acceptance"]
     inv = os.path.join(fdir, "invention-summary.md")
     if os.path.exists(inv):
         ctx["invention_summary_text"] = _load(inv)
@@ -109,14 +179,11 @@ def main(argv=None):
     if not os.path.isdir(FIXTURES):
         print("  (no fixtures directory)")
     else:
-        names = sorted(
-            d for d in os.listdir(FIXTURES)
-            if os.path.isdir(os.path.join(FIXTURES, d))
-        )
-        if not names:
+        fixtures = list(_fixture_dirs(FIXTURES))
+        if not fixtures:
             print("  (no fixtures yet)")
-        for name in names:
-            all_ok = _run_fixture(name) and all_ok
+        for name, fdir in fixtures:
+            all_ok = _run_fixture(name, fdir) and all_ok
 
     print("\nREGRESSION: %s" % ("PASS" if all_ok else "FAIL"))
     return 0 if all_ok else 1

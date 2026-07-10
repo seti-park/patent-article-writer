@@ -30,16 +30,15 @@ defaults — learned from run 045's hand-revision (see
   reconstructs the argument (run 045: *workflow-not-robot → disclaims-the-hard-parts →
   territory-is-not-the-moat → moat-is-filed-elsewhere*). Avoid bare-label / "What X does"
   headers. *(checked: editorial pass-6 / pass-7 header-as-claim.)*
-- **Steelman beat (concede-and-return, not elaborate).** When `thesis-spine.md` adversarial
+<!-- Guidance style: affirmative targets only; rationale in docs/architecture/comprehension-loop.md §5.1 + invariant 6. -->
+- **Steelman beat (concede-and-return).** When `thesis-spine.md` adversarial
   defense names a strong pro-subject counter, allocate a beat that concedes it **compactly and
   specifically, then returns to the affirmative core** (run 045: "the workflow claim is a strong
-  fence, and a fence is not an engine"). Draft the concession once and the return-to-core with
-  **at least as much weight** as the concession; do **not** re-spend a caveat an earlier section
-  already made, and keep the spend/procedure lexicon **out** of the beat — elaborating the
-  counter primes it (the "don't think of an elephant" effect) and reads as safe-harbor. Ratio,
-  not length: a long beat is fine if the core out-weighs the counter. *(checked: pass-4 / pass-7
-  `steelman-absent` ↔ `steelman-overweight`; mechanical warn `SURF-007`; doctrine
-  `_shared/references/reader-energy.md` §6.)*
+  fence, and a fence is not an engine"). Draft the concession once, anchored to one specific
+  claim / baseline / causal fact, and give the return-to-core **at least as much weight** as the
+  concession. Ratio, not length: a long beat is fine if the core out-weighs the counter.
+  *(checked: pass-4 / pass-7 `steelman-absent` ↔ `steelman-overweight`; mechanical warn
+  `SURF-007`; doctrine `_shared/references/reader-energy.md` §6.)*
 - **No stub sections.** Keep `word_target`s balanced; a section far shorter than its siblings
   should be merged or expanded. *(gate: `STUB-001` warn.)*
 - **Attention budget (payload-first, procedure priced once).** Learned from
@@ -96,7 +95,7 @@ Fields:
 - **forward_pointer** — observable next event or future condition (e.g., "the algorithm stays until the model can be trusted without it").
 - **wider_framing** — analogy, industry pattern, broader framing.
 - **thesis_recap** — one-sentence thesis crystallization.
-- **anti_pattern** — defensive hedging to avoid (e.g., "no 'only X can confirm' / 'we cannot say'").
+- **closing_stance** — the close lands on its affirmative commitment (a `forward_pointer` or `thesis_recap`), stated with the verb of certainty the evidence supports.
 
 ### Closing directive integrates with `thesis-spine.md`
 
@@ -157,7 +156,7 @@ The composer's Step 0 (mode selection) defaults to walkthrough + measured (see `
 | Adversarial reader concern / strategic essay | walkthrough | conservative |
 | Patent-heavy / factual density high | walkthrough | conservative |
 
-The hint is overrideable by SETI invocation. Priority: invocation > hint > default.
+The hint is overrideable by Owner invocation. Priority: invocation > hint > default.
 
 ## Section ordering pattern (default)
 

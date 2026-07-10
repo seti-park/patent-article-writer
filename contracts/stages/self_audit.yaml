@@ -1,0 +1,55 @@
+# Stage contract: self_audit
+# Post-acceptance blind pass (publish). Raises the bar only; never lowers it.
+# Naming + may_read follow the agents (adversarial-reader, grounding-verifier).
+
+id: self_audit
+# no single skill — orchestrator spawns agent forks
+agents:
+  - adversarial-reader     # ≥2 independent, pass-7 checklist personas
+  - grounding-verifier     # mechanical text↔source table
+  # cold reader = one extra adversarial-reader fork run checklist-FREE
+  # (casual scroller: stop-points, felt reaction, repeat-to-a-friend only; CD-13)
+agents_cold_reader: adversarial-reader   # same agent type; checklist-FREE prompt
+
+handoff: handoff/03-edit/
+
+may_read:
+  - handoff/03-edit/essay-final.md
+  - handoff/02-compose/thesis-trace.md
+  - handoff/01-design/invention-summary.md
+  - handoff/01-design/thesis-spine.md
+  - handoff/01-design/fact-check-log.md   # grounding-verifier external-fact checks
+  - handoff/00-understand/**
+  - input/patent.md
+  - input/figures/**
+  - .claude/skills/editorial-review/references/pass-7-adversarial-reader.md
+  - .claude/skills/_shared/references/reader-profile.md   # adversarial personas
+  - .claude/skills/_shared/scripts/**                     # gate_quotes / gate_anchors
+
+must_not_read:
+  # fresh context: no commitment to prior approvals
+  - handoff/03-edit/edit-log.round-*.md   # isolation from inner-loop rulings
+  - .claude/skills/voice-canon-lookup/**
+
+required_outputs:
+  # orchestrator names the path; agent defaults below (see .claude/agents/*)
+  - handoff/03-edit/selfaudit-round-N-reader-A.md   # adversarial-reader (persona A)
+  - handoff/03-edit/selfaudit-round-N-reader-B.md   # adversarial-reader (persona B)
+  - handoff/03-edit/grounding-check-round-N.md      # grounding-verifier
+  - handoff/03-edit/selfaudit-round-N-coldreader.md # cold reader (checklist-FREE)
+  - handoff/03-edit/revision-notes.md               # deltas origin: self-post-accept
+  # multi-vote applied fixes may also produce:
+  # handoff/02-compose/revision-response.selfaudit-round-N.md
+
+rules:
+  - ">=2 adversarial-reader + grounding-verifier + cold reader; multi-vote."
+  - "Fix via composer revision mode; re-audit after each apply round."
+  - "Cap 3 dry-loop iterations; stop when fresh pass adds no high/medium (DRY)."
+  - "Multi-vote: apply on agreement; log-and-drop splits."
+  - "Hard-gates (grounding, goal-2) still hold; self-audit only ADDS findings."
+  - "Normalize applied deltas to ledger (origin: self-post-accept)."
+
+profiles:
+  publish: required
+  draft: off
+  wire: off

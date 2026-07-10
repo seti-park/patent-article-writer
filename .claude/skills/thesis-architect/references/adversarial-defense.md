@@ -4,16 +4,17 @@ For each thesis candidate that survived 4-axis grounding (Step 4) and the Q7 hoo
 
 ## 원칙
 
+<!-- Guidance style: affirmative targets only; rationale in docs/architecture/comprehension-loop.md §5.1 + invariant 6. -->
+
 가장 strict 한 reader (편집장, 경쟁 분석가, 회의적 투자자) 의 시각에서 thesis 를 공격. Steelman 의 반대 — weak-man 회피.
 
 **Generic-truism ban.** "특허는 양산/제품/주가 상승을 보장하지 않는다" 류의 category-level
 truism 은 steelman 이 아니라 weak-man 이다 — 어떤 특허 에세이에도 똑같이 적용되므로 THIS
 thesis 에 대한 objection 이 아니다. Strongest objection 은 반드시 이 특허의 청구항 텍스트,
-이 baseline, 이 thesis 의 인과 구조를 특정해서 공격해야 한다. Generic truism 을 objection
-으로 채택하면 mitigation 이 자동으로 generic hedge ("보장하지 않지만 지켜볼 만하다") 로
-수렴하고, 결론부가 safe-harbor boilerplate 로 무너진다 (pass-6 6G / gate_hedge 가 이를
-잡지만, 근본 원인은 여기서 차단). Category-level 한계는 limits section 이 1회 다루는
-소재이지, adversarial defense 의 산출물이 아니다.
+이 baseline, 이 thesis 의 인과 구조를 특정해서 공격해야 한다. 이 특허를 특정한 objection 은 mitigation 도 이 특허의 반론을 이 청구항·baseline·인과
+구조에서 특정해 답하게 만든다 — 정밀한 objection 이 근본 원인을 design 단계에서 차단하고,
+잔여 증상은 pass-6 6G / gate_hedge 가 사후에 잡는다. Category-level 한계는 limits section
+이 1회 다루는 소재이지, adversarial defense 의 산출물이 아니다.
 
 3 layer:
 
@@ -113,12 +114,10 @@ pro-subject counter for the reader to raise.
 specific is not the same as long. Two failure modes are symmetric:
 
 - `steelman-absent` — the concession is missing or a generic truism (below).
-- `steelman-overweight` — the concession is present, specific, and correct but **over-spends
-  the reader's attention on the objection**: it elaborates the counter past the point of
-  conceding it, restates a caveat an earlier section already made, or narrates spend/procedure
-  inside the beat. The cost is cognitive: **elaborating an objection primes the objection**
-  (the negation / framing effect — "don't think of an elephant"), so the reader leaves carrying
-  the counter, not the invention the concession exists to defend.
+- `steelman-overweight` — the concession is present, specific, and correct but **out-weighs the
+  affirmative core**. Target: concede once, anchored to one specific claim / baseline / causal
+  fact, then return — the affirmative core carries at least as much attention as the concession,
+  so the reader leaves carrying the invention the concession defends.
 
 So the carried spec sets a **ratio, not a length**: the affirmative core (what survives the
 concession) carries **at least as much attention** as the concession, and the concession is

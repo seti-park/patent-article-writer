@@ -32,12 +32,26 @@ Context keys consumed:
 
 Checks:
   QUOTE-000 (warn): no patent_text or no invention_summary_text provided --
-                    verbatim check skipped.
+                    verbatim check skipped (warn-only; cannot verify without
+                    the patent).
   QUOTE-001 (fail): a quote recorded as verbatim in the invention-summary does
                     not appear in the patent text (fabricated or mutated span).
-  QUOTE-002 (warn): invention-summary provided but zero extractable quotes
-                    (allowed edge case, but worth a look -- Phase 2 then has no
-                    citable spans).
+  QUOTE-002 (fail|warn): target text yields zero extractable quote anchors.
+                    FAIL when patent_text is available AND anchors are required
+                    (invention-summary always; essay/draft when mode is essay,
+                    the default). WARN only when mode is wire (anchors optional)
+                    or when the severity would otherwise be fail but we still
+                    surface the gap. Invoked without a patent → QUOTE-000, not
+                    this rule (vacuous pass closed — GATE-05/HARNESS-02).
+
+Span-line parsing (H5 / trailing gloss):
+  A Quotable span line is any bullet that carries an anchor and a quoted
+  string, optionally followed by trailing gloss after the closing quote:
+    - `[0014]`: "verbatim span"
+    - `[0014]`: "verbatim span" (owner gloss / note)
+  Trailing text after the closing `"` is ignored; the quoted span is always
+  verified against the patent. (Older `$`-anchored regex skipped any line
+  with trailing text, silently accepting fabricated quotes with a gloss.)
 """
 
 import argparse
@@ -48,8 +62,11 @@ import sys
 # Tunable constants
 # ---------------------------------------------------------------------------
 GATE_ID = "quotes"
-# - `[0016]`: "verbatim text"
-SPAN_LINE_RE = re.compile(r"^\s*-\s*`\[(\d{4})\]`\s*:\s*\"(.+)\"\s*$")
+# - `[0016]`: "verbatim text"          OR
+# - `[0016]`: "verbatim text" (gloss)  — trailing text after closing " ignored
+# Capture group 2 is the interior of the first double-quoted span on the line.
+SPAN_LINE_RE = re.compile(
+    r"^\s*-\s*`\[(\d{4})\]`\s*:\s*\"([^\"]*)\"")
 # | q-0016-1 | `[0016]` | "verbatim text" | significance |
 TABLE_QID_RE = re.compile(r"^q-(\d{4})-\d+$")
 MIN_QUOTE_CHARS = 8  # ignore degenerate captures shorter than this
@@ -115,14 +132,21 @@ def check(draft_text: str, context: dict) -> dict:
 
     quotes = _extract_quotes(summary)
     if not quotes:
+        # Vacuous zero-anchor pass is closed when anchors are required and the
+        # patent is available so a match could have been verified (GATE-05).
+        # mode=wire keeps warn (anchors optional). No patent → QUOTE-000 above.
+        mode = (context.get("mode") or "essay").strip().lower()
+        requires_anchors = mode != "wire"
+        sev = "fail" if requires_anchors else "warn"
         findings.append({
             "check_id": "QUOTE-002",
-            "severity": "warn",
+            "severity": sev,
             "message": "invention-summary contains no extractable Quotable spans "
                        "or Quote anchor table rows (Phase 2 has nothing to cite)",
             "location": "invention-summary",
         })
-        return {"gate": GATE_ID, "passed": True, "findings": findings}
+        passed = not any(f["severity"] == "fail" for f in findings)
+        return {"gate": GATE_ID, "passed": passed, "findings": findings}
 
     patent_norm = _normalize(patent)
     for anchor, quote, source in quotes:

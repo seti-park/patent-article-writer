@@ -1,6 +1,6 @@
 # `invention-summary.md` schema
 
-The fixed Markdown structure for Phase 1 Step 1's output. Replaces v1's `patent-reader-output.yaml`. Markdown chosen for human-edit-friendly handoff (SETI can correct extraction errors directly).
+The fixed Markdown structure for Phase 1 Step 1's output. Replaces v1's `patent-reader-output.yaml`. Markdown chosen for human-edit-friendly handoff (the Owner can correct extraction errors directly).
 
 ## Top-level structure
 
@@ -167,9 +167,9 @@ Documents paired relationships that figure-selection (thesis-architect Step 9) n
   record the phase-to-panel ranges with the enumerating paragraph anchor. Keyframes chosen for a
   cover strip map one-per-phase from this column, not from visual spacing.
 
-Phase 1 Step 9 (figure mapping) reviews this table to ensure paired figures are treated as one unit in `figure-selection.md`. Phase 1 Step 11 (`phase2-handoff-notes.md`) flags any paired figure where SETI chose to break the pair, so Phase 2 doesn't reopen the decision.
+Phase 1 Step 9 (figure mapping) reviews this table to ensure paired figures are treated as one unit in `figure-selection.md`. Phase 1 Step 11 (`phase2-handoff-notes.md`) flags any paired figure where the Owner chose to break the pair, so Phase 2 doesn't reopen the decision.
 
-Origin: phase1-retrospective.md Insight 6-1 — FIG 6A 가 selection 단계에서 누락 후 SETI 의 catch 로 추가됨. Paired 관계를 reference number table 단계에서 미리 정리하면 figure-selection 의 retroactive 정정 회피.
+Origin: phase1-retrospective.md Insight 6-1 — FIG 6A 가 selection 단계에서 누락 후 Owner 의 catch 로 추가됨. Paired 관계를 reference number table 단계에서 미리 정리하면 figure-selection 의 retroactive 정정 회피.
 
 ### Quote anchor table
 

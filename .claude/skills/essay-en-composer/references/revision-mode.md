@@ -1,5 +1,7 @@
 # Revision mode (Compose↔Edit loop, round N)
 
+<!-- Findings re-enter the composer as positive precision targets, never prohibitions — docs/architecture/comprehension-loop.md §5.1 + invariant 6. -->
+
 How the composer revises `handoff/02-compose/` when the orchestrator feeds back a failing
 round: the round-N edit-log findings + failing gate `check_id`s. Before this reference
 existed, "revision mode" was undefined behavior — the loop's weakest link: nothing forced a
@@ -35,8 +37,14 @@ review would wave it through.
    reword, compress, or de-duplicate a signature line declared in `thesis-trace.md`, or to sand
    title/header/lead-¶1 style on count grounds, is correctly dispositioned `rejected` citing
    `_shared/references/reader-energy.md` — UNLESS the finding is factual (grounding, scope,
-   causality), which is applied like any other. Never fix a defensive-open (6H) finding by
-   deleting the insurance facts; reverse their order (discovery first, priced second).
+   causality), which is applied like any other. For a defensive-open (6H) finding: reverse
+   order (discovery first, priced second); keep the insurance facts as priced content.
+
+   **Hedge-class findings (positive target, not deletion).** When a finding's class is
+   hedge / over-hedge / steelman-overweight / safe-harbor, act on the positive precision
+   target in the recommendation — precision at the claim anchor, affirmative-core weight,
+   verdict committed to what evidence and scope support — not by deleting phrases. The bound
+   still lands once; the steelman ratio still holds (see `feedback-format.md`).
 4. **Apply the edits** to `handoff/02-compose/essay-draft.md` in place, re-emit
    `publication.md` via the strip pipeline, and update `figures-rationale.md` /
    `thesis-trace.md` if placement or the spine→section trace moved.
@@ -56,3 +64,10 @@ publication.md are re-emitted, and the response file exists. The orchestrator th
 gates and spawns a FRESH reviewer for round N+1 — the reviewer will verify each `applied`
 disposition actually landed, so cosmetic compliance is wasted effort: the cheapest path
 through the loop is a real fix.
+
+## CAP HIT (orchestrator; not composer)
+
+If revision rounds hit `max_revision` without acceptance, the orchestrator runs the
+`cap_hit` owner checkpoint (patent-essay SKILL.md). What ships on cap: the **last draft**
+only (not a preferred earlier round). A score-history row records `notes: CAP HIT`. Hard
+stop unless `--yes` (then ship last draft and continue downstream stages on publish).

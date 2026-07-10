@@ -7,6 +7,8 @@ agent: essay-composer
 
 # essay-en-composer
 
+**Contract:** `contracts/stages/compose.yaml`
+
 Phase 2 Compose's drafting stage. Reads the Phase 1 handoff bundle and produces the essay draft.
 
 ```
@@ -22,7 +24,7 @@ handoff/01-design/{thesis-spine.md, invention-summary.md, title-lead-candidates.
 
 ## When to invoke
 
-User has uploaded `handoff/01-design/*` files + `figures/` to the Phase 2 Compose Project and asks to draft, compose, or write the essay. Phase 1's Quotable spans are the only patent source — patent.md is NOT in Phase 2 Knowledge.
+User has uploaded `handoff/01-design/*` files + `figures/` to the Phase 2 Compose Project and asks to draft, compose, or write the essay. Phase 1's Quotable spans are the only patent source. Reading `input/patent.md` is **FORBIDDEN** by `contracts/stages/compose.yaml` `must_not_read` (invariant 3). If a paragraph cannot be grounded in a Quotable span, do **not** open the patent — raise `OWNER_QUESTION` (or `STOPPED: span gap`) naming the paragraph. A post-hoc detector (`gate_patent_leak`) also enforces this; the fence is not honour-system alone.
 
 ## Modes (2 dimensions)
 

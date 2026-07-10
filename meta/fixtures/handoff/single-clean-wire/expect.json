@@ -1,0 +1,31 @@
+{
+  "kind": "check_run",
+  "scenarios": [
+    {
+      "name": "single-clean-off",
+      "acceptance": "single-clean",
+      "owner_confirm": "off",
+      "require_understand": false,
+      "threshold": "pass",
+      "self_audit": "on",
+      "recheck_gates": false,
+      "passed": true,
+      "must_not_contain": [
+        "RUN-005"
+      ]
+    },
+    {
+      "name": "double-clean-same-tree",
+      "acceptance": "double-clean",
+      "owner_confirm": "off",
+      "require_understand": false,
+      "threshold": "pass",
+      "self_audit": "on",
+      "recheck_gates": false,
+      "passed": false,
+      "must_contain": [
+        "RUN-005"
+      ]
+    }
+  ]
+}

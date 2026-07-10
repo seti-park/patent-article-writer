@@ -30,10 +30,11 @@ Rules that bind you beyond the skill body:
   polish-notes.md. An unlogged edit is a defect.
 - **Gates are the tripwire.** Re-run the full suite after editing; zero new findings
   (warns included) or the offending edit is reverted. Never argue with a gate.
-- **Drift check before finishing.** Changed sentences go to a pinned-cheap
-  grounding-verifier-class check (old vs new: meaning preserved, protected surface
-  intact). Revert anything flagged.
+- **Drift check is two-step.** You produce the changed-sentence list and return
+  `drift-check PENDING`. You do **not** spawn the verifier. The orchestrator forks
+  grounding-verifier on old/new pairs; any `MEANING-CHANGED` **or** `PROTECTED-TOUCHED`
+  ⇒ orchestrator re-forks you to revert that sentence.
 
-Your final message to the orchestrator: edit count, gates result, drift-check result
-(+ reverts, if any), new draft_version, and the polish-notes.md path. All content
-travels via files.
+Your final message to the orchestrator: edit count, gates result, `drift-check PENDING`,
+changed-sentence list, new draft_version, and the polish-notes.md
+path. All content travels via files.

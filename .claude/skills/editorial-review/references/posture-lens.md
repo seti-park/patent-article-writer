@@ -65,9 +65,9 @@ analysis (6G fix priority).
 The feedback YAML carries two severity fields per finding.
 
 - `severity`: actual severity applied under current posture
-- `severity_under_default_posture`: what severity would have been under measured posture, for SETI's quick grasp of why current severity differs
+- `severity_under_default_posture`: what severity would have been under measured posture, for the orchestrator's (and Owner's, via score-history) quick grasp of why current severity differs
 
-This transparency lets SETI see at a glance which findings shifted because of posture and which would have triggered regardless.
+This transparency lets the orchestrator see at a glance which findings shifted because of posture and which would have triggered regardless.
 
 ## Quote-integrated paragraph heuristic
 
@@ -77,12 +77,12 @@ When a paragraph contains a direct verbatim quote + surrounding narrative anchor
 - aggressive + quote-integrated → flagging skipped (down from low)
 - conservative + quote-integrated → medium severity (down from high)
 
-Rationale: voice rhythm + quote anchor integration justifies extended paragraph length as a SETI rhythm-priority pattern.
+Rationale: voice rhythm + quote anchor integration justifies extended paragraph length as an Owner rhythm-priority pattern.
 
 ## Severity assignment discipline
 
 Severity is inferential judgment. To avoid drift:
 
-- "Publication-blocking" is the bar for high severity. If unsure, escalate to SETI rather than auto-assigning high.
+- "Publication-blocking" is the bar for high severity. If unsure, raise `OWNER_QUESTION` (orchestrator relays via the Owner checkpoint protocol in `patent-essay/SKILL.md`) rather than auto-assigning high.
 - Severity_under_default_posture must be populated for every finding so the posture differential is auditable.
 - Critical severity reserved for conservative posture's factual findings. Other passes max out at high.

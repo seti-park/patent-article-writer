@@ -41,6 +41,12 @@ to run `patent-understand` first. Do not silently extract a new summary unless t
 orchestrator explicitly passes `repair-understand` (then write Revision notes and prefer
 re-running understand).
 
+**Understand confirm (CD-03 residual):** if `handoff/00-understand/understand-confirmed.md`
+is absent or its `status:` is not `confirmed` → **STOP** and return
+`STOPPED: understand_confirm not satisfied`. Exception: soft profiles — when the
+orchestrator passes `owner_confirm: soft` in the fork instruction, proceed (soft path
+never writes a confirm file; RUN-010 is the verify-time backstop only).
+
 ## Process
 
 ### 0. Load frozen model
@@ -108,6 +114,18 @@ See `_shared/references/reader-energy.md`. End with `recommended:` line.
 Write `figure-selection.md` + `figure-rationale.md` mapping figures to **thesis points**
 (use figure-primer + invention-summary figure relationships). Cover candidate + phase
 keyframes as before.
+
+**Count follows the content — there is no target or cap.** Select every figure that
+carries load-bearing information the thesis uses: a distinct mechanism, a claimed step,
+a baseline contrast, a data panel the prose leans on. A patent whose story needs two
+figures uses two; one whose story needs seven uses seven. The only reason to leave a
+figure out is that its information is already fully conveyed — by the prose or by
+another selected figure (mark those `body_figure_prose_covers_fully` /
+`body_figure_in_header_composite`). Judge each figure on the unique information it
+adds, one at a time; do not select against a number. (Economy = drop the redundant,
+not cap the count. This is distinct from Rule 2 in `references/4-axis-grounding.md`,
+which is about not letting a striking figure drive the *thesis* — a grounding rule,
+not a count rule.)
 
 ### 10. Fact-check log seed
 

@@ -25,10 +25,15 @@ Rules beyond the skill body:
 - **Compat copies.** After success, copy invention-summary and owner-briefing into
   `handoff/01-design/` so design/gates that still resolve 01-design paths keep working.
   Canonical files stay in `00-understand/`.
+- **Never write `understand-confirmed.md`.** Confirm file is written only by the
+  orchestrator via the Owner checkpoint protocol (after Owner affirmative, or `--yes`).
 
-Final message to the orchestrator (only):
+Return value to orchestrator (NOT shown to Owner as-is):
 
 1. 한 줄 triad  
 2. Path to `owner-study-pack.md`  
 3. Open-questions count  
 4. gate_quotes verdict (PASS/FAIL)  
+
+The orchestrator then runs the understand_confirm checkpoint (renders study-pack triad +
+open-questions INLINE to the Owner — paths alone never satisfy the protocol).

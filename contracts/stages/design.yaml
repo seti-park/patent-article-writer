@@ -6,8 +6,28 @@ skill: thesis-architect
 agent: design-architect
 handoff: handoff/01-design/
 
+# Entry precondition (CD-03a): understand complete + confirmed (or --yes or soft).
+# Confirm-file validity = patent-essay SKILL "Owner checkpoint protocol" /
+# contracts/stages/understand.yaml owner_checkpoint.validity.
+entry_requires:
+  required_outputs_from_understand:
+    - handoff/00-understand/invention-summary.md
+    - handoff/00-understand/owner-study-pack.md
+    - handoff/00-understand/owner-briefing.md
+    - handoff/00-understand/figure-primer.md
+    - handoff/00-understand/open-questions.md
+  confirm: >
+    VALID handoff/00-understand/understand-confirmed.md
+    (status: confirmed; by: owner | orchestrator-yes-flag; real date;
+    patent matches current input/patent.md)
+    OR recorded --yes (orchestrator wrote confirm with by: orchestrator-yes-flag)
+    OR profile owner_confirm is soft AND orchestrator performed RENDER+ASK this run
+    (evidence: soft-checkpoint note in the run report per Owner checkpoint protocol;
+    soft path never writes a confirm file).
+
 may_read:
   - handoff/00-understand/**
+  - handoff/00-understand/comprehension-notes.md  # explanation priors (framing/emphasis), NOT a fact source
   - handoff/01-design/invention-summary.md   # compat copy from understand
   - handoff/01-design/owner-briefing.md
   - input/patent.md                          # allowed for quote repair only
@@ -28,7 +48,7 @@ required_outputs:
   - handoff/01-design/thesis-candidates.md
   - handoff/01-design/title-lead-candidates.md
   - handoff/01-design/figure-selection.md
-  - handoff/01-design/figure-rationale.md
+  - handoff/01-design/figure-rationale.md   # design: why figures were selected (≠ compose figures-rationale.md)
   - handoff/01-design/fact-check-log.md
   - handoff/01-design/search-log.md
   - handoff/01-design/phase2-handoff-notes.md
@@ -40,11 +60,18 @@ must_not_recreate:
   - invention-summary.md   # edit only via Revision note if understand was wrong; prefer re-run understand
 
 owner_checkpoint:
-  id: design_title_pick
+  id: design_title_lead
   surfaces:
     - handoff/01-design/title-lead-candidates.md
     - handoff/01-design/thesis-candidates.md
-  soft: true
+  soft: true   # soft on every profile (STOP waived; RENDER+ASK mandatory)
+  # Protocol: .claude/skills/patent-essay/SKILL.md "Owner checkpoint protocol".
+  question: >
+    Accept the recommended title/lead candidate, pick another from the list,
+    or supply your own?
+  render:   # RENDER step — print INLINE to the Owner, in this order:
+    - title/lead candidates (inline), each with its rationale one-liner
+    - the file's recommended: line
 
 rules:
   - Consume understand triad; do not invent a new mechanism story.

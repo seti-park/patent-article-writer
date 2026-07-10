@@ -69,9 +69,31 @@ Fixed order:
 3. **Solution** — mechanism steps + claim scope card + 근거  
 4. **Benefits** — spec-asserted only + 근거  
 5. **Boundary** — 단정 불가 / 원문이 열어 둔 것 (short)  
-6. **Self-check** — five questions whose answers are already in the pack  
+6. **Self-check** — five questions whose answers are already in the pack (source of
+   the keyed quiz in step 3b)
 
 No thesis candidates. No energy registers. No firm/open closing posture.
+
+### 3b. Comprehension quiz bank (keyed; P2)
+
+Write `handoff/00-understand/comprehension-quiz.md` — a **keyed** bank derived from
+the study pack §5 self-check. Template shape:
+`handoff-template/00-understand/comprehension-quiz.md`. Design contract:
+`docs/architecture/comprehension-loop.md` §4.1 / IF-2.
+
+Per item fields (frozen):
+
+- `question:` — Korean; same substance as the §5 self-check line it upgrades  
+- `options:` — A / B / C … (exactly one correct)  
+- `key:` — the correct letter  
+- `aspect:` — one of `problem` | `claim-scope` | `benefits` | `boundary`  
+- `rationale:` — quotes the study-pack span the answer rests on (positive framing;
+  never names a defensive writing behavior)
+
+Coverage: **≥1 item per aspect**; the **`claim-scope` item is mandatory**. Answers
+trace only to the study pack — **no new facts**. This file is the bank the
+orchestrator grades against at `understand_confirm`; this worker does not run the
+loop and does not write `comprehension-notes.md` or `understand-confirmed.md`.
 
 ### 4. Owner briefing (shelf artifact)
 
@@ -130,6 +152,7 @@ Canonical originals remain under `00-understand/`.
 - essay drafting or voice-canon  
 - Investor verdict language, stock claims, “reader should”  
 - Treating `essay-context.md` as the mechanism story (it may list questions only)
+- Writing `understand-confirmed.md` (orchestrator only, via Owner checkpoint protocol)
 
 ## Pre / post
 
@@ -138,9 +161,11 @@ Canonical originals remain under `00-understand/`.
 **Post:**
 
 - All `required_outputs` in `contracts/stages/understand.yaml` exist  
+- `comprehension-quiz.md` present (keyed bank; ≥1 item per aspect; claim-scope mandatory)  
 - gate_quotes PASS on summary, briefing, study pack  
 - Compat copies present under `01-design/`  
-- Final orchestrator message: 한 줄 triad + path to study pack + open-questions count  
+- Return value to orchestrator (NOT shown to Owner as-is): 한 줄 triad + path to study pack + open-questions count + quiz item count  
+- The orchestrator then runs the understand_confirm checkpoint (renders study-pack triad + open-questions INLINE to the Owner — paths alone never satisfy the protocol). On `--comprehension-check` runs the orchestrator (not this worker) drives the P2 grading loop against `comprehension-quiz.md` and writes `handoff/00-understand/comprehension-notes.md`.
 
 ## References
 

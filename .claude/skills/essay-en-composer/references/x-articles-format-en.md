@@ -2,7 +2,7 @@
 
 X Articles platform conventions for English essays. Referenced by tech-essay-en SKILL.md.
 
-본 파일은 두 차원으로 구성. Section 1 은 X Articles platform 전반의 spec (SETI authoritative — tech-essay-ko-pub 도 동일 적용 의무). Section 2 는 영문 essay 의 editorial convention (BP 6건 분석 기반).
+본 파일은 두 차원으로 구성. Section 1 은 X Articles platform 전반의 spec (Owner authoritative — tech-essay-ko-pub 도 동일 적용 의무). Section 2 는 영문 essay 의 editorial convention (BP 6건 분석 기반).
 
 X Articles 는 X platform 의 long-form publication format. tech-essay-en (영문 essay) 과 tech-essay-ko-pub (한글 essay) 의 발행 산출물이 본 platform 의 영역. patent-wire 와 patent-promo 는 X post format 영역 — X Articles 가 아니므로 본 spec 적용 안 됨 (각 skill 의 자체 format 영역).
 

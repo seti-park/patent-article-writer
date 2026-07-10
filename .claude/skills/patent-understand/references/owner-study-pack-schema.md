@@ -51,13 +51,22 @@ with a gate-parseable `**근거 (verbatim):**` block (same line format as owner-
 - **단정 불가**: …
 - **원문이 열어 둔 것**: …
 
-## 5. Self-check (답이 이미 위에 있음)
-1. 이 특허가 출발점으로 삼는 문제는?
-2. 핵심 독립항이 요구하는 것은?
-3. 명세서 선호일 뿐인 것은?
-4. 문서가 주장하는 효과 한 가지는?
-5. 독자 앞에서 단정하면 안 되는 것 한 가지는?
+## 5. Self-check (답이 이미 위에 있음) — source of comprehension-quiz items
+<!-- P2: these become keyed items in handoff/00-understand/comprehension-quiz.md
+     (IF-2). Keep answers traceable to sections above; no new facts. -->
+1. 이 특허가 출발점으로 삼는 문제는?                         → aspect: problem
+2. 핵심 독립항이 요구하는 것은?                             → aspect: claim-scope  (mandatory)
+3. 명세서 선호일 뿐인 것은? (청구와 구분)                   → aspect: claim-scope or boundary
+4. 문서가 주장하는 효과 한 가지는?                           → aspect: benefits
+5. 독자 앞에서 단정하면 안 되는 것 한 가지는?               → aspect: boundary
 ```
+
+The keyed bank (`comprehension-quiz.md`) is the graded form of this section. Each
+quiz item must carry `question:` / `options:` / `key:` / `aspect:`
+(`problem|claim-scope|benefits|boundary`) / `rationale:` (quotes a study-pack span).
+≥1 item per aspect; the `claim-scope` item is mandatory. See
+`handoff-template/00-understand/comprehension-quiz.md` and design
+`docs/architecture/comprehension-loop.md` §4.1 / IF-2.
 
 ## Rules
 
@@ -66,3 +75,6 @@ with a gate-parseable `**근거 (verbatim):**` block (same line format as owner-
 3. Benefits must answer a bottleneck named under Problem when the spec does.  
 4. No thesis, energy register, closing_posture, or promo bold-selection.  
 5. Quotes ≥ 8 characters; verbatim; gate_quotes must PASS.  
+6. Self-check answers (and the keyed quiz derived from them) introduce no new facts —
+   every correct option traces to a span already in sections 1–4.  
+
