@@ -199,6 +199,45 @@ only *how to explain*:
   `gate_patent_leak` / span-grounding gates (a fact still has to trace to a Quotable span
   regardless of what the notes say).
 
+### 5.1 Claim-scope precision *licenses* affirmative writing — and the guidance must be positive
+
+Getting claim scope right at the source is not only error-prevention; it is what removes
+the pipeline's dominant downstream pathology. The ledger names it: **claim-scope
+misattribution is the system's #1 recurring defect class**, and its surface symptom is
+**over-defensive prose** — sections spent on "this is merely a pending claim", "one should
+examine the actual product", safe-harbor meta-commentary that carries no information about
+the invention, does not actually fix the scope error, and confuses the reader. (The system
+already half-admits this: the promo skill's rule *"the article hedges, the promo points"*
+exists to compensate in the promo for hedging the article should never have produced.)
+
+**Root cause:** over-defensiveness is the writing's immune response to its own *uncertainty
+about what is claimed*. When the model lacks a precise scope model it blankets the whole
+document in disclaimers instead of scoping each assertion. Remove the uncertainty
+(precision at the understand source) and the padding is never generated.
+
+**Critical framing rule — the guidance to the generating agent must be PURELY POSITIVE.**
+A negative instruction ("do not add disclaimers", "no examination-status section", "≤1
+status clause") *plants the very frame it forbids* — the "don't think of an elephant"
+effect. Told not to hedge, an agent spends attention on legal risk, examination status,
+and clause-counting instead of on the invention, and hedges more. So:
+
+- **Instructions the composer reads carry no prohibition and never name the defensive
+  behavior.** They supply a *better target*: the precise claimed-vs-described contrast as a
+  concrete fact — e.g. *"the claim requires a vision sensor; the camera/radar/lidar are
+  spec-described alternatives, not claimed"* — written affirmatively. The claim-scope
+  `explanation-prior` in `comprehension-notes.md` is phrased this way (a positive framing
+  seed), never as "avoid over-hedging".
+- **Prohibitions, if any, live only in a post-hoc *detector*** (a gate that runs after
+  compose and never enters the composer's context, so it cannot prime the frame). And its
+  feedback, when it re-enters the review loop, must be **re-expressed as a positive
+  precision instruction** ("state the scope precisely here"), never as "cut the hedging"
+  (which re-plants the elephant and drives the invariant-6 hedge ratchet).
+
+This is not "remove all caution": a pending application genuinely has a distinct
+epistemic status, and the pending-application edition is legitimate. The goal is to move
+caution **from a section-level blanket to assertion-level precision** — achieved by
+*presence of a precise affirmative model*, not by *prohibition of defensiveness*.
+
 ## 6. Invariants & fences
 
 1. **Facts vs framing is absolute.** `comprehension-notes.md` carries zero claims. Any
@@ -215,6 +254,10 @@ only *how to explain*:
    Owner from proceeding, only records what was and was not demonstrated.
 5. **Checkpoint STOP semantics unchanged.** Each ASK ends the turn. The loop is a sequence
    of protocol-compliant STOP turns, not a single mega-turn.
+6. **Positive framing only in generating-agent instructions (§5.1).** No prompt the quiz,
+   the notes, or the composer reads may name or forbid a defensive behavior; guidance
+   supplies a precise affirmative target instead. Prohibitions live only in post-hoc
+   detectors, and their loop feedback is re-expressed positively.
 
 ## 7. Surface (flags / profiles)
 
