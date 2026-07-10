@@ -138,6 +138,9 @@ Before any stage worker or figures check. Orchestrator-inline (no forked agent).
    ```
 
    `run_id` syntax: glossary. Compute sha256 of `input/patent.md`. `essay_id` ≡ `run_id`.
+   Prefer appending a short `-<topic>` keyword (e.g. `-backend-hbm`) so the id stays
+   scannable as the `essays/` corpus grows — bare `<assignee>-us<number>` ids blur
+   together at scale.
 
 6. **Backlog preflight** (META-BACKLOG-01) — read
    `meta/improvement-proposals/README.md` status index; report count of pending
