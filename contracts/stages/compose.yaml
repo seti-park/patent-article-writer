@@ -9,6 +9,7 @@ handoff: handoff/02-compose/
 may_read:
   - handoff/01-design/**
   - handoff/00-understand/**           # Quotable spans / frozen model only
+  - handoff/00-understand/comprehension-notes.md  # explanation priors (framing/emphasis), NOT a fact source
   - input/figures/**
   - handoff-template/02-compose/**
   - .claude/skills/essay-en-composer/**

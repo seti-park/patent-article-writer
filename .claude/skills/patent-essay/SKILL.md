@@ -24,7 +24,11 @@ Content travels on disk. Graph + profiles: `contracts/pipeline.yaml`. Roles:
 | `--max-iter` | profile default | Max **revision** rounds (confirmation does not count) |
 | `--mode` | from profile | `essay` \| `wire` |
 | `--self-audit` | from profile | `on` \| `off` |
+| `--comprehension-check` | from profile | `on` \| `off` — interactive Owner comprehension check at understand_confirm |
 | `--yes` | off | Skip owner checkpoints (unattended) |
+
+**`--comprehension-check` defaults:** **on** for `publish` and `understand-only`;
+**off** for `draft` / `wire`; **forced off** under `--yes` (no Owner present to quiz).
 
 **`--profile promo-only`:** positional argument MUST be an existing `essays/<id>/` id
 (resolved against `essays/`). Missing or ambiguous id ⇒ ask the Owner before promo.
@@ -176,19 +180,42 @@ Follow **Owner checkpoint protocol (STOP/CONFIRM)** above. This instance:
    - `open-questions.md` in full
    - the five output paths (study pack, briefing, invention-summary, figure-primer,
      open-questions)
-2. **ASK** — utter the stage contract `question:` verbatim:
+2. **Comprehension check (P1, capture-only)** — runs only when `--comprehension-check`
+   resolves **on** (per Parameters defaults) **and** not `--yes`. Reuses the
+   STOP/CONFIRM protocol; does not invent a parallel mechanism.
+   - Ask the five `owner-study-pack.md` §5 Self-check questions **one at a time**,
+     each as its own ASK→STOP turn (end the turn after each question; resume on the
+     Owner's reply). Questions stay Korean (verbatim from the study pack):
+     1. 이 특허가 출발점으로 삼는 문제는?
+     2. 핵심 독립항이 요구하는 것은?
+     3. 명세서 선호일 뿐인 것은?
+     4. 문서가 주장하는 효과 한 가지는?
+     5. 독자 앞에서 단정하면 안 되는 것 한 가지는?
+   - Capture each answer **verbatim** and any Owner pushback/correction.
+   - **P1 is CAPTURE-ONLY:** do NOT grade answers, do NOT compute pass/fail, do NOT
+     hard-STOP on a wrong answer, do NOT re-open/re-freeze the model. P2 adds keyed
+     grading and the claim-scope hard STOP; P1 only captures.
+   - The Owner may opt out at any point ("confirm without the questions") — honor it.
+   - After the questions (or opt-out), write
+     `handoff/00-understand/comprehension-notes.md` (template shape) from the
+     dialogue, then proceed to the main ASK/RECORD as normal.
+   - When this step is skipped (`--yes`, or flag off): do not write
+     `comprehension-notes.md`; RECORD still sets `comprehension:` per step 5.
+3. **ASK** — utter the stage contract `question:` verbatim:
    > Can you restate Problem, Solution (incl. claim scope), and Benefits without
    > reopening the full patent? If yes, confirm. If no, edit open-questions or
    > request re-run of understand.
-3. **STOP** — hard on `publish` / `understand-only` (end turn; no design, no Task/Skill
+4. **STOP** — hard on `publish` / `understand-only` (end turn; no design, no Task/Skill
    for downstream, no confirm-file write this turn). Soft on `draft` / `wire` (RENDER
    and ASK still mandatory; may continue same turn with "soft checkpoint: continuing;
    reply to override").
-4. **RECORD** — only after Owner's explicit affirmative in a later turn, write
+5. **RECORD** — only after Owner's explicit affirmative in a later turn, write
    `handoff/00-understand/understand-confirmed.md` (`by: owner`, quote utterance in
-   `notes:`). **`--yes` only** writes without Owner utterance
-   (`by: orchestrator-yes-flag`). Stage worker never writes this file.
-5. **RESUME** — valid confirm file for the current patent (see protocol validity) ⇒
+   `notes:`). Set `comprehension:` to `captured` (questions asked), `self-asserted`
+   (Owner opted out), or `skipped-unattended` (`--yes`). **`--yes` only** writes
+   without Owner utterance (`by: orchestrator-yes-flag`). Stage worker never writes
+   this file.
+6. **RESUME** — valid confirm file for the current patent (see protocol validity) ⇒
    skip to design without re-asking; else RENDER→ASK→STOP again.
 
 **Forbidden on hard checkpoints:** invoking design (or any next stage) in the same turn

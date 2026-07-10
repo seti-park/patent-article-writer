@@ -27,6 +27,7 @@ entry_requires:
 
 may_read:
   - handoff/00-understand/**
+  - handoff/00-understand/comprehension-notes.md  # explanation priors (framing/emphasis), NOT a fact source
   - handoff/01-design/invention-summary.md   # compat copy from understand
   - handoff/01-design/owner-briefing.md
   - input/patent.md                          # allowed for quote repair only

@@ -129,9 +129,16 @@ that does not gate):
 
 Both paths lead to RECORD. The opt-out is always available (the Owner is the authority;
 the loop assists, it never imprisons) — but taking it is recorded in `notes:` so a later
-retro can see that comprehension was self-asserted, not demonstrated. The claim-scope item
-is the one aspect for which a second miss surfaces a soft warning in the confirm record
-("claim scope not demonstrated") rather than silently passing.
+retro can see that comprehension was self-asserted, not demonstrated.
+
+**Claim-scope is the exception — a second miss is a HARD STOP** (Owner decision, locked
+2026-07-11). Because claim scope is the most-misread aspect and the costliest error
+downstream, a second miss on the claim-scope item does **not** advance: the checkpoint
+STOPs and requires the Owner to either re-read the claim-scope card and re-answer, or
+explicitly accept the risk in writing (recorded verbatim in the confirm `notes:` as
+`claim-scope risk accepted by owner`). The general opt-out does **not** cover claim scope —
+the Owner must make that acceptance explicit and separate. (This is a **P2** mechanism; it
+requires keyed grading, so it is inert in the P1 capture-only phase — see §11.)
 
 ### 4.4 Model-correction → bounded re-freeze
 
@@ -212,9 +219,10 @@ only *how to explain*:
 ## 7. Surface (flags / profiles)
 
 - New flag `--comprehension-check on|off`. Default: **on** for `publish` and
-  `understand-only`; **off** for `draft` / `wire` (fast paths); forced **off** under
-  `--yes` (no Owner present to quiz — falls back to `by: orchestrator-yes-flag`, and the
-  confirm `notes:` records "comprehension check skipped: unattended").
+  `understand-only` (locked 2026-07-11); **off** for `draft` / `wire` (fast paths); forced
+  **off** under `--yes` (no Owner present to quiz — falls back to
+  `by: orchestrator-yes-flag`, and the confirm `notes:` records "comprehension check
+  skipped: unattended").
 - `understand-only` is the profile where this feature earns the most — its entire purpose
   is Owner learning — so it defaults on there too.
 
@@ -240,29 +248,51 @@ only *how to explain*:
   is present and well-formed on publish when `--comprehension-check on`.
 - **Bounded?** Yes — re-freeze cap 3.
 
-## 10. Open questions for the Owner
+## 10. Owner decisions
 
-1. **Default aggressiveness.** On `publish`, should the comprehension check default **on**
-   (recommended — the point is quality) or stay **opt-in** until it has proven itself on a
-   few real runs?
-2. **Claim-scope hard gate?** Should a *second* miss on the claim-scope item be a soft
-   warning (current design) or a **hard STOP** requiring the Owner to either re-read or
-   explicitly accept the risk? (More rigorous, more friction.)
+**Resolved 2026-07-11:**
+1. **Default aggressiveness** → **default on** for `publish` / `understand-only` (§7).
+2. **Claim-scope gate** → **hard STOP** on a second miss (§4.3), not a soft warning.
+
+**Still open (decide before / during P2):**
 3. **Quiz length.** Minimum one item per aspect (4 total) — enough, or a fixed 5–7 to
    cover figure comprehension and the boundary/"must-not-assert" line too?
 4. **Notes authority in design.** Should the Owner-declared crux be a *prior* design may
    overrule (current design) or a *soft override* design must justify departing from?
 
-## 11. Phased implementation (when approved)
+## 11. Phased implementation
 
-- **P1 — capture-only (no grading).** Ask the existing §5 self-check questions interactively,
-  capture answers + pushback into `comprehension-notes.md`; no keyed grading, no re-freeze.
-  Lowest risk; immediately yields the explanation-prior artifact. Design/compose start
-  reading it.
+- **P1 — capture-only (no grading). ← IN IMPLEMENTATION (started 2026-07-11).** Ask the
+  existing §5 self-check questions interactively, capture answers + pushback into
+  `comprehension-notes.md`; no keyed grading, no re-freeze, no claim-scope hard STOP
+  (that needs grading). Default **on** for publish/understand-only. Lowest risk;
+  immediately yields the explanation-prior artifact. Design/compose start reading it.
 - **P2 — keyed grading + pass predicate.** Add `comprehension-quiz.md` (keyed), the §4.3
-  predicate, the `comprehension:` confirm field, and the RUN-010 assertion.
+  predicate **including the claim-scope hard STOP** (locked), the `comprehension:` confirm
+  field, and the RUN-010 assertion.
 - **P3 — model-correction re-freeze.** Add §4.4 (bounded correction cycles). Highest value,
   highest care — this one mutates the frozen model, so it lands last, behind the other two.
 
 Each phase is independently shippable and independently useful; P1 alone already delivers
 the "optimize the downstream instructions" win the idea started from.
+
+### P1 scope (concrete, this iteration)
+
+1. `--comprehension-check on|off` flag (default on: publish/understand-only; off:
+   draft/wire; forced off under `--yes`) in `patent-essay/SKILL.md` Parameters +
+   `pipeline.yaml` profile note.
+2. In the `understand_confirm` checkpoint: after RENDER, when the flag is on, the
+   orchestrator asks the study-pack §5 self-check questions **one at a time**
+   (ASK→STOP→reply per protocol), capturing each answer and any Owner pushback. No
+   grading in P1 — every answer is captured, not scored.
+3. New artifact `handoff/00-understand/comprehension-notes.md` (explanation-prior brief,
+   §4.5 shape) written by the orchestrator from the dialogue; add a `handoff-template/`
+   copy, list it in `understand.yaml` `optional_outputs`, and add it to `design.yaml` +
+   `compose.yaml` `may_read`.
+4. `understand-confirmed.md` gains a `comprehension:` field
+   (`captured | self-asserted | skipped-unattended`) with the value set by P1; update the
+   template. (The `demonstrated` value and its RUN-010 assertion arrive in P2.)
+5. `glossary.md`: define *comprehension loop*, *comprehension-notes*, *explanation-prior*.
+6. Fences enforced by review only in P1 (no new gate): `comprehension-notes.md` carries no
+   claims; the quiz stays on triad facts. The mechanical claim-lint and the RUN-010
+   `comprehension:` assertion are P2.
