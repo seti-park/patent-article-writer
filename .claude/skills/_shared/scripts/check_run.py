@@ -72,6 +72,16 @@ Checks:
                   requires by: orchestrator-yes-flag. When no run-side patent id
                   is derivable: FAIL under --require-understand (default);
                   WARN (RUN-000) only under --no-require-understand.
+  RUN-010b (fail, comprehension sub-rule of RUN-010; IF-3): when
+                  --comprehension-check is on (default), understand-confirmed.md
+                  MUST carry comprehension: ∈ {demonstrated, self-asserted,
+                  skipped-unattended, risk-accepted}. risk-accepted additionally
+                  requires notes: to contain the verbatim substring
+                  "claim-scope risk accepted by owner". skipped-unattended is
+                  valid only under owner-confirm=yes-flag (or when
+                  --comprehension-check is off, which skips this sub-rule).
+                  Missing/out-of-set/invalid ⇒ FAIL (check_id RUN-010; message
+                  names the comprehension field).
   RUN-011 (fail): --require-understand is on (default) and the five understand
                   required_outputs are not all present and non-empty under
                   handoff/00-understand/ (invention-summary, owner-study-pack,
@@ -129,6 +139,7 @@ Usage:
                [--self-audit on|off]
                [--acceptance single-clean|double-clean]
                [--owner-confirm required|yes-flag|off]
+               [--comprehension-check on|off]
                [--require-understand | --no-require-understand]
                [--recheck-gates | --no-recheck-gates]
                [--json]
@@ -171,10 +182,21 @@ CONFIRM_ROUND_RE = re.compile(
     r"^[^\S\n]*-[^\S\n]*\*\*round\*\*[^\S\n]*:[^\S\n]*(\S+)", re.M | re.I)
 CONFIRM_NOTES_RE = re.compile(
     r"^[^\S\n]*-[^\S\n]*\*\*notes\*\*[^\S\n]*:[^\S\n]*(.+)$", re.M | re.I)
+CONFIRM_COMPREHENSION_RE = re.compile(
+    r"^[^\S\n]*-[^\S\n]*\*\*comprehension\*\*[^\S\n]*:[^\S\n]*(\S+)", re.M | re.I)
 REAL_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 PLACEHOLDER_DATE_RE = re.compile(r"^<[^>]+>$")
 
 MEDIUM_PLUS = frozenset({"medium", "high", "critical", "unspecified"})
+
+# IF-1 / IF-3 comprehension confirm-field (comprehension-loop.md §11 P2)
+VALID_COMPREHENSION = frozenset({
+    "demonstrated",
+    "self-asserted",
+    "skipped-unattended",
+    "risk-accepted",
+})
+RISK_ACCEPTED_NOTES_SUBSTRING = "claim-scope risk accepted by owner"
 
 # run-manifest.md — same horizontal-only whitespace (empty values must not
 # absorb the next line via \s matching \n under re.M).
@@ -421,11 +443,53 @@ def _validate_confirm_file(text, owner_confirm_mode, *,
     return True, "ok", warn
 
 
-def _validate_understand_confirmed(text, patent_ids, owner_confirm_mode):
-    """Return (ok, message, warn) for understand-confirmed.md (patent clause on)."""
-    return _validate_confirm_file(
+def _validate_understand_confirmed(text, patent_ids, owner_confirm_mode,
+                                   comprehension_check=True):
+    """Return (ok, message, warn) for understand-confirmed.md (patent clause on).
+
+    When comprehension_check is True (IF-3 / RUN-010b), also require a
+    comprehension: field ∈ VALID_COMPREHENSION, with risk-accepted notes
+    substring and skipped-unattended mode constraints. When False, the
+    comprehension assertion is skipped entirely.
+    """
+    ok, msg, warn = _validate_confirm_file(
         text, owner_confirm_mode,
         patent_ids=patent_ids, require_patent=True)
+    if not ok:
+        return ok, msg, warn
+    if not comprehension_check:
+        return True, "ok", warn
+
+    comp_m = CONFIRM_COMPREHENSION_RE.search(text)
+    if not comp_m:
+        return False, "comprehension field missing", warn
+    comprehension = comp_m.group(1).strip()
+    if comprehension not in VALID_COMPREHENSION:
+        return False, (
+            "comprehension is %r (need demonstrated|self-asserted|"
+            "skipped-unattended|risk-accepted)" % (comprehension or "missing")
+        ), warn
+
+    notes_m = CONFIRM_NOTES_RE.search(text)
+    notes = notes_m.group(1).strip() if notes_m else ""
+
+    if comprehension == "risk-accepted":
+        if RISK_ACCEPTED_NOTES_SUBSTRING not in notes:
+            return False, (
+                "comprehension risk-accepted requires notes to contain "
+                "%r" % RISK_ACCEPTED_NOTES_SUBSTRING
+            ), warn
+
+    if comprehension == "skipped-unattended":
+        # Valid under --yes (yes-flag) or when comprehension_check is off
+        # (already returned above). required + check-on ⇒ FAIL.
+        if owner_confirm_mode != "yes-flag":
+            return False, (
+                "comprehension skipped-unattended only valid under "
+                "owner-confirm=yes-flag (got %r)" % owner_confirm_mode
+            ), warn
+
+    return True, "ok", warn
 
 
 def _validate_cap_confirmed(text, owner_confirm_mode, capped_round):
@@ -468,7 +532,8 @@ def _build_recheck_context(run_root, handoff_dir):
 
 def check(handoff_dir, threshold="pass", self_audit="on",
           acceptance="double-clean", owner_confirm="required",
-          require_understand=True, recheck_gates=True):
+          require_understand=True, recheck_gates=True,
+          comprehension_check=True):
     findings = []
     edit_dir = os.path.join(handoff_dir, "03-edit")
     compose_dir = os.path.join(handoff_dir, "02-compose")
@@ -659,7 +724,8 @@ def check(handoff_dir, threshold="pass", self_audit="on",
                 understand_dir)
         else:
             ok, msg, warn = _validate_understand_confirmed(
-                _read(confirm_path), patent_ids, owner_confirm)
+                _read(confirm_path), patent_ids, owner_confirm,
+                comprehension_check=comprehension_check)
             if not ok:
                 add("RUN-010", "fail",
                     "understand-confirmed.md invalid: %s" % msg, confirm_path)
@@ -862,6 +928,10 @@ def main(argv=None):
     p.add_argument("--owner-confirm", choices=["required", "yes-flag", "off"],
                    default="required",
                    help="RUN-010 owner-confirm policy (default: required)")
+    p.add_argument("--comprehension-check", choices=["on", "off"],
+                   default="on",
+                   help="RUN-010b IF-3 comprehension field assertion "
+                        "(default: on)")
     p.add_argument("--require-understand", dest="require_understand",
                    action="store_true", default=True,
                    help="require five understand outputs (RUN-011; default on)")
@@ -885,6 +955,7 @@ def main(argv=None):
         owner_confirm=args.owner_confirm,
         require_understand=args.require_understand,
         recheck_gates=args.recheck_gates,
+        comprehension_check=(args.comprehension_check == "on"),
     )
     if args.json:
         print(json.dumps(result, indent=2))

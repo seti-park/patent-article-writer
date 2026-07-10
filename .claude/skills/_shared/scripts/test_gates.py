@@ -1013,7 +1013,8 @@ class TestCheckRun(unittest.TestCase):
 
     def _write_understand_complete(self, confirmed=True, by="owner",
                                    status="confirmed", date="2026-07-10",
-                                   patent=None, notes='"owner confirmed triad"'):
+                                   patent=None, notes='"owner confirmed triad"',
+                                   comprehension="demonstrated"):
         os.makedirs(os.path.join(self.root, "00-understand"), exist_ok=True)
         self._w("00-understand/invention-summary.md",
                 "# Invention Summary\n\n## Metadata\n- **Patent ID**: %s\n\n"
@@ -1036,8 +1037,10 @@ class TestCheckRun(unittest.TestCase):
                     "- **by**: %s\n"
                     "- **date**: %s\n"
                     "- **patent**: %s\n"
+                    "- **comprehension**: %s\n"
                     "- **notes**: %s\n"
-                    % (status, by, date, patent or self.PATENT_ID, notes))
+                    % (status, by, date, patent or self.PATENT_ID,
+                       comprehension, notes))
 
     def _accepted_double_clean(self, with_briefing=True, with_understand=True):
         self._w("03-edit/edit-log.round-1.md", self.FAIL_LOG)
@@ -1444,6 +1447,7 @@ class TestCheckRun(unittest.TestCase):
                 "- **by**: owner\n"
                 "- **date**: 2026-07-10\n"
                 "- **patent**: \n"
+                "- **comprehension**: demonstrated\n"
                 "- **notes**: \"owner confirmed triad\"\n")
         r = check_run.check(self.root, owner_confirm="required")
         self.assertFalse(r["passed"])
@@ -1454,17 +1458,20 @@ class TestCheckRun(unittest.TestCase):
     # --- newline-swallowing field parsers (WS-B follow-up 2) ---------------
 
     def _confirm_text(self, **fields):
-        """Build a confirm-file body; omit a key or pass '' for empty value."""
+        """Build a confirm-file body; omit a key (pass None) or pass '' for empty."""
         defaults = {
             "status": "confirmed",
             "by": "owner",
             "date": "2026-07-10",
             "patent": "US9999999B2",
+            "comprehension": "demonstrated",
             "notes": '"ok"',
         }
         defaults.update(fields)
         lines = ["# understand-confirmed", ""]
-        for key in ("status", "by", "date", "patent", "notes"):
+        for key in ("status", "by", "date", "patent", "comprehension", "notes"):
+            if defaults.get(key) is None:
+                continue  # omit field entirely
             lines.append("- **%s**: %s" % (key, defaults[key]))
         return "\n".join(lines) + "\n"
 
@@ -1523,6 +1530,7 @@ class TestCheckRun(unittest.TestCase):
                 "- **by**: owner\n"
                 "- **date**: 2026-07-10\n"
                 "- **patent**:\n"
+                "- **comprehension**: demonstrated\n"
                 "- **notes**: \"owner confirmed triad\"\n")
         r = check_run.check(self.root, owner_confirm="required")
         self.assertFalse(r["passed"])
@@ -1552,6 +1560,189 @@ class TestCheckRun(unittest.TestCase):
         ok, msg, _warn = check_run._validate_understand_confirmed(
             text, [], "required")
         self.assertFalse(ok, msg)
+
+    # --- RUN-010 comprehension assertion (IF-3) ----------------------------
+
+    def test_run010_comprehension_demonstrated_passes(self):
+        self._accepted_double_clean(with_understand=False)
+        self._write_understand_complete(comprehension="demonstrated")
+        r = check_run.check(self.root, owner_confirm="required",
+                            comprehension_check=True)
+        self.assertTrue(r["passed"], r["findings"])
+        self.assertFalse(_has(r, "RUN-010"))
+
+    def test_run010_comprehension_self_asserted_passes(self):
+        self._accepted_double_clean(with_understand=False)
+        self._write_understand_complete(comprehension="self-asserted")
+        r = check_run.check(self.root, owner_confirm="required",
+                            comprehension_check=True)
+        self.assertTrue(r["passed"], r["findings"])
+        self.assertFalse(_has(r, "RUN-010"))
+
+    def test_run010_comprehension_skipped_unattended_yes_flag_passes(self):
+        self._accepted_double_clean(with_understand=False)
+        self._write_understand_complete(
+            by="orchestrator-yes-flag",
+            comprehension="skipped-unattended",
+            notes='"--yes unattended"',
+        )
+        r = check_run.check(self.root, owner_confirm="yes-flag",
+                            comprehension_check=True)
+        self.assertTrue(r["passed"], r["findings"])
+        self.assertFalse(_has(r, "RUN-010"))
+
+    def test_run010_comprehension_skipped_unattended_required_fails(self):
+        self._accepted_double_clean(with_understand=False)
+        self._write_understand_complete(comprehension="skipped-unattended")
+        r = check_run.check(self.root, owner_confirm="required",
+                            comprehension_check=True)
+        self.assertFalse(r["passed"])
+        self.assertTrue(_has(r, "RUN-010"))
+        msgs = [f["message"] for f in r["findings"] if f["check_id"] == "RUN-010"]
+        self.assertTrue(any("comprehension" in m.lower() for m in msgs), msgs)
+        self.assertTrue(any("skipped-unattended" in m for m in msgs), msgs)
+
+    def test_run010_comprehension_risk_accepted_with_notes_passes(self):
+        self._accepted_double_clean(with_understand=False)
+        self._write_understand_complete(
+            comprehension="risk-accepted",
+            notes='"claim-scope risk accepted by owner"',
+        )
+        r = check_run.check(self.root, owner_confirm="required",
+                            comprehension_check=True)
+        self.assertTrue(r["passed"], r["findings"])
+        self.assertFalse(_has(r, "RUN-010"))
+
+    def test_run010_comprehension_risk_accepted_without_notes_fails(self):
+        self._accepted_double_clean(with_understand=False)
+        self._write_understand_complete(
+            comprehension="risk-accepted",
+            notes='"owner confirmed triad"',
+        )
+        r = check_run.check(self.root, owner_confirm="required",
+                            comprehension_check=True)
+        self.assertFalse(r["passed"])
+        self.assertTrue(_has(r, "RUN-010"))
+        msgs = [f["message"] for f in r["findings"] if f["check_id"] == "RUN-010"]
+        self.assertTrue(any("comprehension" in m.lower() for m in msgs), msgs)
+        self.assertTrue(
+            any("claim-scope risk accepted by owner" in m for m in msgs), msgs)
+
+    def test_run010_comprehension_missing_fails(self):
+        self._accepted_double_clean(with_understand=False)
+        self._write_understand_complete(confirmed=False)
+        self._w("00-understand/understand-confirmed.md",
+                "# understand-confirmed\n\n"
+                "- **status**: confirmed\n"
+                "- **by**: owner\n"
+                "- **date**: 2026-07-10\n"
+                "- **patent**: %s\n"
+                "- **notes**: \"owner confirmed triad\"\n"
+                % self.PATENT_ID)
+        r = check_run.check(self.root, owner_confirm="required",
+                            comprehension_check=True)
+        self.assertFalse(r["passed"])
+        self.assertTrue(_has(r, "RUN-010"))
+        msgs = [f["message"] for f in r["findings"] if f["check_id"] == "RUN-010"]
+        self.assertTrue(any("comprehension" in m.lower() for m in msgs), msgs)
+
+    def test_run010_comprehension_out_of_set_fails(self):
+        self._accepted_double_clean(with_understand=False)
+        self._write_understand_complete(comprehension="bogus")
+        r = check_run.check(self.root, owner_confirm="required",
+                            comprehension_check=True)
+        self.assertFalse(r["passed"])
+        self.assertTrue(_has(r, "RUN-010"))
+        msgs = [f["message"] for f in r["findings"] if f["check_id"] == "RUN-010"]
+        self.assertTrue(any("comprehension" in m.lower() for m in msgs), msgs)
+
+    def test_run010_comprehension_check_off_skips_assertion(self):
+        """--comprehension-check off: missing/out-of-set comprehension is not RUN-010."""
+        self._accepted_double_clean(with_understand=False)
+        self._write_understand_complete(confirmed=False)
+        # Valid base confirm fields, but no comprehension: field at all.
+        self._w("00-understand/understand-confirmed.md",
+                "# understand-confirmed\n\n"
+                "- **status**: confirmed\n"
+                "- **by**: owner\n"
+                "- **date**: 2026-07-10\n"
+                "- **patent**: %s\n"
+                "- **notes**: \"owner confirmed triad\"\n"
+                % self.PATENT_ID)
+        r = check_run.check(self.root, owner_confirm="required",
+                            comprehension_check=False)
+        self.assertTrue(r["passed"], r["findings"])
+        self.assertFalse(_has(r, "RUN-010"))
+        # Also: out-of-set value is ignored when check is off.
+        self._write_understand_complete(comprehension="bogus")
+        r2 = check_run.check(self.root, owner_confirm="required",
+                             comprehension_check=False)
+        self.assertTrue(r2["passed"], r2["findings"])
+        self.assertFalse(_has(r2, "RUN-010"))
+
+    def test_validate_comprehension_if3_unit(self):
+        """Unit: IF-3 branches fire and do not over-fire on demonstrated."""
+        patent_ids = ["US9999999B2"]
+        ok, msg, _ = check_run._validate_understand_confirmed(
+            self._confirm_text(comprehension="demonstrated"),
+            patent_ids, "required", comprehension_check=True)
+        self.assertTrue(ok, msg)
+
+        ok, msg, _ = check_run._validate_understand_confirmed(
+            self._confirm_text(comprehension="self-asserted"),
+            patent_ids, "required", comprehension_check=True)
+        self.assertTrue(ok, msg)
+
+        ok, msg, _ = check_run._validate_understand_confirmed(
+            self._confirm_text(
+                by="orchestrator-yes-flag",
+                comprehension="skipped-unattended",
+                notes='"--yes"',
+            ),
+            patent_ids, "yes-flag", comprehension_check=True)
+        self.assertTrue(ok, msg)
+
+        ok, msg, _ = check_run._validate_understand_confirmed(
+            self._confirm_text(comprehension="skipped-unattended"),
+            patent_ids, "required", comprehension_check=True)
+        self.assertFalse(ok, msg)
+        self.assertIn("comprehension", msg.lower())
+
+        ok, msg, _ = check_run._validate_understand_confirmed(
+            self._confirm_text(
+                comprehension="risk-accepted",
+                notes='"claim-scope risk accepted by owner"',
+            ),
+            patent_ids, "required", comprehension_check=True)
+        self.assertTrue(ok, msg)
+
+        ok, msg, _ = check_run._validate_understand_confirmed(
+            self._confirm_text(
+                comprehension="risk-accepted",
+                notes='"ok"',
+            ),
+            patent_ids, "required", comprehension_check=True)
+        self.assertFalse(ok, msg)
+        self.assertIn("comprehension", msg.lower())
+        self.assertIn("claim-scope risk accepted by owner", msg)
+
+        ok, msg, _ = check_run._validate_understand_confirmed(
+            self._confirm_text(comprehension=None),
+            patent_ids, "required", comprehension_check=True)
+        self.assertFalse(ok, msg)
+        self.assertIn("comprehension", msg.lower())
+
+        ok, msg, _ = check_run._validate_understand_confirmed(
+            self._confirm_text(comprehension="bogus"),
+            patent_ids, "required", comprehension_check=True)
+        self.assertFalse(ok, msg)
+        self.assertIn("comprehension", msg.lower())
+
+        # Off: missing field is not a failure.
+        ok, msg, _ = check_run._validate_understand_confirmed(
+            self._confirm_text(comprehension=None),
+            patent_ids, "required", comprehension_check=False)
+        self.assertTrue(ok, msg)
 
     def test_patent_ids_match_rejects_truncated_prefix(self):
         self.assertFalse(
