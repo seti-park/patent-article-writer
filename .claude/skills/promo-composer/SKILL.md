@@ -18,7 +18,7 @@ essays/<id>/essay-final.md                 (FINAL; frontmatter: essay_id, closin
   + publication-package/publication.md    (the paste-ready strip readers actually saw)
   + owner-briefing.md                     (Korean owner briefing; parallel archive contract,
                                            may be ABSENT on older archives)
-  + handoff/02-compose/thesis-trace.md    (## Signature lines: <=3 protected exact strings)
+  + thesis-trace.md                       (## Signature lines: <=3 protected exact strings)
   + README.md                             (reader_sentence)
   + publication-package/ images + posting-checklist.md   (cover + alt-text lines)
   + optional owner context               (emphasis and timing only, never new facts)
@@ -77,7 +77,7 @@ X post, share copy, thread, 프로모, 홍보 문구.
 1. **Load the archive.** `essay-final.md` (frontmatter: `essay_id`, `closing_posture`,
    `draft_version`), `publication-package/publication.md`,
    `publication-package/posting-checklist.md`, `owner-briefing.md`,
-   `handoff/02-compose/thesis-trace.md`, `README.md`. Reject the run if `essay-final.md` or
+   `thesis-trace.md`, `README.md`. Reject the run if `essay-final.md` or
    `publication.md` is missing. `owner-briefing.md` absent: proceed and record `ABSENT` in
    the header; the KR post then translates from the essay's protected lines instead of
    reusing the briefing's Korean phrasings.
@@ -129,7 +129,7 @@ X post, share copy, thread, 프로모, 홍보 문구.
 - `essays/<id>/essay-final.md` and `essays/<id>/publication-package/publication.md` exist;
   the run is accepted (double-clean or an explicit CAP HIT ship). Promo never runs on a
   mid-loop draft.
-- `handoff/02-compose/thesis-trace.md` and `README.md` present in the archive.
+- `essays/<id>/thesis-trace.md` and `README.md` present in the archive.
 - `essays/<id>/owner-briefing.md` expected (tracked archive deliverable per the
   owner-comprehension overhaul; contract landing in parallel). Absence is tolerated and
   recorded, not fatal.

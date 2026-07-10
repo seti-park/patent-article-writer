@@ -11,7 +11,7 @@ may_read:
   - essays/<id>/publication-package/**
   - essays/<id>/owner-briefing.md
   - essays/<id>/README.md
-  - essays/<id>/handoff/02-compose/thesis-trace.md
+  - essays/<id>/thesis-trace.md        # slim archive (2026-07-11): graduated from handoff/02-compose/
   - essays/<id>/promo/**                 # prior pack for overwrite bumps
   - .claude/skills/promo-composer/**
   - .claude/skills/voice-canon-lookup/** # optional opening/closing only

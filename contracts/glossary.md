@@ -27,7 +27,7 @@ Use these terms in all live skills and operator docs. Do not invent synonyms mid
 
 | Term | Meaning |
 |------|---------|
-| **run_id** | `<assignee>-<publication-number>` lowercased (e.g. `intel-us20250266395`), matching `essays/` directory names. Re-run of the same patent appends `-r2`, `-r3`, …. Generated at bootstrap. `essay_id` ≡ `run_id`. Written to `handoff/run-manifest.md`. |
+| **run_id** | `<assignee>-<publication-number>[-<suffix>]` lowercased (e.g. `intel-us20250266395`), matching `essays/` directory names. Suffixes are governed: `-r2`/`-r3`… = a re-run of the same patent; `-<topic>` (lowercase kebab, e.g. `-backend-hbm`) = a distinct topical edition of the same patent (a different thesis on the same document). One suffix kind at a time. Generated at bootstrap. `essay_id` ≡ `run_id`. Written to `handoff/run-manifest.md`. |
 
 ## Legacy alias
 

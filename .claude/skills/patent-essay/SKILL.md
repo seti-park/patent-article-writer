@@ -375,9 +375,11 @@ Profile → flags (`contracts/stages/verify.yaml`):
    `python tools/make_header.py ... --out essays/<id>/publication-package/cover-5x2.png`
    (see `tools/header-style.md`; `make_header.py` is the contracted producer).
 8. Copy score-history, gate-result, README; leave `promo/` for the promo stage.
-9. **Migration:** full `handoff/` tree under `essays/<id>/handoff/` is still allowed until
-   slim-archive lands — remove when that contract is added; new runs after that date must not
-   copy the full tree.
+9. Copy `handoff/02-compose/thesis-trace.md` → `essays/<id>/thesis-trace.md` (promo reads it).
+10. **Slim archive:** the shelf carries the final artifacts + `thesis-trace.md` only. Do NOT
+    copy the working `handoff/` tree into `essays/<id>/` — rejected thesis-candidates and
+    pre-final drafts read as canonical to a fresh-context worker. The full round-by-round
+    evidence stays in `runs/<id>/` (per-run, not tracked).
 
 ### 9. Promo (publish) — `promo-composer`
 

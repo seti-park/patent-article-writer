@@ -28,13 +28,15 @@ required_outputs:
   - essays/<id>/score-history.md
   - essays/<id>/gate-result.json       # or last gate-result.round-N
   - essays/<id>/README.md
+  - essays/<id>/thesis-trace.md        # signature lines; consumed by promo (promo.yaml)
   # promo/ is added later by promo stage (empty or absent at archive time OK)
   - essays/<id>/promo/                 # optional at archive; promo stage fills
-  # MIGRATION EXCEPTION: full handoff tree allowed under essays/<id>/handoff/
-  # until slim-archive lands. SUNSET: remove when slim-archive contract is
-  # added; every new run after that date must not copy the full tree.
-  - essays/<id>/handoff/               # migration; see sunset above
-  - runs/<id>/                         # full round evidence
+  # SLIM ARCHIVE (2026-07-11): the shelf carries FINAL artifacts + thesis-trace
+  # only. Working intermediates (rejected thesis-candidates, pre-final drafts,
+  # per-round edit-logs/gate-results, search/fact-check logs, design scratch)
+  # are NOT copied into essays/<id>/ — they would read as canonical to a
+  # fresh-context worker. The full round-by-round evidence lives in runs/<id>/.
+  - runs/<id>/                         # full round evidence (not tracked; per-run)
 
 assembly:  # deterministic parts — archive stage responsibility
   - copy essay-final.md from handoff/03-edit/
@@ -44,9 +46,10 @@ assembly:  # deterministic parts — archive stage responsibility
   - copy publication.md → publication-package/publication.md
   - author publication-package/posting-checklist.md
   - copy score-history + gate-result + README
+  - copy thesis-trace.md from handoff/02-compose/ → essays/<id>/thesis-trace.md
   - "cover step (required): invoke tools/make_header.py → essays/<id>/publication-package/cover-5x2.png (tools/header-style.md; make_header.py is contracted cover producer; mascot/investor variants optional)"
 
 rules:
   - "Cover generation is an explicit archive step, not optional on publish."
   - "patent.md snapshot must hash-match handoff/run-manifest.md patent_sha256."
-  - "Full handoff copy is migration-only; sunset when slim-archive lands."
+  - "Slim archive: copy final artifacts + thesis-trace only; never the full handoff tree (working intermediates stay in runs/<id>/)."
