@@ -44,7 +44,7 @@ required_outputs:
   - handoff/01-design/thesis-candidates.md
   - handoff/01-design/title-lead-candidates.md
   - handoff/01-design/figure-selection.md
-  - handoff/01-design/figure-rationale.md
+  - handoff/01-design/figure-rationale.md   # design: why figures were selected (≠ compose figures-rationale.md)
   - handoff/01-design/fact-check-log.md
   - handoff/01-design/search-log.md
   - handoff/01-design/phase2-handoff-notes.md

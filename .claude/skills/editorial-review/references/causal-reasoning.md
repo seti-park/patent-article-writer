@@ -4,7 +4,7 @@ Referenced by editorial-review SKILL.md. Applied during Pass 3 (Claim adequacy) 
 
 ## Where this matters
 
-SETI essays carry a recurring shape: patent as primary evidence, leading to an inference about a company's intent, capability, or trajectory. The connection from patent evidence to that inference is the essay's causal spine. When the spine is intact, the essay reads as analysis. When the spine is weak, the essay reads as projection.
+Owner essays carry a recurring shape: patent as primary evidence, leading to an inference about a company's intent, capability, or trajectory. The connection from patent evidence to that inference is the essay's causal spine. When the spine is intact, the essay reads as analysis. When the spine is weak, the essay reads as projection.
 
 This file enumerates the failure patterns and the checks that catch them.
 
@@ -62,7 +62,7 @@ Fix: either supply the mechanism in one or two sentences, or downgrade the claim
 
 ### Pattern 5: Counterfactual omission in reversal structure
 
-SETI essays often turn on a reversal: the conventional narrative says X, the patent evidence supports not-X. The counterfactual question is essential here: if the conventional narrative were true, what would the patent evidence look like, and what would it not look like?
+Owner essays often turn on a reversal: the conventional narrative says X, the patent evidence supports not-X. The counterfactual question is essential here: if the conventional narrative were true, what would the patent evidence look like, and what would it not look like?
 
 Without the counterfactual, the reversal reads as assertion rather than argument.
 

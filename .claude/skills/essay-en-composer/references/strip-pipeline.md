@@ -23,7 +23,7 @@ draft.md is the file deterministic-gate consumes for CheckID 2, 4, and 6 verific
 - Sources block preserved (sits above the Footnotes heading)
 - Figure markdown and italic captions preserved per `figure-rendering.md` rules
 
-publication.md is the file SETI pastes into X Articles at publication time.
+publication.md is the file the Owner pastes into X Articles at publication time.
 
 ## Reproducible pipeline
 

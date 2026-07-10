@@ -157,7 +157,7 @@ The composer's Step 0 (mode selection) defaults to walkthrough + measured (see `
 | Adversarial reader concern / strategic essay | walkthrough | conservative |
 | Patent-heavy / factual density high | walkthrough | conservative |
 
-The hint is overrideable by SETI invocation. Priority: invocation > hint > default.
+The hint is overrideable by Owner invocation. Priority: invocation > hint > default.
 
 ## Section ordering pattern (default)
 

@@ -1,21 +1,21 @@
 ---
 name: voice-canon-lookup
-description: "Lookup-only skill that serves SETI's voice canon (14 pattern categories, 33+ canonical example entries). Invoked by essay-en-composer when a section needs a concrete voice anchor (opening pattern, closing pattern, inline bold thesis anchor, Korean signature phrase). Returns the requested voice-canon entry's verbatim body so the composer can match cadence and structure. Use when the composer asks for a voice example, voice pattern reference, or canon lookup. NOT for: voice judgment (caller decides what to do with the example), essay drafting, editorial review, or category creation."
+description: "Lookup-only skill that serves the Owner's voice canon (14 pattern categories, 33+ canonical example entries). Invoked by essay-en-composer when a section needs a concrete voice anchor (opening pattern, closing pattern, inline bold thesis anchor, Korean signature phrase). Returns the requested voice-canon entry's verbatim body so the composer can match cadence and structure. Use when the composer asks for a voice example, voice pattern reference, or canon lookup. NOT for: voice judgment (caller decides what to do with the example), essay drafting, editorial review, or category creation."
 ---
 
 # voice-canon-lookup
 
 Lookup-only. 어떤 voice category 가 있고, 각 category 가 무엇이고, 실제 example 이 무엇인지만 제공합니다.
 
-본 skill 은 SETI 가 직접 trigger 하는 영역이 아닙니다. `essay-en-composer` 의 내부 호출로만 작동합니다. 작성, 편집, 판단, 분석 같은 적극적 작업은 안 합니다 — 그건 호출하는 skill 의 책임입니다.
+본 skill 은 Owner 가 직접 trigger 하는 영역이 아닙니다. `essay-en-composer` 의 내부 호출로만 작동합니다. 작성, 편집, 판단, 분석 같은 적극적 작업은 안 합니다 — 그건 호출하는 skill 의 책임입니다.
 
 ## When to invoke
 
-`essay-en-composer` 가 section 작성 시 voice anchor 가 필요할 때. SETI 가 직접 트리거하지 않음 (PI 가 명시).
+`essay-en-composer` 가 section 작성 시 voice anchor 가 필요할 때. Owner 가 직접 트리거하지 않음 (PI 가 명시).
 
 ## Voice 의 핵심 3 가지
 
-1. **SETI 글쓰기의 목적**: 통념을 특허 물증으로 전복하는 아하 모먼트 + 결론을 열어두기
+1. **Owner 글쓰기의 목적**: 통념을 특허 물증으로 전복하는 아하 모먼트 + 결론을 열어두기
 2. **핵심 패턴**: 통념 → 특허 물증으로 전복 구조. 인용-해석 동반. 본문 원자적 해석 → 결론부 종합.
 3. **절대 하지 않는 것**: 인지하고 있는 명확한 진실 왜곡. 근거 없는 희망. 선동성 톤.
 

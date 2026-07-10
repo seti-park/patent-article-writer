@@ -104,4 +104,4 @@ Inline citations make prose feel academic.
 
 User selected strict-execution but Blueprint coverage is incomplete. Or user selected conservative posture but a thesis-altering catch emerges.
 
-→ Surface the mismatch. Propose mode or posture shift per `mode-spec.md` mid-pipeline shift rules. SETI decides: shift mid-pipeline, abandon attempt, or return to essay-architect for blueprint revision.
+→ Surface the mismatch. Propose mode or posture shift per `mode-spec.md` mid-pipeline shift rules. Raise `OWNER_QUESTION` (orchestrator relays via Owner checkpoint protocol); Owner decides: shift mid-pipeline, abandon attempt, or return to design for blueprint revision.

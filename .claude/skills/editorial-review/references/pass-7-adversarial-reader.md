@@ -55,7 +55,8 @@ slips the blacklist.
 
 Findings in the standard `feedback-format.md` schema with `pass: pass-7-adversarial-reader`.
 They feed `overall_assessment` like any pass. A `/goal` driver can require "pass-7 returns no
-unresolved high findings" as part of the acceptance set (see `scoring-rubric.md`).
+unresolved high findings" as part of the acceptance set (see
+`_shared/references/scoring-rubric.md`).
 
 ## Voice fence
 

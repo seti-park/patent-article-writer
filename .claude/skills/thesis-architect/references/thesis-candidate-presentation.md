@@ -1,6 +1,6 @@
 # Thesis candidate presentation (Step 3)
 
-Each candidate presented in a uniform format. SETI compares via the table at the end and selects one.
+Each candidate presented in a uniform format. The Owner compares via the table at the end and selects one (orchestrator soft checkpoint / design title-lead surface; forked worker raises `OWNER_QUESTION` if it needs a pick mid-run — see `patent-essay/SKILL.md` Owner checkpoint protocol).
 
 ## Per-candidate format
 
@@ -61,7 +61,7 @@ After presenting candidates, summarize as:
 
 ## Recommendation
 
-After the comparison table, give a Claude recommendation. Single line; SETI decides.
+After the comparison table, give a Claude recommendation. Single line; the Owner decides via the orchestrator-relayed checkpoint.
 
 ```markdown
 ## Recommendation
@@ -69,9 +69,9 @@ After the comparison table, give a Claude recommendation. Single line; SETI deci
 Candidate 1 — strongest 4-axis grounding (Bosch baseline well-documented in context research) and clearest hook (Tesla公식발표 narrative is specific and recent).
 ```
 
-## SETI selection options
+## Owner selection options
 
-SETI 가 다음 중 하나로 응답:
+Owner 가 다음 중 하나로 응답 (orchestrator ASK; worker never addresses the Owner directly):
 
 1. **Select Candidate N** — proceeding with that candidate.
 2. **Combination Candidates A + B** — combine. Requires multi-spine override per `single-spine-default.md`. Combined statement, combined framing, combined evidence required.

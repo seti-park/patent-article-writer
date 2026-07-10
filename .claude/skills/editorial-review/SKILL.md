@@ -9,7 +9,8 @@ agent: editorial-reviewer
 
 **Contract:** `contracts/stages/review_loop.yaml`
 
-Phase 3 Edit's mandatory inferential review. Six passes. Structured feedback YAML output.
+Phase 3 Edit's mandatory inferential review. Seven passes (incl. `pass-7-adversarial-reader`).
+Structured feedback YAML output.
 
 ```
 handoff/02-compose/essay-draft.md
@@ -142,6 +143,11 @@ findings:
 ```
 
 Feedback gets written to `handoff/03-edit/edit-log.md`. The orchestrator routes medium+ findings to the composer's revision mode; on acceptance the draft is promoted to `handoff/03-edit/essay-final.md`.
+
+**CLEAN(N)** (orchestrator formula; identical to `_shared/references/scoring-rubric.md` and
+`patent-essay/SKILL.md` §4): gates pass + assessment ≥ threshold + grounding hard-gate +
+goal-2 hard-gate + verdict hard-gate. After each round the orchestrator appends one row to
+`handoff/03-edit/score-history.md` (template: `handoff-template/03-edit/score-history.md`).
 
 ## Pre/post conditions
 

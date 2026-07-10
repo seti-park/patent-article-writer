@@ -1,5 +1,7 @@
 # Patent Essay Pipeline — stage graph and profiles
 # Source of truth for what runs. Orchestrator interprets this; CLAUDE.md only summarizes.
+# The per-profile `stages:` list is the ONLY execution list. Flags below it are derived
+# summaries; on any disagreement `stages:` wins.
 
 name: patent-article-writer
 version: 2
@@ -37,6 +39,7 @@ stages:
     # acceptance policy set by profile
 
   - id: self_audit
+    # cold reader = one extra adversarial-reader fork, checklist-FREE (see stages/self_audit.yaml)
     agents: [adversarial-reader, grounding-verifier]
     requires: [review_loop]
 
@@ -66,7 +69,6 @@ profiles:
   understand-only:
     description: Freeze patent triad for Owner study; no angle, no essay.
     stages: [bootstrap, figures, understand]
-    review_loop: null
     owner_confirm: true
     self_audit: false
     polish: false
@@ -86,8 +88,8 @@ profiles:
     retro: false
 
   wire:
-    description: Wire/short mode; self-audit off.
-    stages: [bootstrap, figures, understand, design, compose, review_loop, verify, archive]
+    description: Wire/short mode; self-audit off; no retro (short path archives only).
+    stages: [bootstrap, figures, understand, design, compose, review_loop, verify, archive, retro]
     review_loop:
       acceptance: single_clean
       max_revision: 3
@@ -95,7 +97,7 @@ profiles:
     self_audit: false
     polish: false
     promo: false
-    retro: true
+    retro: true    # retro requires archive; wire archives — the stages-list omission was the bug
     mode: wire
 
   publish:

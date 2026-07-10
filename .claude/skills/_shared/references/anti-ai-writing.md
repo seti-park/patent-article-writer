@@ -1,6 +1,6 @@
 # Anti-AI-Writing canon (Phase 2 strip, Phase 3 Pass 1 check)
 
-SETI's anti-AI-tell rules are the source of truth for naturalness (north-star goal 4b). This
+The Owner's anti-AI-tell rules are the source of truth for naturalness (north-star goal 4b). This
 canon has two tiers:
 
 - **Mechanical subset** — the unambiguous banned words/patterns, mirrored to
@@ -13,7 +13,7 @@ canon has two tiers:
 
 The two well-researched vendored skills (`_shared/vendor/humanizer`, `_shared/vendor/ai-check`)
 have been **absorbed into this canon** and are kept only as reference (they are NOT run in the
-runtime loop — a generic detector would fight SETI's voice). The meta-loop (`pipeline-retro`)
+runtime loop — a generic detector would fight the Owner's voice). The meta-loop (`pipeline-retro`)
 grows this canon over time and proposes promotions into the mechanical subset when a pattern
 recurs and is safe to enforce.
 

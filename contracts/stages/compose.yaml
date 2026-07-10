@@ -29,7 +29,7 @@ must_not_read:
 
 required_outputs:
   - handoff/02-compose/essay-draft.md
-  - handoff/02-compose/figures-rationale.md
+  - handoff/02-compose/figures-rationale.md  # compose: how figures are used in prose (≠ design figure-rationale.md)
   - handoff/02-compose/thesis-trace.md
   - handoff/02-compose/publication.md
 

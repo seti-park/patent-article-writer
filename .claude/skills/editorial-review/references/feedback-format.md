@@ -30,14 +30,15 @@ findings:
     related_fact_entry: <optional fact_id>
 ```
 
-## Pass names
+## Pass names (7-pass enum; locked)
 
-- `voice-canon-compliance`
-- `redundancy-compression`
-- `claim-adequacy`
-- `paraphrase-mutation-judgment`
-- `reader-perspective`
-- `lead-conclusion-strength`
+- `pass-1-voice-anti-ai`
+- `pass-2-redundancy`
+- `pass-3-fact-paraphrase`
+- `pass-4-logic-causality`
+- `pass-5-reader-perspective`
+- `pass-6-lead-conclusion-format`
+- `pass-7-adversarial-reader`
 
 ## Required fields per finding
 
@@ -149,7 +150,7 @@ overall_assessment: revise-required
 
 findings:
   - finding_id: r1-F1
-    pass: paraphrase-mutation-judgment
+    pass: pass-3-fact-paraphrase
     location: §3, sentence containing "complements"
     severity: high
     severity_under_default_posture: high
@@ -162,7 +163,7 @@ findings:
     related_fact_entry: tesla-supplements-2026-05-08
 
   - finding_id: r1-F2
-    pass: voice-canon-compliance
+    pass: pass-1-voice-anti-ai
     location: §2, paragraph 1
     severity: medium
     severity_under_default_posture: medium
@@ -174,7 +175,7 @@ findings:
     quote: "The patent describes an architecture where..."
 
   - finding_id: r1-F3
-    pass: claim-adequacy
+    pass: pass-3-fact-paraphrase
     location: §4
     severity: low
     severity_under_default_posture: low
@@ -184,16 +185,16 @@ findings:
     recommendation: |
       Reference industry baseline (10ms typical) to make 70ms significance land.
 
-  - pass: redundancy-compression
+  - pass: pass-2-redundancy
     finding: "no findings"
     scoped_to: "All sections reviewed for repeated claims and tightening opportunities"
 
-  - pass: reader-perspective
+  - pass: pass-5-reader-perspective
     finding: "no findings"
     scoped_to: "Engagement curve and audience accessibility checked across all sections"
 
   - finding_id: r1-F4
-    pass: lead-conclusion-strength
+    pass: pass-6-lead-conclusion-format
     location: §1 lead
     severity: low
     severity_under_default_posture: low
@@ -217,7 +218,7 @@ overall_assessment: revise-required
 
 findings:
   - finding_id: r1-F1
-    pass: paraphrase-mutation-judgment
+    pass: pass-3-fact-paraphrase
     location: §3, sentence containing "complements"
     severity: high
     severity_under_default_posture: high
@@ -229,7 +230,7 @@ findings:
       Re-anchor to source verbatim.
 
   - finding_id: r2-F1
-    pass: redundancy-compression
+    pass: pass-2-redundancy
     location: §4, paragraphs 2–3
     severity: medium
     severity_under_default_posture: medium
@@ -245,5 +246,6 @@ findings:
 - Recommendations should be specific and actionable.
 - The `quote` field helps caller locate finding quickly.
 - Empty passes (no findings) must still appear in output (failure-mode mitigation against editorial inertia).
-- `severity_under_default_posture` transparency lets SETI see at a glance which findings shifted due to posture lens.
+- `severity_under_default_posture` transparency lets the orchestrator (and Owner via
+  score-history) see at a glance which findings shifted due to posture lens.
 - Auto-fix is NOT this skill's responsibility. Caller decides what to apply.

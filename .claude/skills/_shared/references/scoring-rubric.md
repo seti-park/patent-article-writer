@@ -128,10 +128,10 @@ on the judge shrinks.
 ## PASS / FAIL (orchestrator loop policy)
 
 ```
-CLEAN(N)  ⇔  Layer-1 gates all pass (no fail-severity finding, including FIGUSE-001)
-             AND  editorial overall_assessment is acceptable per threshold
-             AND  grounding hard-gate not breached
-             AND  verdict hard-gate not breached
+CLEAN(N)  ⇔  gates pass + assessment ≥ threshold + grounding hard-gate
+             + goal-2 hard-gate + verdict hard-gate
+             (orchestrator arbiter: patent-essay/SKILL.md §4; same formula in
+             editorial-review/SKILL.md)
 
 ACCEPTED  ⇔  two consecutive CLEAN rounds from independently spawned reviewers
              (the second is a confirmation round with no revision in between)

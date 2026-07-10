@@ -220,4 +220,4 @@ declares `closing_posture: firm` and the lead's procedure share crowds the tech 
 
 ## Pass 6's place in the pipeline
 
-v1 had Pass 6 (lead/conclusion + sources) and a separate deterministic-gate skill for mechanical checks (em-dash, format, banned-words). v2 brief locked deterministic-gate's absorption into Pass 6. The merge keeps mechanical checks in the editorial flow where SETI's revise decision is centralized.
+v1 had Pass 6 (lead/conclusion + sources) and a separate deterministic-gate skill for mechanical checks (em-dash, format, banned-words). v2 brief locked deterministic-gate's absorption into Pass 6. The merge keeps mechanical checks in the editorial flow where the orchestrator's revise decision is centralized.

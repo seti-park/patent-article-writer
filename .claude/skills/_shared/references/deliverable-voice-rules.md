@@ -15,7 +15,7 @@
   *(gate: `LATIN-001`)*
 - **No exclamation marks** in body prose. *(gate: `EXCLAIM-001`)*
 - **No banned AI-tell terms/constructions** outside quotes (the govuk-base govspeak/cliché list
-  + the SETI canon live in `anti-ai-writing.md` → `scripts/banned_terms.txt`). *(gate: `BANNED-001`)*
+  + the Owner's canon live in `anti-ai-writing.md` → `scripts/banned_terms.txt`). *(gate: `BANNED-001`)*
 - **No reader-instruction / essay-self-reference posturing** — "read it the way…", "the rest of
   this essay…". Insight, not stage directions. *(gate: `META-001`; functional scope disclaimers
   like "this essay does not adjudicate X" are exempt.)*

@@ -242,8 +242,10 @@ Reaching `max_revision` without acceptance is an owner checkpoint:
 
 ### 5. Self-audit (publish)
 
-≥2 adversarial-reader + grounding-verifier + cold reader; multi-vote; fix via revision mode;
-normalize deltas to ledger. Cap 3 dry-loop iterations.
+≥2 adversarial-reader + grounding-verifier + one extra `adversarial-reader` fork run
+checklist-FREE (the "cold reader"; same agent type, casual-scroller prompt only — contracted
+in `contracts/stages/self_audit.yaml`); multi-vote; fix via revision mode; normalize deltas
+to ledger. Cap 3 dry-loop iterations.
 
 ### 6. Polish (publish) — `prose-polish`
 
