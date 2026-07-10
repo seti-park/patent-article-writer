@@ -88,7 +88,7 @@ profiles:
     retro: false
 
   wire:
-    description: Wire/short mode; self-audit off; no retro (short path archives only).
+    description: Wire/short mode; self-audit off; retro on (it archives).
     stages: [bootstrap, figures, understand, design, compose, review_loop, verify, archive, retro]
     review_loop:
       acceptance: single_clean
