@@ -29,6 +29,7 @@ Content travels on disk. Graph + profiles: `contracts/pipeline.yaml`. Roles:
 | `--promo-vendor` | `inherit` | `inherit` \| `grok` — promo lane; `grok` = Grok 4.5 via CLI lane; Claude safe-claims check + auto-fallback to `inherit` with substitution recorded |
 | `--drift-vendor` | `gpt` | `gpt` \| `claude` — polish drift-check lane (GPT-5.6-sol high via codex; fallback claude, recorded) |
 | `--pregate-vendor` | `gpt` | `gpt` \| `claude` — compose voice pre-gate lane (same fallback contract) |
+| `--review-vendor` | `gpt` | `gpt` \| `claude` — review-loop lane; `gpt` = 7-pass review via codex lane, Claude acceptance layer retained (voice veto + CLEAN + arbitration); fallback `claude`, recorded |
 | `--comprehension-check` | from profile | `on` \| `off` — interactive Owner comprehension check at understand_confirm |
 | `--yes` | off | Skip owner checkpoints (unattended) |
 
@@ -87,7 +88,10 @@ Checkpoint instances (hardness × profile):
 - **Vendor lanes:** opt-in flags defaulting to today's models. The judge/verifier is NEVER
   the vendor that generated the artifact (non-negotiable — `docs/architecture/multi-vendor-lanes.md` §2).
   CLI missing / quota / web ⇒ graceful degradation to the default model; substitution recorded;
-  run must succeed identically.
+  run must succeed identically. **Exception / clarification (P6 hybrid):** `review_loop`
+  execution may run on the GPT lane by default (`--review-vendor gpt`), but the
+  judge/acceptance AUTHORITY (voice veto, `CLEAN(N)`, LOOP-07 arbitration) stays
+  `inherit` — never grok (§2).
 
 ## Pipeline by stage
 
@@ -349,6 +353,21 @@ Per round N:
 On grok-composed drafts the voice pre-gate runs before each full round; the round-cap lane
 switch (compose block step 7) operates INSIDE `max_revision` — the profile revision cap
 itself is unchanged.
+
+**GPT review lane (`--review-vendor gpt`)** — per round:
+
+1. Gates as today (`run_gates.py` → `gate-result.round-N.json`).
+2. Build the prompt from `references/review-lane-gpt.md` (fill placeholders with PATHS, not
+   inlined content — codex reads the repo itself) → `handoff/03-edit/review-lane-prompt.round-N.md`.
+3. `cli_lane.py --vendor gpt --prompt-file handoff/03-edit/review-lane-prompt.round-N.md
+   --output handoff/03-edit/edit-log.round-N.gpt.md --validate review --timeout 900
+   --cwd <repo root>`.
+4. exit 3 ⇒ fork the claude `editorial-reviewer` as before; record substitution.
+5. exit 0 ⇒ ACCEPTANCE LAYER (orchestrator, `inherit`): read the GPT log + the draft's
+   protected surfaces; ratify or veto findings (voice veto explicit); rule `CLEAN(N)` per
+   the unchanged definition; prepend an `orchestrator-acceptance:` block (ruling, vetoes,
+   arbitration) and save as `edit-log.round-N.md`; append the score-history row as today.
+   Double-clean semantics are UNCHANGED.
 
 **Acceptance:**
 

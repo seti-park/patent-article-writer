@@ -51,7 +51,7 @@ graceful fallback.** It reuses the exact machinery `fable-advisor` already provi
 | `understand` | read + freeze the patent model | `inherit` (Claude) | judgment + Korean surface |
 | `design` | thesis/angle | `inherit` (Claude) | voice-adjacent judgment |
 | **`compose`** | **generate prose** | **Grok 4.5 (CLI lane)** | fast/cheap; gated by the loop |
-| `review_loop` | **voice + quality judge** | **`inherit` (Claude) — FIXED** | the strict supervisor; must not be Grok |
+| `review_loop` | **voice + quality judge** | **`inherit` (Claude) — FIXED** | FIXED = the judge/acceptance AUTHORITY is Claude; execution may run on the GPT lane (P6) |
 | `self_audit` grounding-verifier | **verify claim ↔ source** | **GPT-5.6-sol high (CLI lane)** | spec-determined cross-check; was pinned `sonnet` |
 | `self_audit` adversarial-reader | refute thesis/grounding | `inherit` + optional GPT vote | independent failure distribution |
 | `polish` | plain-language surface | `inherit` (Claude) | byte-protected; voice-sensitive |
@@ -218,3 +218,29 @@ Owner's standing condition: cheap lanes may hold the pen anywhere mechanical, as
 as **the `inherit` (Fable) tier does the verification properly** — the orchestrator
 rules on every revert, and ambiguity escalates to `inherit`, never resolved by the
 cheap lane itself.
+
+## 13. P6 (Owner-decided 2026-07-12): hybrid review handoff
+
+- **Rationale**: review rounds cost 30-46K `inherit` tokens and 9-16 minutes each in the
+  first production run, versus seconds-scale GPT lane calls; GPT's verification precision
+  was already proven by the grounding tallies from the P1 verifier lane and the P4 drift
+  lane's live results.
+- **The hybrid shape**: GPT is the review-loop WORKHORSE (executes the full 7-pass review
+  per round via a fresh codex call each round — fresh call = fresh reviewer, satisfying
+  invariant 1's physical-isolation requirement the same way a fresh Claude fork did before).
+  Claude (`inherit`) keeps ACCEPTANCE AUTHORITY: the voice veto, the `CLEAN(N)` ruling, and
+  LOOP-07 arbitration — and this authority now lives INLINE with the orchestrator (no
+  separate acceptance fork), since it is a thin ratification/veto layer reading an already-
+  complete GPT edit-log, not a from-scratch review.
+- **§2 analysis**: GPT is not grok, so a GPT execution pass over a grok-composed draft (or
+  any draft) remains cross-vendor at the EXECUTION layer; more importantly, this phase
+  introduces a genuinely new pattern beyond P1-P5's full-replacement lanes: execution moves
+  to a cheap/fast vendor, but ACCEPTANCE AUTHORITY explicitly does NOT move — it stays
+  `inherit` regardless of which vendor executed the review. This is the load-bearing
+  distinction that keeps §2's non-negotiable rule intact even though the "judge" role is now
+  split into an execution component (GPT) and an authority component (Claude).
+- **Explicit revisit trigger**: "if the Fable veto rate stays low over several runs, revisit
+  full handoff" — i.e. this hybrid is an intentionally conservative first step, not a
+  permanent architecture; if the acceptance layer rarely needs to veto or add findings
+  across multiple production runs, a future phase may reconsider whether the acceptance
+  layer needs to stay this involved.

@@ -18,6 +18,7 @@ Contract (orchestrator keys on exit codes + one JSON line on stdout):
   --validate grounding  post-capture shape check (verifier line + verdict token + |---).
   --validate drift  post-capture shape check (verifier line + drift-verdict token + |---).
   --validate pregate  post-capture shape check (pregate line + VOICE-PASS/FAIL verdict).
+  --validate review  post-capture shape check (round_type + assessment token + 3 hard-gate labels + findings list).
   --max-turns N  grok runaway-turn guard only (default 16); NOT the isolation mechanism.
   Isolation is tool-less grok: every grok invoke always gets --tools "" --no-subagents
   --disable-web-search (prompts inline everything; no tool use required).
@@ -59,6 +60,13 @@ DRIFT_VERDICT_TOKENS = (
     "MEANING-PRESERVED",
     "MEANING-CHANGED",
     "PROTECTED-TOUCHED",
+)
+
+# Review-lane overall_assessment tokens (editorial-review feedback-format.md).
+REVIEW_ASSESSMENT_TOKENS = (
+    "assessment: pass",
+    "assessment: revise-recommended",
+    "assessment: revise-required",
 )
 
 
@@ -193,6 +201,35 @@ def _validate_pregate(text: str) -> str | None:
     if not has_verdict:
         missing.append(
             "no 'verdict: VOICE-PASS' or 'verdict: VOICE-FAIL' substring"
+        )
+    if missing:
+        return "; ".join(missing)
+    return None
+
+
+def _validate_review(text: str) -> str | None:
+    """Return None if valid; else a short detail string."""
+    lines = text.splitlines()
+    has_round_type = any(line.lstrip().startswith("round_type:") for line in lines)
+    has_assessment = any(tok in text for tok in REVIEW_ASSESSMENT_TOKENS)
+    has_hard_gates = (
+        "grounding" in text and "goal-2" in text and "verdict" in text
+    )
+    has_findings = any("|---" in line for line in lines) or any(
+        line.lstrip().startswith("- id:") for line in lines
+    )
+    missing = []
+    if not has_round_type:
+        missing.append("no line starting with 'round_type:'")
+    if not has_assessment:
+        missing.append("no assessment token from %s" % (REVIEW_ASSESSMENT_TOKENS,))
+    if not has_hard_gates:
+        missing.append(
+            "missing one or more hard-gate labels (grounding/goal-2/verdict)"
+        )
+    if not has_findings:
+        missing.append(
+            "no findings list found (|--- table or '- id:' YAML list)"
         )
     if missing:
         return "; ".join(missing)
@@ -372,6 +409,14 @@ def run_lane(
                 except OSError:
                     pass
                 return _substitute(vendor, "invalid-output", bad, output_path)
+        elif validate == "review":
+            bad = _validate_review(content)
+            if bad:
+                try:
+                    Path(output_path).write_text(content, encoding="utf-8")
+                except OSError:
+                    pass
+                return _substitute(vendor, "invalid-output", bad, output_path)
 
         try:
             Path(output_path).parent.mkdir(parents=True, exist_ok=True)
@@ -428,7 +473,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--validate",
-        choices=["grounding", "compose", "compose-revision", "promo", "drift", "pregate"],
+        choices=["grounding", "compose", "compose-revision", "promo", "drift", "pregate", "review"],
         default=None,
         help="Optional post-capture output validation",
     )

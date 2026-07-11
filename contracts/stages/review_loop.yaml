@@ -59,3 +59,17 @@ owner_checkpoint:
   id: cap_hit
   # When max_revision reached without acceptance — patent-essay SKILL "CAP HIT"
   soft: false   # hard unless --yes
+
+# Multi-vendor review lane (docs/architecture/multi-vendor-lanes.md §13 P6)
+# Owner-decided 2026-07-12: hybrid handoff — GPT executes the 7-pass review,
+# Claude (inherit, orchestrator-inline) keeps acceptance authority (no separate fork).
+review_vendor:
+  flag: "--review-vendor"
+  values: [claude, gpt]
+  default: gpt
+  gpt:
+    lane: "_shared/scripts/cli_lane.py --vendor gpt --validate review (codex read-only; fresh call per round = fresh reviewer)"
+    prompt_template: .claude/skills/patent-essay/references/review-lane-gpt.md
+    acceptance_layer: "Claude inherit (orchestrator-inline): reads the GPT edit-log + draft, holds the voice veto, rules CLEAN(N), arbitrates LOOP-07; may veto/add findings — the GPT log plus the orchestrator ruling block IS edit-log.round-N.md"
+    isolation: "§2 holds — GPT reviews grok-composed drafts; the acceptance authority stays Claude (Owner-decided hybrid, 2026-07-12)"
+    fallback: "cli_lane exit 3 => fork the claude editorial-reviewer as before; run report records the substitution"

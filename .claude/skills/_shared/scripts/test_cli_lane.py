@@ -104,6 +104,52 @@ INVALID_PREGATE = textwrap.dedent("""\
     notes: malformed verdict for validator exercise.
 """)
 
+# Valid review-lane output for --validate review.
+VALID_REVIEW = textwrap.dedent("""\
+    reviewer: gpt-5.6-sol high (cli-lane)
+    round: 1
+    round_type: confirmation
+    posture_applied: measured
+    grounding: PASS
+    goal-2: PASS
+    verdict: PASS
+    assessment: pass
+
+    findings:
+    - id: r1-F1
+      pass: pass-1-voice-anti-ai
+      severity: low
+      quote: "The architecture routes vision data upstream."
+      why: Minor cadence drift in §2 supporting prose; not publication-blocking.
+      fix-direction: Tighten the opening clause to land the mechanism first.
+
+    warn_dispositions:
+    - gate_surface SURF-003: noted; surface already within band after pre-gate.
+""")
+
+# Same shape (round_type + hard-gate labels + findings list) but no valid assessment token.
+INVALID_REVIEW = textwrap.dedent("""\
+    reviewer: gpt-5.6-sol high (cli-lane)
+    round: 1
+    round_type: confirmation
+    posture_applied: measured
+    grounding: PASS
+    goal-2: PASS
+    verdict: PASS
+    assessment: needs-work
+
+    findings:
+    - id: r1-F1
+      pass: pass-1-voice-anti-ai
+      severity: low
+      quote: "The architecture routes vision data upstream."
+      why: Minor cadence drift in §2 supporting prose.
+      fix-direction: Tighten the opening clause.
+
+    warn_dispositions:
+    - gate_surface SURF-003: noted.
+""")
+
 # Valid compose draft for --validate compose: frontmatter fence, [dddd] anchor, >=800 stripped chars.
 VALID_COMPOSE = textwrap.dedent("""\
     ---
@@ -1336,6 +1382,48 @@ class TestValidatePregate(CliLaneTestBase):
                 "--prompt-file", self.prompt_path,
                 "--output", self.output_path,
                 "--validate", "pregate",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 3, proc.stdout + proc.stderr)
+        data = _parse_json_line(proc.stdout)
+        self.assertEqual(data["reason"], "invalid-output")
+        self.assertTrue(data["substituted"])
+        self.assertFalse(os.path.exists(self.output_path))
+
+
+class TestValidateReview(CliLaneTestBase):
+    def test_valid_review(self):
+        self._install_codex(mode="success", content=VALID_REVIEW)
+        proc = _run_cli(
+            [
+                "--vendor", "gpt",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "review",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
+        data = _parse_json_line(proc.stdout)
+        self.assertTrue(data["ok"])
+        self.assertTrue(os.path.isfile(self.output_path))
+        with open(self.output_path, encoding="utf-8") as fh:
+            body = fh.read()
+        self.assertIn("round_type:", body)
+        self.assertIn("assessment: pass", body)
+        self.assertIn("grounding", body)
+        self.assertIn("goal-2", body)
+        self.assertIn("verdict", body)
+
+    def test_invalid_review_no_assessment(self):
+        self._install_codex(mode="success", content=INVALID_REVIEW)
+        proc = _run_cli(
+            [
+                "--vendor", "gpt",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "review",
             ],
             self.env,
         )
