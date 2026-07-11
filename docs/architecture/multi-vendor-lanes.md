@@ -188,20 +188,31 @@ discipline in practice:
   grok ingests large prompt files in chunked turns. First real run needed 48.
   Raise the helper default or scale it with prompt size.
 
-## 12. P4 (proposed, Owner-endorsed 2026-07-11): grok drift-verifier lane
+## 12. P4+P5 (Owner-decided 2026-07-11): GPT verification axis
 
-Owner observation from the first real run: for mechanical verdict work, grok 4.5 is
-faster than (and at least as good as) the sonnet pin. Where that swap is legitimate:
+Mid-run Owner decision: the verification axis consolidates on GPT-5.6-sol high,
+revising the earlier grok-drift-verifier proposal this section used to describe.
+BOTH the polish drift check (P4) AND the compose voice pre-gate (P5) now route through
+the codex CLI lane by default, each with lossless fallback to the Claude fork the
+pipeline already ran.
 
-- **`polish` drift check → grok lane** (`--drift-vendor grok|claude`, default `claude`):
-  the drift check judges CLAUDE-polished sentence pairs, so a grok judge *satisfies*
-  §2 (cross-vendor). Mechanical vocabulary (MEANING-PRESERVED / MEANING-CHANGED /
-  PROTECTED-TOUCHED), sentence pairs inline, constrained document envelope — the
-  exact pattern P1–P3 proved.
-- **NOT the voice pre-gate** — it judges grok-composed drafts; grok would be grading
-  its own generator (§2 violation). Stays Claude regardless of tier.
-- **NOT figures-prep** — tool-heavy + vision; opposite of the tool-less lane pattern
-  that made grok reliable.
+- **`polish` drift check → gpt lane** (`--drift-vendor gpt|claude`, default `gpt`):
+  the drift check judges CLAUDE-polished sentence pairs, so a GPT judge satisfies §2
+  (cross-vendor — the judge is never the generator's vendor). Mechanical vocabulary
+  (MEANING-PRESERVED / MEANING-CHANGED / PROTECTED-TOUCHED), sentence pairs inline,
+  constrained-shape validation — the same pattern P1–P3 proved, GPT instead of the
+  originally-proposed grok.
+- **`compose` voice pre-gate → gpt lane** (`--pregate-vendor gpt|claude`, default
+  `gpt`): the pre-gate judges GROK-composed drafts, so a GPT judge ALSO satisfies §2
+  (cross-vendor). The AUTHORITATIVE voice ruling stays the `inherit` editorial
+  review — the pre-gate is only the fast, cheap filter before a full review round; it
+  never replaces the review loop's judgment.
+- **NOT figures-prep** — stays sonnet: tool-heavy + vision strength, the opposite of
+  the tool-less/constrained-document lane pattern that makes the cross-vendor lanes
+  reliable elsewhere.
+
+Both new lanes: `cli_lane.py --vendor gpt` exit 3 ⇒ fall back to the Claude fork
+exactly as today, substitution recorded (never silent).
 
 Owner's standing condition: cheap lanes may hold the pen anywhere mechanical, as long
 as **the `inherit` (Fable) tier does the verification properly** — the orchestrator

@@ -56,6 +56,54 @@ INVALID_GROUNDING = textwrap.dedent("""\
     | s1 | [0001] | MAYBE | span | — |
 """)
 
+# Valid drift-check output for --validate drift (mode-B vocabulary).
+VALID_DRIFT = textwrap.dedent("""\
+    verifier: gpt-5.6-sol high (cli-lane, drift mode)
+    round: 1
+
+    | pair | verdict | evidence |
+    |---|---|---|
+    | p1 | MEANING-PRESERVED | rewrite restates same claim; anchors intact |
+
+    tally: MEANING-PRESERVED 1 / MEANING-CHANGED 0 / PROTECTED-TOUCHED 0
+""")
+
+# Has verifier: + |--- but no drift-mode verdict token from the required set.
+INVALID_DRIFT = textwrap.dedent("""\
+    verifier: gpt-5.6-sol high (cli-lane, drift mode)
+    round: 1
+
+    | pair | verdict | evidence |
+    |---|---|---|
+    | p1 | UNCHANGED | rewrite looks similar |
+""")
+
+# Valid voice pre-gate output for --validate pregate.
+VALID_PREGATE = textwrap.dedent("""\
+    pregate: voice-drift (guardrail 2)
+    generator: grok-4.5 (cli-lane)
+    round: 1
+    verdict: VOICE-PASS
+
+    tells:
+    - none
+
+    notes: clean draft, no repeated tells, register matches the exemplars.
+""")
+
+# Has pregate: line but no VOICE-PASS / VOICE-FAIL verdict substring.
+INVALID_PREGATE = textwrap.dedent("""\
+    pregate: voice-drift (guardrail 2)
+    generator: grok-4.5 (cli-lane)
+    round: 1
+    verdict: MAYBE
+
+    tells:
+    - none
+
+    notes: malformed verdict for validator exercise.
+""")
+
 # Valid compose draft for --validate compose: frontmatter fence, [dddd] anchor, >=800 stripped chars.
 VALID_COMPOSE = textwrap.dedent("""\
     ---
@@ -1156,6 +1204,85 @@ class TestValidatePromo(CliLaneTestBase):
         self.assertTrue(data["substituted"])
         self.assertFalse(os.path.exists(self.output_path))
         self.assertIn("verification status", data.get("detail", "").lower())
+
+
+class TestValidateDrift(CliLaneTestBase):
+    def test_valid_drift(self):
+        self._install_codex(mode="success", content=VALID_DRIFT)
+        proc = _run_cli(
+            [
+                "--vendor", "gpt",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "drift",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
+        data = _parse_json_line(proc.stdout)
+        self.assertTrue(data["ok"])
+        self.assertTrue(os.path.isfile(self.output_path))
+        with open(self.output_path, encoding="utf-8") as fh:
+            body = fh.read()
+        self.assertIn("verifier:", body)
+        self.assertIn("MEANING-PRESERVED", body)
+        self.assertIn("|---", body)
+
+    def test_invalid_drift_no_verdict(self):
+        self._install_codex(mode="success", content=INVALID_DRIFT)
+        proc = _run_cli(
+            [
+                "--vendor", "gpt",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "drift",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 3, proc.stdout + proc.stderr)
+        data = _parse_json_line(proc.stdout)
+        self.assertEqual(data["reason"], "invalid-output")
+        self.assertTrue(data["substituted"])
+        self.assertFalse(os.path.exists(self.output_path))
+
+
+class TestValidatePregate(CliLaneTestBase):
+    def test_valid_pregate(self):
+        self._install_codex(mode="success", content=VALID_PREGATE)
+        proc = _run_cli(
+            [
+                "--vendor", "gpt",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "pregate",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
+        data = _parse_json_line(proc.stdout)
+        self.assertTrue(data["ok"])
+        self.assertTrue(os.path.isfile(self.output_path))
+        with open(self.output_path, encoding="utf-8") as fh:
+            body = fh.read()
+        self.assertIn("pregate:", body)
+        self.assertIn("verdict: VOICE-PASS", body)
+
+    def test_invalid_pregate_no_verdict(self):
+        self._install_codex(mode="success", content=INVALID_PREGATE)
+        proc = _run_cli(
+            [
+                "--vendor", "gpt",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "pregate",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 3, proc.stdout + proc.stderr)
+        data = _parse_json_line(proc.stdout)
+        self.assertEqual(data["reason"], "invalid-output")
+        self.assertTrue(data["substituted"])
+        self.assertFalse(os.path.exists(self.output_path))
 
 
 def _run():

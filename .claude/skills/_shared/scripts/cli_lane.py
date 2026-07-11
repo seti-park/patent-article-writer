@@ -16,6 +16,8 @@ Contract (orchestrator keys on exit codes + one JSON line on stdout):
 
   --check  presence-only (shutil.which); no network, no CLI invoke.
   --validate grounding  post-capture shape check (verifier line + verdict token + |---).
+  --validate drift  post-capture shape check (verifier line + drift-verdict token + |---).
+  --validate pregate  post-capture shape check (pregate line + VOICE-PASS/FAIL verdict).
   --max-turns N  grok runaway-turn guard only (default 16); NOT the isolation mechanism.
   Isolation is tool-less grok: every grok invoke always gets --tools "" --no-subagents
   --disable-web-search (prompts inline everything; no tool use required).
@@ -50,6 +52,13 @@ VERDICT_TOKENS = (
     "MISREAD",
     "OVERREACHED-BEYOND-ANCHOR",
     "UNSUPPORTED",
+)
+
+# Drift-mode vocabulary (polish drift check / mode B) — distinct from mode-A above.
+DRIFT_VERDICT_TOKENS = (
+    "MEANING-PRESERVED",
+    "MEANING-CHANGED",
+    "PROTECTED-TOUCHED",
 )
 
 
@@ -150,6 +159,41 @@ def _validate_promo(text: str) -> str | None:
         missing.append("stripped length < 600 characters")
     if not has_verification:
         missing.append("missing 'Verification Status' substring")
+    if missing:
+        return "; ".join(missing)
+    return None
+
+
+def _validate_drift(text: str) -> str | None:
+    """Return None if valid; else a short detail string."""
+    has_verifier = any(line.lstrip().startswith("verifier:") for line in text.splitlines())
+    has_verdict = any(tok in text for tok in DRIFT_VERDICT_TOKENS)
+    has_table_sep = any("|---" in line for line in text.splitlines())
+    missing = []
+    if not has_verifier:
+        missing.append("no line starting with 'verifier:'")
+    if not has_verdict:
+        missing.append("no verdict token from %s" % (DRIFT_VERDICT_TOKENS,))
+    if not has_table_sep:
+        missing.append("no markdown table separator (|---)")
+    if missing:
+        return "; ".join(missing)
+    return None
+
+
+def _validate_pregate(text: str) -> str | None:
+    """Return None if valid; else a short detail string."""
+    has_pregate = any(line.lstrip().startswith("pregate:") for line in text.splitlines())
+    has_verdict = (
+        "verdict: VOICE-PASS" in text or "verdict: VOICE-FAIL" in text
+    )
+    missing = []
+    if not has_pregate:
+        missing.append("no line starting with 'pregate:'")
+    if not has_verdict:
+        missing.append(
+            "no 'verdict: VOICE-PASS' or 'verdict: VOICE-FAIL' substring"
+        )
     if missing:
         return "; ".join(missing)
     return None
@@ -311,6 +355,22 @@ def run_lane(
                 except OSError:
                     pass
                 return _substitute(vendor, "invalid-output", bad, output_path)
+        elif validate == "drift":
+            bad = _validate_drift(content)
+            if bad:
+                try:
+                    Path(output_path).write_text(content, encoding="utf-8")
+                except OSError:
+                    pass
+                return _substitute(vendor, "invalid-output", bad, output_path)
+        elif validate == "pregate":
+            bad = _validate_pregate(content)
+            if bad:
+                try:
+                    Path(output_path).write_text(content, encoding="utf-8")
+                except OSError:
+                    pass
+                return _substitute(vendor, "invalid-output", bad, output_path)
 
         try:
             Path(output_path).parent.mkdir(parents=True, exist_ok=True)
@@ -367,7 +427,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--validate",
-        choices=["grounding", "compose", "compose-revision", "promo"],
+        choices=["grounding", "compose", "compose-revision", "promo", "drift", "pregate"],
         default=None,
         help="Optional post-capture output validation",
     )

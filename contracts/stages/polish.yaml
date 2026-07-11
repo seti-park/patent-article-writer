@@ -42,6 +42,19 @@ drift_check:
   orchestrator_runs: grounding-verifier
   protocol_ref: .claude/skills/patent-essay/SKILL.md §6
 
+# Multi-vendor drift-check lane (docs/architecture/multi-vendor-lanes.md §12 P4)
+# Owner-decided 2026-07-11: default gpt (GPT-5.6-sol high via codex). Judges
+# Claude-polished pairs so §2 vendor-isolation holds. exit 3 => Claude fork.
+drift_vendor:
+  flag: "--drift-vendor"
+  values: [claude, gpt]
+  default: gpt
+  gpt:
+    lane: "_shared/scripts/cli_lane.py --vendor gpt --validate drift  (codex exec, gpt-5.6-sol high)"
+    prompt_template: .claude/skills/patent-essay/references/drift-lane-gpt.md
+    replaces: "grounding-verifier drift-mode fork"
+    fallback: "cli_lane exit 3 => sonnet grounding-verifier drift fork as today; run report records the substitution"
+
 profiles:
   publish: required
   draft: off
