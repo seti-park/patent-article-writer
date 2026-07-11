@@ -1,0 +1,127 @@
+# Stage contract: understand
+# First content stage. Problem · Solution · Benefits triad. No thesis angle.
+
+id: understand
+skill: patent-understand
+agent: patent-reader
+handoff: handoff/00-understand/
+
+may_read:
+  - input/patent.md
+  - input/figures/**
+  - input/figures/figures-manifest.md
+  - input/essay-context.md   # questions only; must not become the spine
+  - handoff-template/00-understand/**
+  - .claude/skills/patent-understand/**
+  - .claude/skills/thesis-architect/references/invention-summary-schema.md
+  - .claude/skills/thesis-architect/references/quote-anchor-conventions.md
+  - .claude/skills/_shared/references/owner-briefing-schema.md
+
+must_not_read:
+  - .claude/skills/voice-canon-lookup/**
+  - .claude/skills/_shared/references/deliverable-voice-rules.md
+  - .claude/skills/essay-en-composer/**
+  - handoff/01-design/**      # design does not exist yet / must not pollute
+
+must_not_write:
+  - thesis-spine.md
+  - thesis-candidates.md
+  - title-lead-candidates.md
+  - essay-draft.md
+  - understand-confirmed.md
+
+required_outputs:
+  - handoff/00-understand/invention-summary.md
+  - handoff/00-understand/owner-study-pack.md
+  - handoff/00-understand/owner-briefing.md
+  - handoff/00-understand/figure-primer.md
+  - handoff/00-understand/open-questions.md
+
+optional_outputs:
+  # written only via the Owner checkpoint protocol (orchestrator after Owner's affirmative reply, or --yes)
+  - handoff/00-understand/understand-confirmed.md
+  # P2 comprehension loop: worker-produced keyed bank (IF-2); orchestrator grades at checkpoint
+  - handoff/00-understand/comprehension-quiz.md
+  # P2 comprehension loop (orchestrator at understand_confirm when --comprehension-check on)
+  - handoff/00-understand/comprehension-notes.md
+
+# Compatibility copies (orchestrator may symlink/copy for design + gates that still
+# look under 01-design during migration):
+compat_copies:
+  - from: handoff/00-understand/invention-summary.md
+    to: handoff/01-design/invention-summary.md
+  - from: handoff/00-understand/owner-briefing.md
+    to: handoff/01-design/owner-briefing.md
+
+gates_before_exit:
+  - cmd: >
+      python3 .claude/skills/_shared/scripts/gate_quotes.py
+      handoff/00-understand/invention-summary.md
+      --invention-summary handoff/00-understand/invention-summary.md
+      --patent input/patent.md
+  - cmd: >
+      python3 .claude/skills/_shared/scripts/gate_quotes.py
+      handoff/00-understand/owner-briefing.md
+      --invention-summary handoff/00-understand/owner-briefing.md
+      --patent input/patent.md
+  - cmd: >
+      python3 .claude/skills/_shared/scripts/gate_quotes.py
+      handoff/00-understand/owner-study-pack.md
+      --invention-summary handoff/00-understand/owner-study-pack.md
+      --patent input/patent.md
+
+owner_checkpoint:
+  id: understand_confirm
+  surfaces:
+    - handoff/00-understand/owner-study-pack.md
+    - handoff/00-understand/owner-briefing.md
+    - handoff/00-understand/open-questions.md
+  confirm_file: handoff/00-understand/understand-confirmed.md
+  question: >
+    Can you restate Problem, Solution (incl. claim scope), and Benefits without
+    reopening the full patent? If yes, confirm. If no, edit open-questions or
+    request re-run of understand.
+  # Protocol: .claude/skills/patent-essay/SKILL.md "Owner checkpoint protocol".
+  # The understand WORKER never writes the confirm file (see must_not_write).
+  render:   # RENDER step — print INLINE to the Owner, in this order:
+    - owner-study-pack.md "한 줄" line, then a 2-4 sentence summary of each of
+      Problem / Solution / Benefits (Korean, from the study pack)
+    - open-questions.md in full
+    - the five output paths (study pack, briefing, invention-summary,
+      figure-primer, open-questions)
+  # P2 keyed grading: orchestrator asks comprehension-quiz.md items one at a time
+  # (ASK→STOP per question), GRADEs against key, TEAChes on miss, writes
+  # comprehension-notes.md (incl. IF-4 claim-scope framing), sets confirm
+  # comprehension: field. Claim-scope second miss = HARD STOP (§4.3).
+  # Model-correction re-freeze is P3 — not in this phase.
+  comprehension_loop:
+    phase: P2   # keyed grading + pass predicate + claim-scope hard STOP
+    flag: --comprehension-check
+    default_on: [publish, understand-only]
+    default_off: [draft, wire]
+    forced_off_under: --yes
+    quiz_bank: handoff/00-understand/comprehension-quiz.md   # worker-produced (IF-2)
+    asks: comprehension-quiz.md items (Korean, one ASK→STOP each; grade against key)
+    grading: true
+    pass_predicate: >
+      every mandatory aspect (problem | claim-scope | benefits | boundary)
+      correct within two tries → comprehension: demonstrated
+    opt_out: "confirm without the quiz"   # → self-asserted; NOT available for claim scope
+    claim_scope_hard_stop: >
+      second miss on aspect: claim-scope does NOT advance; Owner must (a) re-read
+      claim-scope card and re-answer, or (b) accept risk → notes MUST contain
+      "claim-scope risk accepted by owner" and comprehension: risk-accepted
+    positive_framing: true   # quiz rationale + notes never name a defensive behavior (§5.1)
+    output: handoff/00-understand/comprehension-notes.md
+    confirm_field: "comprehension: demonstrated | self-asserted | skipped-unattended | risk-accepted"
+  validity: # confirm file counts only if ALL hold
+    - "status: confirmed"
+    - "by: owner | orchestrator-yes-flag"
+    - "date is a real date (no placeholder)"
+    - "patent matches current input/patent.md identifier"
+
+north_star: |
+  Owner and pipeline share one frozen patent model:
+  (1) Problem — what was wrong
+  (2) Solution — how this invention fixes it (mechanism + claim scope)
+  (3) Benefits — what the document asserts as upside

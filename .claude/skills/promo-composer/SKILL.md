@@ -7,6 +7,8 @@ agent: promo-composer
 
 # promo-composer
 
+**Contract:** `contracts/stages/promo.yaml`
+
 Phase 4 Promote. Runs POST-archive against a finished `essays/<id>/` tree and emits one
 promo pack. The essay is FINAL: this skill digests it, never edits it, and its findings
 never reopen the Compose↔Edit loop.
@@ -16,14 +18,14 @@ essays/<id>/essay-final.md                 (FINAL; frontmatter: essay_id, closin
   + publication-package/publication.md    (the paste-ready strip readers actually saw)
   + owner-briefing.md                     (Korean owner briefing; parallel archive contract,
                                            may be ABSENT on older archives)
-  + handoff/02-compose/thesis-trace.md    (## Signature lines: <=3 protected exact strings)
+  + thesis-trace.md                       (## Signature lines: <=3 protected exact strings)
   + README.md                             (reader_sentence)
   + publication-package/ images + posting-checklist.md   (cover + alt-text lines)
   + optional owner context               (emphasis and timing only, never new facts)
     -> essays/<id>/promo/promo-pack.md
        Verification Status header
        (a) Korean long-form promo post, 400-800자, 발행자 목소리, bold lead
-       (b) English thread, 3-5 tweets, each <=280 chars, bold hook
+       (b) English thread, 2-4 message-unit posts (X Premium, no char cap), bold hook
 ```
 
 **Model allocation (owner decision, 2026-07-05):** the posting copy — the fenced paste
@@ -75,7 +77,7 @@ X post, share copy, thread, 프로모, 홍보 문구.
 1. **Load the archive.** `essay-final.md` (frontmatter: `essay_id`, `closing_posture`,
    `draft_version`), `publication-package/publication.md`,
    `publication-package/posting-checklist.md`, `owner-briefing.md`,
-   `handoff/02-compose/thesis-trace.md`, `README.md`. Reject the run if `essay-final.md` or
+   `thesis-trace.md`, `README.md`. Reject the run if `essay-final.md` or
    `publication.md` is missing. `owner-briefing.md` absent: proceed and record `ABSENT` in
    the header; the KR post then translates from the essay's protected lines instead of
    reusing the briefing's Korean phrasings.
@@ -97,12 +99,13 @@ X post, share copy, thread, 프로모, 홍보 문구.
    배제, 발행자 1인칭 허용 — 대담함은 문장 선택에서. ¶1 훅 → 메커니즘 단락(기술) →
    함의/receipts → 아티클 포인터. 기술 어휘는 briefing 재사용, stance/hedge 문장은
    재사용 금지.
-7. **Compose the EN thread** (3-5 tweets) per `references/promo-format.md` thread
-   rules: tweet 1 bold hook (protected-surface compression, no insurance), middle
-   tweets one beat each (mechanism / evidence / receipts), final tweet call-first
-   verdict + `[ARTICLE-LINK]` slot. Closing posture of both deliverables agrees with
-   the essay's `closing_posture` per `references/closing-posture.md` (firm essay → no
-   open-question close).
+7. **Compose the EN thread** (2-4 message-unit posts; X Premium, no char cap) per
+   `references/promo-format.md` thread rules: post 1 narrative hook (first sentence =
+   collapsed-preview; no insurance), middle post(s) one message each (core point +
+   interpretation boundary), final post call-first verdict + `[ARTICLE-LINK]` slot.
+   Chars measured and reported, not bound. Closing posture of both deliverables agrees
+   with the essay's `closing_posture` per `references/closing-posture.md` (firm essay →
+   no open-question close).
 8. **Attachment lines** per `references/figure-attachment-policy.md`:
    `publication-package/` images only, `cover-5x2.png` default, 1-2 figures max per
    deliverable, alt text verbatim from `posting-checklist.md`.
@@ -114,9 +117,9 @@ X post, share copy, thread, 프로모, 홍보 문구.
       slot only, 0 is fine); hashtags 0; cashtag only if the essay itself used one.
     - banned terms 0 against `_shared/scripts/banned_terms.txt` (literal lines plus `re:`
       regexes); Tier-2 judgment tells checked per `_shared/references/anti-ai-writing.md`.
-    - counts: KR long post 400-800자 (공백 포함, `[ARTICLE-LINK]` = 23자), each tweet
-      <=280 chars (link slot = 23); bold-selection line (lead source + insurance count
-      per deliverable).
+    - counts: KR long post 400-800자 (공백 포함, `[ARTICLE-LINK]` = 23자), each EN post
+      chars measured (no 280 bound; link slot = 23); bold-selection line (lead source +
+      insurance count per deliverable).
 11. **Emit** `essays/<id>/promo/promo-pack.md` (create `promo/` if needed). Every
     Verification Status line carries a measured number or PASS. Revisions overwrite in
     place with `promo_version` bumped.
@@ -126,7 +129,7 @@ X post, share copy, thread, 프로모, 홍보 문구.
 - `essays/<id>/essay-final.md` and `essays/<id>/publication-package/publication.md` exist;
   the run is accepted (double-clean or an explicit CAP HIT ship). Promo never runs on a
   mid-loop draft.
-- `handoff/02-compose/thesis-trace.md` and `README.md` present in the archive.
+- `essays/<id>/thesis-trace.md` and `README.md` present in the archive.
 - `essays/<id>/owner-briefing.md` expected (tracked archive deliverable per the
   owner-comprehension overhaul; contract landing in parallel). Absence is tolerated and
   recorded, not fatal.
@@ -159,11 +162,11 @@ owner_briefing: read
 sources: essay-final.md (draft_version 6) + publication.md + owner-briefing.md
 fact_trace: PASS (every factual phrase mapped; dropped facts: none)
 subrules: 1 sequence PASS / 2 arithmetic PASS / 3 anchors PASS
-bold_selection: KR lead = signature line 2 압축, insurance 1 clause; T1 = reader_sentence 압축, insurance 1 clause (final tweet); process narration 0
+bold_selection: KR lead = signature line 2 압축, insurance 1 clause; P1 = reader_sentence 압축, insurance 1 clause (final post); process narration 0
 kr_long: 612자/400-800, 4 단락, 아티클 포인터 있음, 의문형 0, 느낌표 0
-thread: 4 tweets, 236/271/258/198 chars/280, link slot in final tweet
+thread: 3 posts, message-unit (X Premium, no char cap), 439/775/552 chars, link slot in final post
 hygiene: em-dash 0, bold 0, emoji 0/1, hashtags 0, banned terms 0
-attachments: cover-5x2.png (KR post, tweet 1), alt verbatim from posting-checklist.md
+attachments: cover-5x2.png (KR post, post 1), alt verbatim from posting-checklist.md
 suspected_essay_defects: none
 === Deliverables ===
 
@@ -175,7 +178,7 @@ suspected_essay_defects: none
 - attach: publication-package/cover-5x2.png
 - alt: "<cover alt, verbatim from posting-checklist.md>"
 
-## 2. English thread (3-5 tweets)
+## 2. English thread (2-4 message-unit posts)
 ...
 ```
 

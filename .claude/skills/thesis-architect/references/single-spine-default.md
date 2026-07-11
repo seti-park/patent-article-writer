@@ -1,6 +1,6 @@
 # Single-spine default
 
-v2 default: single-spine. Multi-spine (multi-vendor synthesis, cross-company convergence, multi-thread restrained) requires SETI explicit override.
+v2 default: single-spine. Multi-spine (multi-vendor synthesis, cross-company convergence, multi-thread restrained) requires Owner explicit override (invocation keyword, or `OWNER_QUESTION` if the worker needs to surface the choice).
 
 ## Default behavior
 
@@ -8,7 +8,7 @@ Step 3 (thesis candidate generation) 의 candidate 들은 single-spine 후보로
 
 ## Override trigger keywords
 
-SETI 가 다음 키워드 중 하나를 명시 invocation 에 포함하면 multi-spine candidate 진입.
+Owner 가 다음 키워드 중 하나를 명시 invocation 에 포함하면 multi-spine candidate 진입.
 
 - "multi-thread essay"
 - "cross-vendor synthesis"
@@ -38,17 +38,17 @@ Multi-spine 후보가 candidate 목록에 들어가면 다음 명시.
 4. word_target 자동 격상 (single-spine 의 1.5x 권장).
 5. `thesis-spine.md` 의 "Single-spine declaration" 영역에 `Multi-spine` 체크.
 
-## SETI 의 결정
+## Owner 의 결정
 
-Multi-spine 진입 후에도 SETI 가 final selection 단계에서 single-spine 으로 회귀 가능. Override 가 candidate 진입 허가일 뿐 selection 강제 아님.
+Multi-spine 진입 후에도 Owner 가 final selection 단계에서 single-spine 으로 회귀 가능 (orchestrator soft checkpoint). Override 가 candidate 진입 허가일 뿐 selection 강제 아님.
 
 ## v2 vs v1 차이
 
 | 영역 | v1 | v2 |
 |---|---|---|
 | Default | Single-spine + multi-spine candidates 함께 도출 | Single-spine candidates 만 도출 |
-| Multi-spine 진입 | thesis_candidates 에 포함되지만 SETI 가 select | SETI 가 override keyword 명시할 때만 candidates 에 포함 |
-| A-style deprecate | pool-admission 단계에서 SETI manual rejection | 불필요 (default 가 single-spine) |
+| Multi-spine 진입 | thesis_candidates 에 포함되지만 Owner 가 select | Owner 가 override keyword 명시할 때만 candidates 에 포함 |
+| A-style deprecate | (dropped; v1 pool-admission) | 불필요 (default 가 single-spine) |
 | Override 부담 | 항상 multi-spine candidate 도 처리 | Override 명시할 때만 처리 |
 
 v2 의 simplification 은 default path 의 burden 감소 + multi-spine 의 explicit cost 가시화.

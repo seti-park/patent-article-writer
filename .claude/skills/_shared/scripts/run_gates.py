@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Aggregator for the patent-essay deterministic validation gates.
 
-Runs all fourteen gates against a draft and aggregates the results.
+Runs all fifteen gates against a draft and aggregates the results.
 
 DRAFT FORMAT ASSUMPTIONS: see gate_emdash.py for the full shared list (Markdown
 draft; quoted text = double quotes or '>' blockquotes; [dddd] anchors; Figure N
@@ -41,6 +41,7 @@ import gate_dupe
 import gate_typography
 import gate_hedge
 import gate_surface
+import gate_patent_leak
 
 GATES = [
     gate_emdash,
@@ -57,6 +58,7 @@ GATES = [
     gate_typography,
     gate_hedge,
     gate_surface,
+    gate_patent_leak,
 ]
 
 

@@ -2,7 +2,9 @@
 
 The publication header for every patent essay uses one fixed series template;
 per essay only the **patent figure(s)** and the **text slots** change. Built by
-`tools/make_header.py`. Output: 3000x1200 PNG (exactly 5:2, X Articles cover).
+`tools/make_header.py` (contracted cover producer for
+`essays/<id>/publication-package/cover-5x2.png`; mascot/investor variants optional).
+Output: 3000x1200 PNG (exactly 5:2, X Articles cover).
 
 ## Why these choices
 
@@ -66,7 +68,7 @@ python tools/make_header.py \
   --subtitle "Tesla's tool-steel filing claims both: a die alloy you can laser-print" \
   --figure input/figures/fig-01.png \
   --avatar <profile.jpg> \
-  --out runs/<essay-id>/header-branded.png
+  --out essays/<id>/publication-package/cover-5x2.png
 ```
 
 Requires Pillow (`pip install Pillow`) and the Liberation fonts

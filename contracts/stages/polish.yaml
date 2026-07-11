@@ -1,0 +1,48 @@
+# Stage contract: polish (윤문)
+# Surface-only plain-language pass after self-audit DRY, before archive.
+
+id: polish
+skill: prose-polish
+agent: prose-polish
+handoff: handoff/03-edit/
+
+may_read:
+  - handoff/03-edit/essay-final.md
+  - essays/*/essay-final.md            # standalone post-archive path
+  - handoff/02-compose/thesis-trace.md  # ## Signature lines byte-protected
+  - .claude/skills/prose-polish/**
+  - .claude/skills/_shared/references/reader-profile.md
+  - .claude/skills/_shared/scripts/**  # re-run gates
+
+must_not_write:
+  # jurisdiction fence — no factual/stance edits beyond surface
+  - handoff/01-design/**
+  - handoff/00-understand/**
+  - essays/*/promo/**
+
+required_outputs:
+  - handoff/03-edit/essay-final.md       # polished in place; draft_version bumped
+  - handoff/03-edit/polish-notes.md      # every edit: before / after / why-plainer
+  # changed-sentence list returned to orchestrator (from polish-notes)
+
+rules:
+  - "Surface-only: split/nest, plain-word swap, transition smooth, grounded gloss."
+  - "FORBIDDEN: add/remove/strengthen/weaken facts; touch quotes, [dddd] anchors, Sources, signature lines, certainty verbs, hedge/stance, section order."
+  - "Gates re-run must PASS with zero NEW findings (warns included)."
+  - "Re-strip publication.md (strip_publication.py) after polish lands."
+
+# Two-step drift check (AUD-W7) — patent-essay SKILL.md §6:
+# 1. Polish worker returns changed-sentence list + marks drift-check PENDING
+#    in its final message. Worker does NOT spawn the verifier.
+# 2. Orchestrator forks grounding-verifier on old/new pairs. Any
+#    MEANING-CHANGED or PROTECTED-TOUCHED ⇒ re-fork polish to revert that
+#    sentence; re-run gates as needed.
+drift_check:
+  worker_marks: PENDING
+  orchestrator_runs: grounding-verifier
+  protocol_ref: .claude/skills/patent-essay/SKILL.md §6
+
+profiles:
+  publish: required
+  draft: off
+  wire: off

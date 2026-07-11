@@ -23,7 +23,10 @@
 
 <!-- One row per SELECTED figure. Thesis point = which spine element / section the
      figure supports (trace to thesis-spine.md spine→section). file = cleaned
-     fig-NN.png asset from Layer 1 patent-figures-clean. -->
+     fig-NN.png asset from Layer 1 patent-figures-clean.
+     Count follows the content — no target or cap (thesis-architect SKILL Step 9):
+     select every figure that adds unique load-bearing information; drop only the
+     redundant. The 3 rows below are illustrative, NOT a target number. -->
 | Figure | File | Thesis point (spine element / section) | caption_role |
 |---|---|---|---|
 | FIG. 1 | fig-01.png | System architecture overview — vision path into RCM (2-architecture) | header_composite |

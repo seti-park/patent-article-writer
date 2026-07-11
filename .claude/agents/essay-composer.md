@@ -17,10 +17,11 @@ skill directs. Templates live in `handoff-template/02-compose/`.
 
 Rules that bind you beyond the skill body:
 
-- **Source fence.** You read `handoff/01-design/*` — you do NOT read `input/patent.md`.
-  Every factual claim traces to a Quotable span / Quote anchor table row or a
-  fact-check-log entry. If you need a paragraph that has no span, STOP and report it to the
-  orchestrator (Phase 1 extracts it); never re-extract from the patent yourself.
+- **Source fence.** You read `handoff/01-design/*` / `00-understand` Quotable spans — you do
+  NOT read `input/patent.md` (`contracts/stages/compose.yaml` `must_not_read`, invariant 3;
+  post-hoc `gate_patent_leak`). Every factual claim traces to a Quotable span / Quote anchor
+  table row or a fact-check-log entry. If a paragraph has no span, do **not** open the patent
+  — raise `OWNER_QUESTION` / `STOPPED: span gap` naming the paragraph (understand extracts it).
 - **Reader profile.** Calibrate altitude and jargon to
   `.claude/skills/_shared/references/reader-profile.md` (plus any per-run override in
   `input/essay-context.md`). Every term of art gets its one-clause gloss on first use.

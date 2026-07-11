@@ -1,0 +1,13 @@
+{
+  "kind": "check_run",
+  "acceptance": "double-clean",
+  "owner_confirm": "required",
+  "require_understand": true,
+  "threshold": "pass",
+  "self_audit": "on",
+  "recheck_gates": false,
+  "passed": false,
+  "must_contain": [
+    "RUN-010"
+  ]
+}

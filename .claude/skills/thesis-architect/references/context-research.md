@@ -41,11 +41,11 @@ Each significant finding (web search result that anchors a 4-axis or shifts the 
 
 | Class | Meaning | Phase 1 next action |
 |---|---|---|
-| **main thread** | finding shifts the thesis's primary anchor or audience hook | surface to SETI immediately; possibly re-extract `invention-summary.md` Layer 4 angles |
+| **main thread** | finding shifts the thesis's primary anchor or audience hook | raise `OWNER_QUESTION` immediately (orchestrator relays); possibly re-extract `invention-summary.md` Layer 4 angles |
 | **paragraph** | finding deserves one body paragraph but doesn't reshape the spine | record in `fact-check-log.md`; plan paragraph in spine |
 | **footnote** | finding is supporting only — useful for credibility but not load-bearing | record only in `fact-check-log.md` |
 
-The classification is a 1-line decision per finding. Claude proposes (with rationale), SETI accepts / overrides.
+The classification is a 1-line decision per finding. Claude proposes (with rationale); Owner accepts / overrides via the orchestrator-relayed checkpoint.
 
 Origin: phase1-retrospective.md Insight 5-1 (STM partnership 발견의 framing 진동) + 5-2 (graceful degradation layer 구분의 정밀화).
 
@@ -63,13 +63,13 @@ Context research output 과 staged ProposedEntries 의 placeholder detection. TB
 
 ### Modes
 
-- **Soft mode** (default): Placeholder 발견 시 warning + SETI elicit. Pipeline 진행 가능 (SETI 가 accept-with-knowledge 또는 fix).
-- **Hard mode** (명시 시): Placeholder 발견 시 immediate STOP. Pipeline halt + FailureReport. SETI 의 fix 후 재진입.
+- **Soft mode** (default): Placeholder 발견 시 warning + `OWNER_QUESTION`. Pipeline 진행 가능 (Owner 가 accept-with-knowledge 또는 fix, orchestrator-relayed).
+- **Hard mode** (명시 시): Placeholder 발견 시 immediate STOP. Pipeline halt + FailureReport. Owner 의 fix 후 재진입 (orchestrator checkpoint).
 
 ### Default selection
 
 - Time-constrained 또는 wire-style essays (strict-execution-mode): hard mode. 시간 제약 시 placeholder 의 silent passing 위험.
-- Standard essays (walkthrough-mode): soft mode. SETI 의 mid-session catch 의 backup 가능.
+- Standard essays (walkthrough-mode, direct/Owner invocation only): soft mode. Pipeline forks raise `OWNER_QUESTION` instead of mid-session elicit.
 - Adversarial reader 또는 strategic essays (conservative posture): hard mode. Placeholder 의 factual gap 위험.
 
 본 placeholder stop 가 engineer-the-environment 적용 — placeholder 의 silent acceptance 회피.
@@ -83,7 +83,7 @@ For each context research finding worth using:
 3. If admitted, entry_id usable in facts_locked.
 4. If rejected, discard or revise.
 
-SETI 가 full visibility 가짐 — every proposed admission is explicit.
+Owner 가 full visibility 가짐 (via orchestrator surfaces) — every proposed admission is explicit.
 
 ### Hybrid strictness (pool-admission 의 책임)
 

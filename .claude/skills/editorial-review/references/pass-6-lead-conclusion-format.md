@@ -89,9 +89,14 @@ Title rule (per `legacy/v1/phase-a-spec.md`'s em-dash decision): title may NOT u
 
 ## 6G — Verdict confidence proportionate to evidence (over-hedge guard)
 
+<!-- Detection names the pattern; the fix handed downstream is a positive precision target
+     (docs/architecture/comprehension-loop.md §5.1 + invariant 6). -->
+
 For essays that land a verdict or recommendation (investor / analysis / assessment editions),
 check that the conclusion's confidence matches the evidence the body established. This is the
 mirror of Pass 3 / Pass 4, which guard OVERREACH; 6G guards OVER-HEDGE.
+
+**Detection** (reviewer names the pattern — detector-side; not composer-facing):
 
 Flag (over-hedge):
 - the verdict leads with the qualifier instead of the call ("a qualified yes" before the "yes");
@@ -103,16 +108,20 @@ Flag (over-hedge):
   never this essay's conclusion;
 - stacked hedges a body with firm evidence does not warrant.
 
-**Hedge budget**: the verdict section keeps exactly ONE anti-hype guard, and it must be specific
-to this patent (e.g. "nobody should price it as a market lock"), not a truism about patents in
-general. Everything else that bounds the thesis lives in the dedicated limits section, referenced
-— not re-listed — from the verdict.
+**Hedge budget** (detection criterion): the verdict section keeps exactly ONE anti-hype guard,
+and it must be specific to this patent (e.g. "nobody should price it as a market lock"), not a
+truism about patents in general. Everything else that bounds the thesis lives in the dedicated
+limits section, referenced — not re-listed — from the verdict.
 
-Do not invert the fix into overclaim: a firm verdict still keeps its one anti-hype guard and
-never asserts beyond the claim scope (Pass 3 still binds). When 6G and Pass 3 appear to conflict
-on the same sentence, the fix priority is: find a stronger anchor → narrow the claim to what the
-anchor supports → reframe as explicitly-labeled analysis. Deleting the call or hedging it into
-boilerplate is the LAST resort, not the first.
+**Remediation** (composer-facing `recommendation` — positive precision target):
+- state each bound once at its precise claim anchor; lead the close with its affirmative
+  commitment;
+- keep the one patent-specific anti-hype guard; commit the verdict to what the evidence and
+  claim scope support, at the anchor;
+- when 6G and Pass 3 appear to conflict on the same sentence, fix priority is: find a stronger
+  anchor → narrow the claim to what the anchor supports → reframe as explicitly-labeled
+  analysis → commit the call at that bound (Pass 3 still binds; never assert beyond claim
+  scope).
 
 Mechanical pre-filter: `gate_hedge` (HEDGE-001 boilerplate, HEDGE-002 qualifier-led verdict,
 HEDGE-003 hedge density) — hard-fails when the draft frontmatter declares `closing_posture: firm`.
@@ -124,11 +133,16 @@ posture and the draft violates it.
 
 ## 6H — Defensive-open guard (insurance before discovery)
 
+<!-- Detection names the pattern; the fix handed downstream is a positive precision target
+     (docs/architecture/comprehension-loop.md §5.1 + invariant 6). -->
+
 6G's mirror at the TOP of the essay. Check that no verdict-insurance fact — status labels
 ("pending application", "not yet granted"), liens / collateral, examiner rejections, "still
 not an asset" framings — precedes the lead's discovery beat (the energy register's payoff
 declared in Phase 1's chosen title-lead pair; doctrine in
 `_shared/references/reader-energy.md`).
+
+**Detection** (reviewer names the pattern — detector-side; not composer-facing):
 
 Flag (defensive-open):
 - one or more insurance facts stacked ahead of the discovery beat in ¶1;
@@ -138,9 +152,10 @@ Flag (defensive-open):
 
 The insurance facts themselves are NOT findings — the two-sided call, which must still land
 by the lead section's END, requires them. The finding is their POSITION ahead of the beat.
-Fix: reverse the polarity (discovery first, priced second) — never delete the insurance, and
-never trade 6H against 6G (both guards hold simultaneously; they constrain order, not
-content).
+
+**Remediation** (composer-facing `recommendation` — positive precision target): lead with the
+discovery beat; keep insurance facts priced second (order, not content). Both 6H and 6G hold
+simultaneously.
 
 Mechanical pre-filter: `gate_surface` SURF-002 (qualifier-led first body sentence) and
 SURF-004 (defensive-open lexicon before any discovery beat) — both warn. 6H is the judgment
@@ -175,8 +190,11 @@ Check, against the spine's declared section `payload` tags (spine → section tr
 
 The insurance facts themselves are NOT findings — both-or-neither evidence selection and
 the two-sided call stand (6G/6H logic applies unchanged). The finding is VOLUME or
-PLACEMENT; the fix is relocate and compress, never delete the insurance, and never trade
-6I against 6G (the call stays firm and two-sided).
+PLACEMENT.
+
+**Remediation** (composer-facing — positive): relocate and compress insurance/process
+material into its spine-tagged home; keep the facts, free the tech beat. 6I and 6G both
+hold (the call stays firm and two-sided).
 
 Mechanical pre-filter: `gate_surface` SURF-005 (procedure-narration sentence count in the
 lead section) and SURF-006 (essay-wide spend-motif count) — both warn. 6I is the judgment
@@ -220,4 +238,4 @@ declares `closing_posture: firm` and the lead's procedure share crowds the tech 
 
 ## Pass 6's place in the pipeline
 
-v1 had Pass 6 (lead/conclusion + sources) and a separate deterministic-gate skill for mechanical checks (em-dash, format, banned-words). v2 brief locked deterministic-gate's absorption into Pass 6. The merge keeps mechanical checks in the editorial flow where SETI's revise decision is centralized.
+v1 had Pass 6 (lead/conclusion + sources) and a separate deterministic-gate skill for mechanical checks (em-dash, format, banned-words). v2 brief locked deterministic-gate's absorption into Pass 6. The merge keeps mechanical checks in the editorial flow where the orchestrator's revise decision is centralized.

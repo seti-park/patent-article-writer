@@ -40,7 +40,8 @@ except ImportError:  # pragma: no cover
 
 IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".bmp", ".webp", ".tif", ".tiff"}
 MAX_EDGE_DEFAULT = 2000
-TRIM_PAD = 16  # px of white margin to keep after the trim
+TRIM_PAD = 4  # px safety kept on the tight crop so anti-aliased edges aren't clipped
+MARGIN_FRAC = 0.10  # white margin ADDED around the trimmed figure (~10% of the short edge)
 WHITE_THRESHOLD = 245  # >= this (0-255) counts as background white for the trim
 
 
@@ -85,9 +86,27 @@ def _to_pages(path):
             break
 
 
-def trim(img, pad=TRIM_PAD):
-    """Auto-crop white margins. getbbox() trims black, not white — so diff
-    against a white canvas (ImageChops.difference) and bbox THAT."""
+def _white_for_mode(mode):
+    """A white fill tuple/int matching an image mode (so the added margin is
+    truly white for RGB / L / RGBA / etc., not black)."""
+    if mode == "L":
+        return 255
+    if mode == "RGBA":
+        return (255, 255, 255, 255)
+    if mode == "LA":
+        return (255, 255)
+    return (255, 255, 255)  # RGB and friends
+
+
+def trim(img, pad=TRIM_PAD, margin_frac=MARGIN_FRAC):
+    """Auto-crop white margins, then ADD a proportional white margin.
+
+    getbbox() trims black, not white — so diff against a white canvas
+    (ImageChops.difference) and bbox THAT. After cropping tight (a few px of
+    safety so anti-aliased edges are not clipped), paste onto a white canvas
+    ~margin_frac larger on every side, so the figure carries a consistent ~10%
+    breathing margin regardless of how much whitespace the source sheet had
+    (a fixed px pad reads as no-margin on a large figure)."""
     rgb = img.convert("RGB")
     white = Image.new("RGB", rgb.size, (255, 255, 255))
     diff = ImageChops.difference(rgb, white)
@@ -100,7 +119,16 @@ def trim(img, pad=TRIM_PAD):
     top = max(bbox[1] - pad, 0)
     right = min(bbox[2] + pad, img.size[0])
     bottom = min(bbox[3] + pad, img.size[1])
-    return img.crop((left, top, right, bottom))
+    cropped = img.crop((left, top, right, bottom))
+
+    cw, ch = cropped.size
+    margin = int(round(min(cw, ch) * margin_frac))
+    if margin <= 0:
+        return cropped
+    canvas = Image.new(cropped.mode, (cw + 2 * margin, ch + 2 * margin),
+                       _white_for_mode(cropped.mode))
+    canvas.paste(cropped, (margin, margin))
+    return canvas
 
 
 def _resize_cap(img, max_edge):

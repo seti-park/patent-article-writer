@@ -1,7 +1,7 @@
 ---
 proposal_id: 2026-07-05-figuse-selection-scope-promote
 created: 2026-07-05T19:30:00Z
-status: recommended-apply
+status: applied  # commit eee7b23 (WS-B) — section-scoping diff + fixture shipped
 lever: gate-strengthen
 goal: "2"
 root_cause_stage: gate

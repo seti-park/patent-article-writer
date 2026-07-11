@@ -7,9 +7,10 @@ objections after publication, and brief a promo. It is a comprehension artifact,
 report, and it is fidelity-checked like the invention-summary: every verbatim span in it must
 appear verbatim in `input/patent.md`.
 
-- **Writer**: `design-architect` (thesis-architect Step 2b, voice-off), after Step 2 context
-  research and before Step 3 thesis candidate generation. Comprehension precedes thesis: the
-  briefing describes the PATENT, never the essay's angle.
+- **Writer**: `patent-reader` (`patent-understand` stage, voice-off) writes ①–④ + ⑥ into
+  `handoff/00-understand/owner-briefing.md` **before** any thesis work. `design-architect`
+  may update section ⑤ (promo link) only after context research. Comprehension precedes
+  thesis: the briefing describes the PATENT, never the essay's angle.
 - **Consumers**: the OWNER first; later `promo-composer` (Phase 4), which uses the briefing
   as a grounding source for the promo pack.
 - **Verification**: `gate_quotes` at the Phase-1 early gate. The `근거 (verbatim)` span lines

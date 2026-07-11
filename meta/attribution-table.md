@@ -51,6 +51,20 @@ to re-exposing `voice-profile.md` in Phase 3.
 | `promo-safe-harbor-overweight` | human-revision (promo v1→v2 owner read; self-check: promo-format Final Checklist bold_selection line) | 5 | promo | promo-composer promo-format.md bold-selection rule + briefing-vocabulary-only reuse | reference-edit (done 2026-07-05, v3 contract) |
 | `plain-language-gap` | human-revision (v6→v7 owner read; owned going forward by the Phase 3.7 prose-polish stage) | 3 | edit + architecture | pass-5 reader-perspective calibration + prose-polish SKILL (surface-only 윤문, drift-verified) | new-stage (done 2026-07-05) + rubric-tuning candidate for pass-5 |
 
+## Orchestration / protocol (process failures — not content)
+
+Cluster-4a / LOOP-08: failures of the *run control plane* (checkpoint skipped, stage order
+broken, confirm-file misuse). These are **not** editorial classes — they route to the
+orchestrator stage. Capture via `## incident` blocks (`origin: orchestration-protocol`) even
+on aborted runs; see pipeline-retro SKILL incident path.
+
+| Finding class (pattern_tag) | Source signal | Goal | Owner stage | Owner artifact | Default lever |
+|---|---|---|---|---|---|
+| `checkpoint-skipped` | orchestration-protocol / incident / check_run RUN-010 | all | orchestrator | patent-essay SKILL checkpoint protocol + check_run RUN-010 | reference-edit (+ gate-strengthen for RUN-010 if mechanical) |
+| `stage-order-violation` | orchestration-protocol / incident (design before understand, compose before design, etc.) | all | orchestrator | patent-essay SKILL stage graph + check_run RUN-010 | reference-edit |
+| `confirm-file-misuse` | orchestration-protocol / incident (understand-confirmed.md backdated, forged, or filled without owner) | all | orchestrator | patent-essay SKILL checkpoint protocol + understand-confirmed.md | reference-edit |
+| `post-hoc-confirmation` | orchestration-protocol / incident (confirm `by:`/`date:` later than design artifact timestamps) | all | orchestrator | patent-essay SKILL checkpoint protocol + check_run RUN-010 | reference-edit |
+
 ## Recurrence ledger summary (auto-maintained by pipeline-retro)
 
 `pipeline-retro` keeps a running count per class here so a human can see system health at a

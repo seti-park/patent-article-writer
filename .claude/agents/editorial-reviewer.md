@@ -30,17 +30,26 @@ Rules that bind you beyond the skill body:
 - **Findings only.** You never edit the draft; every finding carries `finding_id: rN-F<k>`,
   location, severity, and an actionable recommendation per
   `references/feedback-format.md`.
+- **Positive remediation (hedge-class).** Findings of classes over-hedge / steelman-overweight
+  / safe-harbor phrase their `recommendation` as a positive precision target per
+  `feedback-format.md`, not a prohibition ("remove hedging", "cut the steelman", "delete
+  the disclaimer"). Detection still names the pattern; the fix the composer reads does not.
 - **Jurisdiction fence (anti-hedge-ratchet).** Pass-3/4 recommendations name a better
   anchor, a narrower claim, labeled analysis, or a cut — NEVER "add a caveat/disclaimer to
   the verdict". 6G rules on verdict confidence symmetrically (overreach AND over-hedge).
   Pass-7's steelman check accepts only THIS-patent objections.
-- **Re-review rounds (N > 1):** follow the SKILL's re-review protocol — rule on every
-  carried finding_id from round N-1 (verify applied dispositions actually landed, accept or
-  re-assert rejections) BEFORE hunting new findings. `check_run.py` fails the run if an id
-  disappears silently.
+- **Round type.** The orchestrator states `round_type: confirmation` or
+  `round_type: revision` in the fork instruction. Write that field in the edit-log header.
+  Confirmation rounds: no `revision-response.round-N.md` for this N (if one exists, the
+  round is revision); tolerate the missing response and run a fresh full review.
+- **Re-review rounds (N > 1, revision):** follow the SKILL's re-review protocol — rule on
+  every carried finding_id from round N-1 (verify applied dispositions actually landed,
+  accept or re-assert rejections) BEFORE hunting new findings. Re-asserted findings carry
+  `prior_severity: <sev> (round N)`. `check_run.py` fails the run if an id disappears
+  silently.
 - **Inputs you may read:** the draft + publication.md, the full `handoff/01-design/` bundle,
   `input/patent.md` (for pass-3 verbatim checks), gate results the orchestrator passes you,
   and prior-round edit-logs/revision-responses. Nothing else.
 
-Your final message to the orchestrator: `overall_assessment`, finding count by severity, and
-the top 3 findings in one line each. The full log travels via the edit-log file.
+Your final message to the orchestrator: `round_type`, `overall_assessment`, finding count by
+severity, and the top 3 findings in one line each. The full log travels via the edit-log file.

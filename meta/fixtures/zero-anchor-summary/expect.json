@@ -1,0 +1,5 @@
+{
+  "gate_pass": false,
+  "must_contain_check_ids": ["QUOTE-002"],
+  "mode": "essay"
+}

@@ -3,7 +3,7 @@
 Defines how the orchestrator decides PASS/FAIL for the Compose↔Edit loop. Two layers,
 by design:
 
-1. **Deterministic gates** (mechanical, hard pass/fail) — `_shared/scripts/run_gates.py`.
+1. **Deterministic gates** (mechanical, hard pass/fail) — `.claude/skills/_shared/scripts/run_gates.py`.
 2. **Qualitative editorial assessment** — `editorial-review`'s 7-pass review, expressed as a
    **severity model** (`overall_assessment`), not an arbitrary 0–100 number. This mirrors the
    real `editorial-review/references/feedback-format.md` so the loop and the editor speak the
@@ -67,7 +67,7 @@ the rest warn. Their judgment complement is **pass-7** (below).
 Invocation (orchestrator):
 
 ```
-python _shared/scripts/run_gates.py \
+python3 .claude/skills/_shared/scripts/run_gates.py \
   --draft handoff/02-compose/essay-draft.md \
   --invention-summary handoff/01-design/invention-summary.md \
   --figures handoff/01-design/figures-index.txt \
@@ -128,10 +128,10 @@ on the judge shrinks.
 ## PASS / FAIL (orchestrator loop policy)
 
 ```
-CLEAN(N)  ⇔  Layer-1 gates all pass (no fail-severity finding, including FIGUSE-001)
-             AND  editorial overall_assessment is acceptable per threshold
-             AND  grounding hard-gate not breached
-             AND  verdict hard-gate not breached
+CLEAN(N)  ⇔  gates pass + assessment ≥ threshold + grounding hard-gate
+             + goal-2 hard-gate + verdict hard-gate
+             (orchestrator arbiter: patent-essay/SKILL.md §4; same formula in
+             editorial-review/SKILL.md)
 
 ACCEPTED  ⇔  two consecutive CLEAN rounds from independently spawned reviewers
              (the second is a confirmation round with no revision in between)
@@ -157,8 +157,10 @@ ACCEPTED  ⇔  two consecutive CLEAN rounds from independently spawned reviewers
 - **Max revision iterations: 4** (`--max-iter`). On FAIL, the orchestrator feeds the
   `findings` back into `essay-en-composer` (revision mode; every medium+ finding gets a
   disposition in `revision-response.round-N.md`) and re-scores with a fresh reviewer. At the
-  cap, the best round may ship ONLY with an explicit `CAP HIT` line in `score-history.md`
-  and the unresolved findings surfaced.
+  cap, reaching max without acceptance is an owner checkpoint (`cap_hit`): ship the **last
+  draft** only (never pick among earlier rounds by score), with an explicit `CAP HIT` row in
+  `score-history.md` and unresolved findings surfaced. Hard stop unless `--yes` (then ship
+  last draft and continue).
 - **Run-completeness:** before archiving, `_shared/scripts/check_run.py` must pass — it
   mechanically verifies round artifacts, disposition coverage, carried finding_ids,
   double-clean (or CAP HIT) acceptance, and self-audit evidence.

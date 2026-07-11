@@ -18,7 +18,7 @@
 #
 # Literals match on word boundaries: "enhance" will not match "enhancement".
 
-# --- SETI anti-ai banned words (Pass 1, authoritative) ---
+# --- Owner anti-ai banned words (Pass 1, authoritative) ---
 delve
 tapestry
 vibrant
