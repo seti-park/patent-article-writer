@@ -41,3 +41,17 @@ rules:
   - "Inside pipeline: strict-execution only; gap-stops raise OWNER_QUESTION."
   - "Fact introduction beyond invention-summary Quotable spans + fact-check-log external facts is forbidden."
   - "thesis-trace.md declares <=3 signature lines (or explicit none)."
+
+# Multi-vendor compose lane (docs/architecture/multi-vendor-lanes.md §8 P2)
+# Owner-confirmed 2026-07-11: round cap N=3 before inherit fallback (§10-3).
+compose_vendor:
+  flag: "--compose-vendor"
+  values: [inherit, grok]
+  default: inherit
+  grok:
+    lane: "_shared/scripts/cli_lane.py --vendor grok  (grok --prompt-file, -m grok-4.5, tool-less, constrained --json-schema document envelope)"
+    prompt_template: .claude/skills/patent-essay/references/compose-lane-grok.md
+    isolation: "tool-less grok (--tools '' --no-subagents --disable-web-search; single-shot generation) + prompt INLINES design handoff + voice refs; input/patent.md never in the prompt (invariant 3); gate_patent_leak stays the vendor-agnostic net"
+    voice_pregate: "cheap fresh Claude fork before each full review round on a grok draft; VOICE-FAIL => one grok re-drive with the tells, second FAIL => inherit re-compose (guardrail 2)"
+    round_cap: "after 3 grok revision rounds without acceptance, remaining rounds compose with inherit (guardrail 3); lane switch recorded"
+    fallback: "cli_lane exit 3 => compose with inherit as today; the run report MUST record the substitution (never silent)"

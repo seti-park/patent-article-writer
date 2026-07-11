@@ -24,6 +24,11 @@ from pathlib import Path
 HERE = os.path.dirname(os.path.abspath(__file__))
 CLI_LANE = os.path.join(HERE, "cli_lane.py")
 
+# Import GROK_DOC_SCHEMA from cli_lane so argv assertions cannot drift.
+if HERE not in sys.path:
+    sys.path.insert(0, HERE)
+from cli_lane import GROK_DOC_SCHEMA  # noqa: E402
+
 # Canned content for success cases (non-grounding).
 GPT_CANNED = "GPT verifier output here.\n"
 GROK_CANNED = "Grok compose output here.\n"
@@ -49,6 +54,308 @@ INVALID_GROUNDING = textwrap.dedent("""\
     | sentence ref | anchor | verdict | evidence | recommended fix |
     |---|---|---|---|---|
     | s1 | [0001] | MAYBE | span | — |
+""")
+
+# Valid compose draft for --validate compose: frontmatter fence, [dddd] anchor, >=800 stripped chars.
+VALID_COMPOSE = textwrap.dedent("""\
+    ---
+    essay_id: 044-tesla-rcm-vindication
+    patent_reference: US 2026/0125022 A1
+    spine_source: handoff/01-design/thesis-spine.md
+    draft_version: 1
+    mode_used: walkthrough
+    posture_used: measured
+    closing_posture: firm
+    ---
+
+    # Tesla Filed the 70ms Airbag Patent Before It Announced the 70ms Airbag
+
+    ## When the Announcement Arrived Late
+
+    This spring, Tesla described its predictive restraint system as an unprecedented
+    pre-impact response. The description was accurate. It was also roughly eleven months
+    late: the patent that explains the response had already been on file since October
+    2024. The announcement did not reveal the architecture. It caught up to it.
+
+    ## What the Patent Actually Routes
+
+    The restraint-control module does not wait for the crash. The vision sensor array
+    computes a pre-impact prediction and routes it to the vehicle control unit, which
+    arms the airbag module before an accelerometer would register the impact. The patent
+    is explicit that this is not a backup channel: it describes the vision sensor
+    providing pre-impact prediction to the airbag controller [0016], and notes that the
+    vision sensor functions as a predictive input rather than a redundant sensor.
+
+    Conventional restraint systems are reactive by construction. Industry
+    accelerometer-based ECUs reach a deployment decision within roughly ten milliseconds
+    of crash detection. Tesla's architecture moves that decision upstream of the crash
+    entirely, so the deployment decision is made approximately seventy milliseconds
+    before traditional accelerometer-based systems would respond. Both figures describe
+    the same thing, a pre-deployment-decision latency, which is what makes the comparison
+    fair rather than rhetorical. Read against the filing date, the announcement stops
+    being a product reveal and becomes a confirmation of an architecture already
+    committed to silicon and to the patent record before the public ever heard the number.
+
+    # Sources
+
+    ## Patents
+    - US 2026/0125022 A1, Predictive Airbag Deployment using Vehicle Vision Data.
+""")
+
+# Same shape/length/fence as VALID_COMPOSE but no [dddd] anchor.
+COMPOSE_NO_ANCHOR = textwrap.dedent("""\
+    ---
+    essay_id: 044-tesla-rcm-vindication
+    patent_reference: US 2026/0125022 A1
+    spine_source: handoff/01-design/thesis-spine.md
+    draft_version: 1
+    mode_used: walkthrough
+    posture_used: measured
+    closing_posture: firm
+    ---
+
+    # Tesla Filed the 70ms Airbag Patent Before It Announced the 70ms Airbag
+
+    ## When the Announcement Arrived Late
+
+    This spring, Tesla described its predictive restraint system as an unprecedented
+    pre-impact response. The description was accurate. It was also roughly eleven months
+    late: the patent that explains the response had already been on file since October
+    2024. The announcement did not reveal the architecture. It caught up to it.
+
+    ## What the Patent Actually Routes
+
+    The restraint-control module does not wait for the crash. The vision sensor array
+    computes a pre-impact prediction and routes it to the vehicle control unit, which
+    arms the airbag module before an accelerometer would register the impact. The patent
+    is explicit that this is not a backup channel: it describes the vision sensor
+    providing pre-impact prediction to the airbag controller, and notes that the
+    vision sensor functions as a predictive input rather than a redundant sensor.
+
+    Conventional restraint systems are reactive by construction. Industry
+    accelerometer-based ECUs reach a deployment decision within roughly ten milliseconds
+    of crash detection. Tesla's architecture moves that decision upstream of the crash
+    entirely, so the deployment decision is made approximately seventy milliseconds
+    before traditional accelerometer-based systems would respond. Both figures describe
+    the same thing, a pre-deployment-decision latency, which is what makes the comparison
+    fair rather than rhetorical. Read against the filing date, the announcement stops
+    being a product reveal and becomes a confirmation of an architecture already
+    committed to silicon and to the patent record before the public ever heard the number.
+
+    # Sources
+
+    ## Patents
+    - US 2026/0125022 A1, Predictive Airbag Deployment using Vehicle Vision Data.
+""")
+
+# Starts with ---, has [dddd], but well under 800 stripped chars.
+COMPOSE_TOO_SHORT = textwrap.dedent("""\
+    ---
+    essay_id: short-draft
+    closing_posture: firm
+    ---
+
+    # Short Draft
+
+    A brief body with one patent cite [0016] that is far under the length floor.
+""")
+
+# Long enough + has anchor, but first non-whitespace line is not ---.
+COMPOSE_NO_FENCE = textwrap.dedent("""\
+    # Tesla Filed the 70ms Airbag Patent Before It Announced the 70ms Airbag
+
+    ## When the Announcement Arrived Late
+
+    This spring, Tesla described its predictive restraint system as an unprecedented
+    pre-impact response. The description was accurate. It was also roughly eleven months
+    late: the patent that explains the response had already been on file since October
+    2024. The announcement did not reveal the architecture. It caught up to it.
+
+    ## What the Patent Actually Routes
+
+    The restraint-control module does not wait for the crash. The vision sensor array
+    computes a pre-impact prediction and routes it to the vehicle control unit, which
+    arms the airbag module before an accelerometer would register the impact. The patent
+    is explicit that this is not a backup channel: it describes the vision sensor
+    providing pre-impact prediction to the airbag controller [0016], and notes that the
+    vision sensor functions as a predictive input rather than a redundant sensor.
+
+    Conventional restraint systems are reactive by construction. Industry
+    accelerometer-based ECUs reach a deployment decision within roughly ten milliseconds
+    of crash detection. Tesla's architecture moves that decision upstream of the crash
+    entirely, so the deployment decision is made approximately seventy milliseconds
+    before traditional accelerometer-based systems would respond. Both figures describe
+    the same thing, a pre-deployment-decision latency, which is what makes the comparison
+    fair rather than rhetorical. Read against the filing date, the announcement stops
+    being a product reveal and becomes a confirmation of an architecture already
+    committed to silicon and to the patent record before the public ever heard the number.
+
+    The next continuation filing, or the next safety disclosure, will either carry the
+    same vision-first decision path or quietly walk it back. The patent is the more
+    durable record. Companies announce when it is convenient; they file when they have
+    already decided. That timing gap is the essay's entire point, and the architecture
+    that made the seventy-millisecond claim possible was committed before the public
+    number arrived.
+
+    # Sources
+
+    ## Patents
+    - US 2026/0125022 A1, Predictive Airbag Deployment using Vehicle Vision Data.
+""")
+
+# Valid revision-round compose: DISPOSITIONS comment, then --- fence, [dddd], >=800 chars.
+VALID_COMPOSE_REVISION = textwrap.dedent("""\
+    <!-- DISPOSITIONS
+    f1: applied
+    f2: rejected: span already covers the claim
+    -->
+    ---
+    essay_id: 044-tesla-rcm-vindication
+    patent_reference: US 2026/0125022 A1
+    spine_source: handoff/01-design/thesis-spine.md
+    draft_version: 2
+    mode_used: walkthrough
+    posture_used: measured
+    closing_posture: firm
+    ---
+
+    # Tesla Filed the 70ms Airbag Patent Before It Announced the 70ms Airbag
+
+    ## When the Announcement Arrived Late
+
+    This spring, Tesla described its predictive restraint system as an unprecedented
+    pre-impact response. The description was accurate. It was also roughly eleven months
+    late: the patent that explains the response had already been on file since October
+    2024. The announcement did not reveal the architecture. It caught up to it.
+
+    ## What the Patent Actually Routes
+
+    The restraint-control module does not wait for the crash. The vision sensor array
+    computes a pre-impact prediction and routes it to the vehicle control unit, which
+    arms the airbag module before an accelerometer would register the impact. The patent
+    is explicit that this is not a backup channel: it describes the vision sensor
+    providing pre-impact prediction to the airbag controller [0016], and notes that the
+    vision sensor functions as a predictive input rather than a redundant sensor.
+
+    Conventional restraint systems are reactive by construction. Industry
+    accelerometer-based ECUs reach a deployment decision within roughly ten milliseconds
+    of crash detection. Tesla's architecture moves that decision upstream of the crash
+    entirely, so the deployment decision is made approximately seventy milliseconds
+    before traditional accelerometer-based systems would respond. Both figures describe
+    the same thing, a pre-deployment-decision latency, which is what makes the comparison
+    fair rather than rhetorical. Read against the filing date, the announcement stops
+    being a product reveal and becomes a confirmation of an architecture already
+    committed to silicon and to the patent record before the public ever heard the number.
+
+    # Sources
+
+    ## Patents
+    - US 2026/0125022 A1, Predictive Airbag Deployment using Vehicle Vision Data.
+""")
+
+# Same shape/length/---/anchor as VALID_COMPOSE_REVISION but no DISPOSITIONS substring.
+COMPOSE_REVISION_NO_DISPOSITIONS = textwrap.dedent("""\
+    <!-- NOTES
+    f1: applied
+    f2: rejected: span already covers the claim
+    -->
+    ---
+    essay_id: 044-tesla-rcm-vindication
+    patent_reference: US 2026/0125022 A1
+    spine_source: handoff/01-design/thesis-spine.md
+    draft_version: 2
+    mode_used: walkthrough
+    posture_used: measured
+    closing_posture: firm
+    ---
+
+    # Tesla Filed the 70ms Airbag Patent Before It Announced the 70ms Airbag
+
+    ## When the Announcement Arrived Late
+
+    This spring, Tesla described its predictive restraint system as an unprecedented
+    pre-impact response. The description was accurate. It was also roughly eleven months
+    late: the patent that explains the response had already been on file since October
+    2024. The announcement did not reveal the architecture. It caught up to it.
+
+    ## What the Patent Actually Routes
+
+    The restraint-control module does not wait for the crash. The vision sensor array
+    computes a pre-impact prediction and routes it to the vehicle control unit, which
+    arms the airbag module before an accelerometer would register the impact. The patent
+    is explicit that this is not a backup channel: it describes the vision sensor
+    providing pre-impact prediction to the airbag controller [0016], and notes that the
+    vision sensor functions as a predictive input rather than a redundant sensor.
+
+    Conventional restraint systems are reactive by construction. Industry
+    accelerometer-based ECUs reach a deployment decision within roughly ten milliseconds
+    of crash detection. Tesla's architecture moves that decision upstream of the crash
+    entirely, so the deployment decision is made approximately seventy milliseconds
+    before traditional accelerometer-based systems would respond. Both figures describe
+    the same thing, a pre-deployment-decision latency, which is what makes the comparison
+    fair rather than rhetorical. Read against the filing date, the announcement stops
+    being a product reveal and becomes a confirmation of an architecture already
+    committed to silicon and to the patent record before the public ever heard the number.
+
+    # Sources
+
+    ## Patents
+    - US 2026/0125022 A1, Predictive Airbag Deployment using Vehicle Vision Data.
+""")
+
+# Has DISPOSITIONS + anchor + length, but no line that is exactly --- after strip.
+COMPOSE_REVISION_NO_FENCE_LINE = textwrap.dedent("""\
+    <!-- DISPOSITIONS
+    f1: applied
+    f2: rejected: span already covers the claim
+    -->
+    essay_id: 044-tesla-rcm-vindication
+    patent_reference: US 2026/0125022 A1
+    spine_source: handoff/01-design/thesis-spine.md
+    draft_version: 2
+    mode_used: walkthrough
+    posture_used: measured
+    closing_posture: firm
+
+    # Tesla Filed the 70ms Airbag Patent Before It Announced the 70ms Airbag
+
+    ## When the Announcement Arrived Late
+
+    This spring, Tesla described its predictive restraint system as an unprecedented
+    pre-impact response. The description was accurate. It was also roughly eleven months
+    late: the patent that explains the response had already been on file since October
+    2024. The announcement did not reveal the architecture. It caught up to it.
+
+    ## What the Patent Actually Routes
+
+    The restraint-control module does not wait for the crash. The vision sensor array
+    computes a pre-impact prediction and routes it to the vehicle control unit, which
+    arms the airbag module before an accelerometer would register the impact. The patent
+    is explicit that this is not a backup channel: it describes the vision sensor
+    providing pre-impact prediction to the airbag controller [0016], and notes that the
+    vision sensor functions as a predictive input rather than a redundant sensor.
+
+    Conventional restraint systems are reactive by construction. Industry
+    accelerometer-based ECUs reach a deployment decision within roughly ten milliseconds
+    of crash detection. Tesla's architecture moves that decision upstream of the crash
+    entirely, so the deployment decision is made approximately seventy milliseconds
+    before traditional accelerometer-based systems would respond. Both figures describe
+    the same thing, a pre-deployment-decision latency, which is what makes the comparison
+    fair rather than rhetorical. Read against the filing date, the announcement stops
+    being a product reveal and becomes a confirmation of an architecture already
+    committed to silicon and to the patent record before the public ever heard the number.
+
+    The next continuation filing, or the next safety disclosure, will either carry the
+    same vision-first decision path or quietly walk it back. The patent is the more
+    durable record. Companies announce when it is convenient; they file when they have
+    already decided. That timing gap is the essay's entire point, and the architecture
+    that made the seventy-millisecond claim possible was committed before the public
+    number arrived.
+
+    # Sources
+
+    ## Patents
+    - US 2026/0125022 A1, Predictive Airbag Deployment using Vehicle Vision Data.
 """)
 
 
@@ -172,22 +479,45 @@ class CliLaneTestBase(unittest.TestCase):
             )
         _write_stub(os.path.join(self.bin_dir, "codex"), body)
 
+    def _grok_envelope_fixture(self, content: str, name: str = "grok_stdout.json") -> str:
+        """Write a grok JSON envelope fixture; return its path for the bash stub to cat."""
+        envelope = json.dumps({
+            "structuredOutput": {"document": content},
+            "text": json.dumps({"document": content}),
+        })
+        fixture_path = os.path.join(self.tmp, name)
+        with open(fixture_path, "w", encoding="utf-8") as fh:
+            fh.write(envelope)
+        return fixture_path
+
     def _install_grok(self, mode: str = "success", content: str = GROK_CANNED) -> None:
         if mode == "nonzero":
             body = "#!/bin/bash\nexit 1\n"
         elif mode == "timeout":
             body = "#!/bin/bash\nsleep 5\nexit 0\n"
         elif mode == "empty":
-            body = "#!/bin/bash\nprintf '   \\n\\n  '\nexit 0\n"
+            # Whitespace-only document inside a valid JSON envelope so empty-output
+            # still fires after extraction (not invalid-output from parse failure).
+            fixture_path = self._grok_envelope_fixture("   \n\n  ", name="grok_stdout_empty.json")
+            body = "#!/bin/bash\ncat '%s'\nexit 0\n" % fixture_path
         else:
-            body = (
-                "#!/bin/bash\n"
-                "cat <<'EOF'\n"
-                + content
-                + ("\n" if not content.endswith("\n") else "")
-                + "EOF\n"
-                "exit 0\n"
-            )
+            # success — cat a pre-built JSON envelope (document = content).
+            fixture_path = self._grok_envelope_fixture(content)
+            body = "#!/bin/bash\ncat '%s'\nexit 0\n" % fixture_path
+        _write_stub(os.path.join(self.bin_dir, "grok"), body)
+
+    def _install_grok_argv_recorder(self, record_path: str, content: str = GROK_CANNED) -> None:
+        """Install a grok stub that records full argv (one arg per line) then succeeds."""
+        # Single-quote record_path for the shell (escape embedded single quotes).
+        rec = record_path.replace("'", "'\\''")
+        fixture_path = self._grok_envelope_fixture(content, name="grok_argv_stdout.json")
+        fix = fixture_path.replace("'", "'\\''")
+        body = (
+            "#!/bin/bash\n"
+            "printf '%%s\\n' \"$@\" > '%s'\n"
+            "cat '%s'\n"
+            "exit 0\n"
+        ) % (rec, fix)
         _write_stub(os.path.join(self.bin_dir, "grok"), body)
 
 
@@ -225,6 +555,106 @@ class TestGrokSuccess(CliLaneTestBase):
         with open(self.output_path, encoding="utf-8") as fh:
             got = fh.read()
         self.assertEqual(got, GROK_CANNED if GROK_CANNED.endswith("\n") else GROK_CANNED + "\n")
+
+
+class TestGrokCwdAbsolutized(CliLaneTestBase):
+    def test_relative_cwd_and_prompt_file_forwarded_as_absolute(self):
+        """Relative --cwd and --prompt-file must arrive on grok argv as absolute paths.
+
+        Use os.path.relpath against the real process cwd so both values are
+        genuinely relative (no os.chdir, no subprocess cwd= on _run_cli).
+        Without absolutizing --prompt-file, grok would resolve it against the
+        already-changed subprocess cwd and double-apply the path prefix.
+        """
+        target_dir = os.path.join(self.tmp, "compose_cwd")
+        os.makedirs(target_dir)
+        relative_cwd = os.path.relpath(target_dir, os.getcwd())
+        self.assertFalse(
+            os.path.isabs(relative_cwd),
+            "test setup must pass a relative --cwd: %r" % relative_cwd,
+        )
+        relative_prompt = os.path.relpath(self.prompt_path, os.getcwd())
+        self.assertFalse(
+            os.path.isabs(relative_prompt),
+            "test setup must pass a relative --prompt-file: %r" % relative_prompt,
+        )
+
+        record_path = os.path.join(self.tmp, "grok_argv.txt")
+        self._install_grok_argv_recorder(record_path)
+
+        proc = _run_cli(
+            [
+                "--vendor", "grok",
+                "--prompt-file", relative_prompt,
+                "--output", self.output_path,
+                "--cwd", relative_cwd,
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
+        data = _parse_json_line(proc.stdout)
+        self.assertTrue(data["ok"])
+
+        with open(record_path, encoding="utf-8") as fh:
+            argv_lines = [ln.rstrip("\n") for ln in fh.readlines()]
+        self.assertIn("--cwd", argv_lines)
+        cwd_idx = argv_lines.index("--cwd")
+        self.assertLess(cwd_idx + 1, len(argv_lines), "missing value after --cwd")
+        recorded_cwd = argv_lines[cwd_idx + 1]
+        self.assertTrue(os.path.isabs(recorded_cwd), recorded_cwd)
+
+        self.assertIn("--prompt-file", argv_lines)
+        pf_idx = argv_lines.index("--prompt-file")
+        self.assertLess(pf_idx + 1, len(argv_lines), "missing value after --prompt-file")
+        recorded_prompt = argv_lines[pf_idx + 1]
+        self.assertTrue(os.path.isabs(recorded_prompt), recorded_prompt)
+
+        # Default --max-turns (not passed on cli_lane.py) must forward 16 to grok
+        # (runaway-turn guard only; isolation is tool-less, not turn-cap).
+        self.assertIn("--max-turns", argv_lines)
+        mt_idx = argv_lines.index("--max-turns")
+        self.assertLess(mt_idx + 1, len(argv_lines), "missing value after --max-turns")
+        self.assertEqual(argv_lines[mt_idx + 1], "16")
+
+        # Constrained capture: --json-schema document envelope replaces --output-format.
+        self.assertIn("--json-schema", argv_lines)
+        js_idx = argv_lines.index("--json-schema")
+        self.assertLess(js_idx + 1, len(argv_lines), "missing value after --json-schema")
+        self.assertEqual(argv_lines[js_idx + 1], GROK_DOC_SCHEMA)
+        self.assertNotIn("--output-format", argv_lines)
+
+        # Isolation flags: always applied unconditionally on every grok invoke.
+        self.assertIn("--tools", argv_lines)
+        tools_idx = argv_lines.index("--tools")
+        self.assertLess(tools_idx + 1, len(argv_lines), "missing value after --tools")
+        self.assertEqual(argv_lines[tools_idx + 1], "")
+        self.assertIn("--no-subagents", argv_lines)
+        self.assertIn("--disable-web-search", argv_lines)
+
+    def test_explicit_max_turns_forwarded(self):
+        """Explicit --max-turns N must appear on grok argv as that N."""
+        record_path = os.path.join(self.tmp, "grok_argv_max_turns.txt")
+        self._install_grok_argv_recorder(record_path)
+
+        proc = _run_cli(
+            [
+                "--vendor", "grok",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--max-turns", "3",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
+        data = _parse_json_line(proc.stdout)
+        self.assertTrue(data["ok"])
+
+        with open(record_path, encoding="utf-8") as fh:
+            argv_lines = [ln.rstrip("\n") for ln in fh.readlines()]
+        self.assertIn("--max-turns", argv_lines)
+        mt_idx = argv_lines.index("--max-turns")
+        self.assertLess(mt_idx + 1, len(argv_lines), "missing value after --max-turns")
+        self.assertEqual(argv_lines[mt_idx + 1], "3")
 
 
 class TestCliMissing(CliLaneTestBase):
@@ -356,6 +786,31 @@ class TestEmptyOutput(CliLaneTestBase):
         self.assertFalse(os.path.exists(self.output_path))
 
 
+class TestGrokNonJsonStdout(CliLaneTestBase):
+    def test_non_json_stdout_invalid_output(self):
+        """Plain narration stdout (no JSON envelope) must substitute as invalid-output."""
+        body = (
+            "#!/bin/bash\n"
+            "cat <<'EOF'\n"
+            "I'll compose the essay now.\n"
+            "---\n"
+            "some content\n"
+            "EOF\n"
+            "exit 0\n"
+        )
+        _write_stub(os.path.join(self.bin_dir, "grok"), body)
+        proc = _run_cli(
+            ["--vendor", "grok", "--prompt-file", self.prompt_path, "--output", self.output_path],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 3, proc.stdout + proc.stderr)
+        data = _parse_json_line(proc.stdout)
+        self.assertEqual(data["reason"], "invalid-output")
+        self.assertTrue(data["substituted"])
+        self.assertFalse(os.path.exists(self.output_path))
+        self.assertIn("json envelope", data.get("detail", "").lower())
+
+
 class TestValidateGrounding(CliLaneTestBase):
     def test_valid_grounding(self):
         self._install_codex(mode="success", content=VALID_GROUNDING)
@@ -386,6 +841,144 @@ class TestValidateGrounding(CliLaneTestBase):
                 "--prompt-file", self.prompt_path,
                 "--output", self.output_path,
                 "--validate", "grounding",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 3, proc.stdout + proc.stderr)
+        data = _parse_json_line(proc.stdout)
+        self.assertEqual(data["reason"], "invalid-output")
+        self.assertTrue(data["substituted"])
+        self.assertFalse(os.path.exists(self.output_path))
+
+
+class TestValidateCompose(CliLaneTestBase):
+    def test_valid_compose(self):
+        self._install_grok(mode="success", content=VALID_COMPOSE)
+        proc = _run_cli(
+            [
+                "--vendor", "grok",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "compose",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
+        data = _parse_json_line(proc.stdout)
+        self.assertTrue(data["ok"])
+        self.assertTrue(os.path.isfile(self.output_path))
+        with open(self.output_path, encoding="utf-8") as fh:
+            body = fh.read()
+        expected = VALID_COMPOSE if VALID_COMPOSE.endswith("\n") else VALID_COMPOSE + "\n"
+        self.assertEqual(body, expected)
+
+    def test_compose_missing_anchor(self):
+        self._install_grok(mode="success", content=COMPOSE_NO_ANCHOR)
+        proc = _run_cli(
+            [
+                "--vendor", "grok",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "compose",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 3, proc.stdout + proc.stderr)
+        data = _parse_json_line(proc.stdout)
+        self.assertEqual(data["reason"], "invalid-output")
+        self.assertTrue(data["substituted"])
+        self.assertFalse(os.path.exists(self.output_path))
+        self.assertIn("anchor", data.get("detail", "").lower())
+
+    def test_compose_too_short(self):
+        self._install_grok(mode="success", content=COMPOSE_TOO_SHORT)
+        proc = _run_cli(
+            [
+                "--vendor", "grok",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "compose",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 3, proc.stdout + proc.stderr)
+        data = _parse_json_line(proc.stdout)
+        self.assertEqual(data["reason"], "invalid-output")
+        self.assertTrue(data["substituted"])
+        self.assertFalse(os.path.exists(self.output_path))
+        detail = data.get("detail", "").lower()
+        self.assertTrue("800" in detail or "length" in detail)
+
+    def test_compose_no_fence(self):
+        self._install_grok(mode="success", content=COMPOSE_NO_FENCE)
+        proc = _run_cli(
+            [
+                "--vendor", "grok",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "compose",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 3, proc.stdout + proc.stderr)
+        data = _parse_json_line(proc.stdout)
+        self.assertEqual(data["reason"], "invalid-output")
+        self.assertTrue(data["substituted"])
+        self.assertFalse(os.path.exists(self.output_path))
+        detail = data.get("detail", "").lower()
+        self.assertTrue("---" in detail or "fence" in detail)
+
+
+class TestValidateComposeRevision(CliLaneTestBase):
+    def test_valid_compose_revision(self):
+        self._install_grok(mode="success", content=VALID_COMPOSE_REVISION)
+        proc = _run_cli(
+            [
+                "--vendor", "grok",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "compose-revision",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
+        data = _parse_json_line(proc.stdout)
+        self.assertTrue(data["ok"])
+        self.assertTrue(os.path.isfile(self.output_path))
+        with open(self.output_path, encoding="utf-8") as fh:
+            body = fh.read()
+        expected = (
+            VALID_COMPOSE_REVISION
+            if VALID_COMPOSE_REVISION.endswith("\n")
+            else VALID_COMPOSE_REVISION + "\n"
+        )
+        self.assertEqual(body, expected)
+
+    def test_compose_revision_missing_dispositions(self):
+        self._install_grok(mode="success", content=COMPOSE_REVISION_NO_DISPOSITIONS)
+        proc = _run_cli(
+            [
+                "--vendor", "grok",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "compose-revision",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 3, proc.stdout + proc.stderr)
+        data = _parse_json_line(proc.stdout)
+        self.assertEqual(data["reason"], "invalid-output")
+        self.assertTrue(data["substituted"])
+        self.assertFalse(os.path.exists(self.output_path))
+
+    def test_compose_revision_no_fence_line(self):
+        self._install_grok(mode="success", content=COMPOSE_REVISION_NO_FENCE_LINE)
+        proc = _run_cli(
+            [
+                "--vendor", "grok",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "compose-revision",
             ],
             self.env,
         )

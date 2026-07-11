@@ -16,6 +16,11 @@ Contract (orchestrator keys on exit codes + one JSON line on stdout):
 
   --check  presence-only (shutil.which); no network, no CLI invoke.
   --validate grounding  post-capture shape check (verifier line + verdict token + |---).
+  --max-turns N  grok runaway-turn guard only (default 16); NOT the isolation mechanism.
+  Isolation is tool-less grok: every grok invoke always gets --tools "" --no-subagents
+  --disable-web-search (prompts inline everything; no tool use required).
+  Grok capture uses constrained --json-schema (document envelope); extract
+  structuredOutput.document (fallback: json.loads(text)["document"]).
 
 Stdlib only. Never shell=True — argv lists only.
 """
@@ -25,6 +30,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -36,6 +42,8 @@ VENDOR_CLI = {
     "gpt": "codex",
     "grok": "grok",
 }
+
+GROK_DOC_SCHEMA = '{"type":"object","properties":{"document":{"type":"string"}},"required":["document"]}'
 
 VERDICT_TOKENS = (
     "SUPPORTED",
@@ -84,6 +92,55 @@ def _validate_grounding(text: str) -> str | None:
     return None
 
 
+def _validate_compose(text: str) -> str | None:
+    """Return None if valid; else a short detail string."""
+    has_anchor = re.search(r"\[\d{4}\]", text) is not None
+    has_length = len(text.strip()) >= 800
+    first_line = ""
+    for line in text.splitlines():
+        if line.strip():
+            first_line = line.strip()
+            break
+    has_fence = first_line == "---"
+    missing = []
+    if not has_anchor:
+        missing.append("no [dddd] anchor (regex \\[\\d{4}\\])")
+    if not has_length:
+        missing.append("stripped length < 800 characters")
+    if not has_fence:
+        missing.append("first non-whitespace line is not exactly '---'")
+    if missing:
+        return "; ".join(missing)
+    return None
+
+
+def _validate_compose_revision(text: str) -> str | None:
+    """Return None if valid; else a short detail string."""
+    first_line = ""
+    for line in text.splitlines():
+        if line.strip():
+            first_line = line.strip()
+            break
+    has_dispositions = first_line.startswith("<!--") and ("DISPOSITIONS" in text)
+    has_fence = any(line.strip() == "---" for line in text.splitlines())
+    has_anchor = re.search(r"\[\d{4}\]", text) is not None
+    has_length = len(text.strip()) >= 800
+    missing = []
+    if not has_dispositions:
+        missing.append(
+            "first non-whitespace line does not start with '<!--' or text missing 'DISPOSITIONS'"
+        )
+    if not has_fence:
+        missing.append("no line found that is exactly '---'")
+    if not has_anchor:
+        missing.append("no [dddd] anchor (regex \\[\\d{4}\\])")
+    if not has_length:
+        missing.append("stripped length < 800 characters")
+    if missing:
+        return "; ".join(missing)
+    return None
+
+
 def _cli_missing_detail(vendor: str) -> str:
     return "%s CLI '%s' not found on PATH" % (vendor, VENDOR_CLI[vendor])
 
@@ -109,12 +166,16 @@ def _build_gpt_argv(cwd: str, prompt_text: str, last_message_path: str) -> list[
     ]
 
 
-def _build_grok_argv(cwd: str, prompt_file: str) -> list[str]:
+def _build_grok_argv(cwd: str, prompt_file: str, max_turns: int) -> list[str]:
     return [
         "grok",
         "--prompt-file", prompt_file,
         "-m", "grok-4.5",
-        "--output-format", "plain",
+        "--json-schema", GROK_DOC_SCHEMA,
+        "--max-turns", str(max_turns),
+        "--tools", "",
+        "--no-subagents",
+        "--disable-web-search",
         "--cwd", cwd,
     ]
 
@@ -126,7 +187,9 @@ def run_lane(
     timeout: int,
     cwd: str,
     validate: str | None,
+    max_turns: int,
 ) -> int:
+    cwd = os.path.abspath(cwd)
     cli = VENDOR_CLI[vendor]
     if not shutil.which(cli):
         return _substitute(vendor, "cli-missing", _cli_missing_detail(vendor), output_path)
@@ -138,6 +201,7 @@ def run_lane(
             "prompt file not found: %s" % prompt_file,
             output_path,
         )
+    prompt_path = prompt_path.resolve()
 
     tmp_last = None
     try:
@@ -147,7 +211,7 @@ def run_lane(
             os.close(fd)
             argv = _build_gpt_argv(cwd, prompt_text, tmp_last)
         else:
-            argv = _build_grok_argv(cwd, str(prompt_path))
+            argv = _build_grok_argv(cwd, str(prompt_path), max_turns)
 
         t0 = time.monotonic()
         try:
@@ -184,7 +248,17 @@ def run_lane(
                     output_path,
                 )
         else:
-            content = proc.stdout if proc.stdout is not None else ""
+            try:
+                obj = json.loads(proc.stdout)
+                doc = (obj.get("structuredOutput") or {}).get("document")
+                if doc is None:
+                    doc = json.loads(obj["text"])["document"]
+                content = doc
+            except Exception as exc:
+                detail = "grok json envelope parse failed: %s" % repr(exc)
+                if len(detail) > 200:
+                    detail = detail[:200]
+                return _substitute(vendor, "invalid-output", detail, output_path)
 
         if not content.strip():
             return _substitute(vendor, "empty-output", "captured output empty after strip", output_path)
@@ -194,6 +268,22 @@ def run_lane(
             if bad:
                 # Write then remove so the contract (remove partial --output) is uniform;
                 # never leave invalid content for the orchestrator to consume.
+                try:
+                    Path(output_path).write_text(content, encoding="utf-8")
+                except OSError:
+                    pass
+                return _substitute(vendor, "invalid-output", bad, output_path)
+        elif validate == "compose":
+            bad = _validate_compose(content)
+            if bad:
+                try:
+                    Path(output_path).write_text(content, encoding="utf-8")
+                except OSError:
+                    pass
+                return _substitute(vendor, "invalid-output", bad, output_path)
+        elif validate == "compose-revision":
+            bad = _validate_compose_revision(content)
+            if bad:
                 try:
                     Path(output_path).write_text(content, encoding="utf-8")
                 except OSError:
@@ -255,9 +345,19 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--validate",
-        choices=["grounding"],
+        choices=["grounding", "compose", "compose-revision"],
         default=None,
         help="Optional post-capture output validation",
+    )
+    parser.add_argument(
+        "--max-turns",
+        type=int,
+        default=16,
+        help=(
+            "Grok runaway-turn guard (default 16); NOT the isolation mechanism — "
+            "see --tools/--no-subagents/--disable-web-search, which are always "
+            "applied unconditionally"
+        ),
     )
     args = parser.parse_args(argv)
 
@@ -271,14 +371,21 @@ def main(argv: list[str] | None = None) -> int:
         parser.error("either --check, or both --prompt-file and --output, are required")
 
     cwd = args.cwd if args.cwd is not None else os.getcwd()
-    return run_lane(
-        vendor=args.vendor,
-        prompt_file=args.prompt_file,
-        output_path=args.output,
-        timeout=args.timeout,
-        cwd=cwd,
-        validate=args.validate,
-    )
+    try:
+        return run_lane(
+            vendor=args.vendor,
+            prompt_file=args.prompt_file,
+            output_path=args.output,
+            timeout=args.timeout,
+            cwd=cwd,
+            validate=args.validate,
+            max_turns=args.max_turns,
+        )
+    except Exception as exc:
+        detail = repr(exc)
+        if len(detail) > 200:
+            detail = detail[:200]
+        return _substitute(args.vendor, "nonzero", detail, args.output)
 
 
 if __name__ == "__main__":

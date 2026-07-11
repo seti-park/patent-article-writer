@@ -25,6 +25,7 @@ Content travels on disk. Graph + profiles: `contracts/pipeline.yaml`. Roles:
 | `--mode` | from profile | `essay` \| `wire` |
 | `--self-audit` | from profile | `on` \| `off` |
 | `--verifier-vendor` | `claude` | `claude` \| `gpt` — self_audit grounding-verifier lane; `gpt` = GPT-5.6-sol (reasoning high) via codex CLI lane; auto-fallback to `claude` with the substitution recorded in the run report |
+| `--compose-vendor` | `inherit` | `inherit` \| `grok` — compose lane; `grok` = Grok 4.5 via grok CLI lane; voice pre-gate + round-cap 3 + auto-fallback to `inherit` with substitution recorded |
 | `--comprehension-check` | from profile | `on` \| `off` — interactive Owner comprehension check at understand_confirm |
 | `--yes` | off | Skip owner checkpoints (unattended) |
 
@@ -288,6 +289,41 @@ Reads design handoff (+ understand spans). **Never** raw patent. Writes `handoff
 Inside the pipeline the forked worker runs **strict-execution** only; gap-stops and
 mode-shift proposals go through the **OWNER_QUESTION relay**, not in-session elicitation.
 
+**Grok compose lane (`--compose-vendor grok`)** — orchestrator procedure:
+
+1. Pre-flight: `python3 .claude/skills/_shared/scripts/cli_lane.py --vendor grok --check`;
+   exit 3 ⇒ inherit compose now, record substitution.
+2. Build the prompt from `references/compose-lane-grok.md`: inline thesis-spine,
+   invention-summary, figure-selection, fact-check-log, voice rules
+   (deliverable-voice-rules + anti-ai-writing), 2–3 voice-canon exemplars, draft schema.
+   NEVER inline or reference `input/patent.md` (invariant 3). Write to
+   `handoff/02-compose/compose-lane-prompt.round-N.md`.
+3. `python3 .claude/skills/_shared/scripts/cli_lane.py --vendor grok --prompt-file
+   handoff/02-compose/compose-lane-prompt.round-N.md --output
+   handoff/02-compose/essay-draft.md --validate compose --timeout 900 --cwd
+   handoff/02-compose`. The lane runs tool-less (`--tools ''`) — grok sees only the
+   inlined prompt.
+4. exit 3 ⇒ inherit compose as today; record substitution.
+5. exit 0 ⇒ voice-drift pre-gate (guardrail 2): fork a FRESH cheap Claude checker
+   (sonnet-class; not the reviewer) with the draft + the same exemplars + anti-AI tells;
+   verdict `VOICE-PASS`/`VOICE-FAIL` + tell list → `handoff/02-compose/voice-pregate-round-N.md`.
+   FAIL ⇒ one grok re-drive with the tells appended; second FAIL ⇒ inherit re-compose;
+   record.
+6. Derivative artifacts (adoption fork): fork essay-composer (inherit) instructed to ADOPT
+   the draft prose as-is (frontmatter completion only, no rewriting) and emit
+   figures-rationale.md, thesis-trace.md (≤3 signature lines), publication.md via the strip
+   pipeline. If adoption would require prose changes it raises OWNER_QUESTION — never
+   silently rewrites.
+7. Revision rounds: re-drive with `<REVISION_FINDINGS>` (edit-log findings + prior draft)
+   via `cli_lane.py --vendor grok --prompt-file handoff/02-compose/compose-lane-prompt.round-N.md
+   --output handoff/02-compose/grok-revision-round-N.md --validate compose-revision --timeout
+   900 --cwd handoff/02-compose`. exit 0 ⇒ split on the FIRST line that is exactly `---`:
+   everything before → `revision-response.round-N.md`, everything from that line onward
+   (inclusive) replaces `essay-draft.md`. exit 3 ⇒ inherit re-compose; record substitution.
+   Voice pre-gate again before the next review round. After **3** grok revision rounds
+   without acceptance ⇒ remaining rounds compose with **inherit** (guardrail 3;
+   Owner-confirmed N=3); record the lane switch in the run report.
+
 ### 4. Review loop — `editorial-review` / editorial-reviewer
 
 Per round N:
@@ -302,6 +338,10 @@ Per round N:
 4. After each round, append one row to `handoff/03-edit/score-history.md`
    (template: `handoff-template/03-edit/score-history.md`):
    `round | round_type | assessment | gates | clean | notes`.
+
+On grok-composed drafts the voice pre-gate runs before each full round; the round-cap lane
+switch (compose block step 7) operates INSIDE `max_revision` — the profile revision cap
+itself is unchanged.
 
 **Acceptance:**
 
