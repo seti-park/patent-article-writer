@@ -25,7 +25,7 @@ Content travels on disk. Graph + profiles: `contracts/pipeline.yaml`. Roles:
 | `--mode` | from profile | `essay` \| `wire` |
 | `--self-audit` | from profile | `on` \| `off` |
 | `--verifier-vendor` | `claude` | `claude` \| `gpt` — self_audit grounding-verifier lane; `gpt` = GPT-5.6-sol (reasoning high) via codex CLI lane; auto-fallback to `claude` with the substitution recorded in the run report |
-| `--compose-vendor` | `inherit` | `inherit` \| `grok` — compose lane; `grok` = Grok 4.5 via grok CLI lane; voice pre-gate + round-cap 3 + auto-fallback to `inherit` with substitution recorded |
+| `--compose-vendor` | `grok` | `inherit` \| `grok` — compose lane; `grok` = Grok 4.5 via grok CLI lane; voice pre-gate + round-cap 3 + auto-fallback to `inherit` with substitution recorded (default `grok` per Owner §10-1; no CLI ⇒ degrades to `inherit`) |
 | `--promo-vendor` | `inherit` | `inherit` \| `grok` — promo lane; `grok` = Grok 4.5 via CLI lane; Claude safe-claims check + auto-fallback to `inherit` with substitution recorded |
 | `--comprehension-check` | from profile | `on` \| `off` — interactive Owner comprehension check at understand_confirm |
 | `--yes` | off | Skip owner checkpoints (unattended) |

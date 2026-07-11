@@ -43,11 +43,14 @@ rules:
   - "thesis-trace.md declares <=3 signature lines (or explicit none)."
 
 # Multi-vendor compose lane (docs/architecture/multi-vendor-lanes.md §8 P2)
-# Owner-confirmed 2026-07-11: round cap N=3 before inherit fallback (§10-3).
+# Owner-confirmed 2026-07-11: round cap N=3 before inherit fallback (§10-3);
+# default grok (§10-1) — flipped only after all lanes were proven default-off
+# (live runs + fallback burns + regression PASS). No grok CLI ⇒ guardrail 4
+# degrades to inherit and the run report records the substitution.
 compose_vendor:
   flag: "--compose-vendor"
   values: [inherit, grok]
-  default: inherit
+  default: grok
   grok:
     lane: "_shared/scripts/cli_lane.py --vendor grok  (grok --prompt-file, -m grok-4.5, tool-less, constrained --json-schema document envelope)"
     prompt_template: .claude/skills/patent-essay/references/compose-lane-grok.md

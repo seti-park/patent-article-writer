@@ -1,6 +1,7 @@
 # Design: Multi-vendor lanes — cheap generation, strict cross-vendor verification
 
-**Status:** PROPOSED (design + minimal spec; not yet implemented)
+**Status:** ADOPTED — P1–P3 implemented on `feat/multi-vendor-lanes` (2026-07-11), each lane
+proven by live execution + PATH-hidden fallback burn; §10 decided by the Owner (see §10, §11)
 **Author:** architect session, 2026-07-11
 **Depends on:** the hardened loop (STOP/CONFIRM, RUN-005/010b/013/014/015, physical
 isolation, double-clean), `contracts/pipeline.yaml`, `.claude/agents/*`, the
@@ -75,7 +76,7 @@ Rationale for the two cross-vendor placements:
    round. (Pass 1 is a judgment pass, so when the generator is cross-vendor the reviewer
    must be explicitly voice-strict — this pre-gate enforces that.)
 3. **Round-cap → `inherit` fallback.** If the Grok draft does not converge to double-clean
-   within `N` rounds (default 2), the orchestrator re-composes the failing sections with
+   within `N` rounds (N=3, Owner-confirmed 2026-07-11), the orchestrator re-composes the failing sections with
    `inherit` (Claude). Cheap generation only wins when convergence is fast; this caps the
    downside (Grok×N + review×N could otherwise exceed one strong pass).
 4. **Graceful degradation.** CLI missing / quota hit / running on **web (no local shell)**
@@ -153,10 +154,33 @@ moves to a cheaper/faster vendor. It only pays off if cross-vendor drafts conver
 the round cap; guardrail 3 bounds the loss when they don't. Measure convergence rounds on
 the first few real runs before trusting the default.
 
-## 10. Open questions for the Owner
+## 10. Owner decisions (answered 2026-07-11)
 
-1. **compose default**: keep `inherit` as default and make `grok` opt-in until convergence
-   is measured (recommended), or default `compose-vendor grok` once P2 lands?
-2. **verifier**: GPT-5.6-sol high as a *replacement* for the sonnet grounding-verifier, or
-   as an *additional* vote alongside it (more cost, more coverage)?
-3. **round cap N** before falling back to inherit compose (default 2)?
+1. **compose default**: **`grok`** — once P2 is proven, `--compose-vendor` defaults to
+   `grok` (the Owner chose immediate cost capture over the measure-first recommendation).
+   Implementation sequence: all lanes landed default-off first so the "no flags = today,
+   regression PASS" property was provable, then the default flip shipped as its own
+   final commit. Graceful degradation (guardrail 4) means a machine without the grok CLI
+   still runs identically to today.
+2. **verifier**: **replacement** — `--verifier-vendor gpt` replaces the sonnet
+   grounding-verifier (not an extra vote); CLI-unavailable falls back to sonnet.
+3. **round cap N**: **3** grok revision rounds before inherit re-compose.
+
+## 11. Execution learnings (2026-07-11, from live-burning the lanes)
+
+Five defects were found by execution, none by reading — the "documentation ≠ working"
+discipline in practice:
+
+- **Headless grok is agentic**: it used tools to roam the repo beyond `--cwd` (read
+  fixtures and skills on its own). `--cwd` is NOT an isolation boundary. Real isolation =
+  `--tools "" --no-subagents --disable-web-search` (tool-less generation), plus prompts
+  that inline everything. `--max-turns 1` is flaky (grok's own turn accounting burns
+  turns even tool-less); 16 is a runaway guard, not the mechanism.
+- **Narration leaks into plain AND json `text`** (per-turn preambles are concatenated).
+  The capture contract is grok's constrained decoding: `--json-schema` with a
+  one-key `{document}` envelope; `cli_lane.py` extracts `structuredOutput.document`.
+- **Relative paths double-resolve** when forwarded into a CLI that also gets a cwd:
+  `cli_lane.py` absolutizes cwd + prompt-file once, before argv construction.
+- The revision-round output shape (`<!-- DISPOSITIONS -->` before the draft) needs its
+  own validator (`compose-revision`) — the round-0 validator would have silently
+  substituted every revision round to inherit.
