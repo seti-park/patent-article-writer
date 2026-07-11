@@ -52,6 +52,29 @@ def _run_gate_tests():
     return rc == 0
 
 
+def _run_meta_validators():
+    """Run the meta-bookkeeping validators so they cannot silently rot.
+
+    - validate_ledger.py (default, non-strict): the findings ledger conforms to
+      schema (historical '?'/absent tolerated; --strict is a manual/diff tool).
+    - proposals_index.py --check: the improvement-proposals README index agrees
+      with each proposal file's status: frontmatter.
+    Absent scripts are skipped (not a failure), so this is additive.
+    """
+    print("== meta validators ==")
+    ok = True
+    for name, args in (("validate_ledger.py", []),
+                       ("proposals_index.py", ["--check"])):
+        path = os.path.join(HERE, name)
+        if not os.path.exists(path):
+            print("  skip %s (not present)" % name)
+            continue
+        rc = subprocess.call([sys.executable, path] + args)
+        print("  %s %s" % ("ok  " if rc == 0 else "FAIL", name))
+        ok = ok and rc == 0
+    return ok
+
+
 def _load(path):
     with open(path, "r", encoding="utf-8") as fh:
         return fh.read()
@@ -174,6 +197,7 @@ def main(argv=None):
     all_ok = True
     if not args.fixtures_only:
         all_ok = _run_gate_tests() and all_ok
+        all_ok = _run_meta_validators() and all_ok
 
     print("== fixtures ==")
     if not os.path.isdir(FIXTURES):
