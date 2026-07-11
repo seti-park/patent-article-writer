@@ -920,6 +920,67 @@ class TestTimeout(CliLaneTestBase):
         self.assertFalse(os.path.exists(self.output_path))
 
 
+class TestGptStdinNotInherited(CliLaneTestBase):
+    def test_codex_child_gets_devnull_not_parent_pipe(self):
+        """cli_lane must not forward its own (possibly never-EOF) stdin to codex.
+
+        Background/piped orchestrator runs leave stdin as an open pipe; codex
+        exec appends stdin when not a TTY. With stdin=DEVNULL on the child, a
+        stub that does extra="$(cat)" returns immediately; if the open pipe
+        were inherited, the stub (and this test) would hang until timeout.
+        """
+        content = GPT_CANNED
+        body = (
+            "#!/bin/bash\n"
+            "extra=\"$(cat)\"\n"
+            "out=\"\"\n"
+            "while [ $# -gt 0 ]; do\n"
+            "  if [ \"$1\" = \"-o\" ]; then out=\"$2\"; shift 2; continue; fi\n"
+            "  shift\n"
+            "done\n"
+            "if [ -z \"$out\" ]; then echo 'no -o' >&2; exit 1; fi\n"
+            "cat > \"$out\" <<'EOF'\n"
+            + content
+            + ("\n" if not content.endswith("\n") else "")
+            + "EOF\n"
+            "exit 0\n"
+        )
+        _write_stub(os.path.join(self.bin_dir, "codex"), body)
+
+        # Outer cli_lane stdin is a never-EOF pipe (live background hang shape).
+        # If cli_lane inherited/forwarded it to codex, the stub's cat would block.
+        r_fd, w_fd = os.pipe()
+        try:
+            proc = subprocess.run(
+                [
+                    sys.executable,
+                    CLI_LANE,
+                    "--vendor", "gpt",
+                    "--prompt-file", self.prompt_path,
+                    "--output", self.output_path,
+                    "--timeout", "5",
+                ],
+                stdin=r_fd,
+                capture_output=True,
+                text=True,
+                env=self.env,
+                timeout=8,
+            )
+        finally:
+            try:
+                os.close(r_fd)
+            except OSError:
+                pass
+            try:
+                os.close(w_fd)
+            except OSError:
+                pass
+
+        self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
+        data = _parse_json_line(proc.stdout)
+        self.assertTrue(data["ok"])
+
+
 class TestEmptyOutput(CliLaneTestBase):
     def test_gpt_empty(self):
         self._install_codex(mode="empty")

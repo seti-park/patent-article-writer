@@ -279,6 +279,7 @@ def run_lane(
                 text=True,
                 timeout=timeout,
                 cwd=cwd if vendor == "grok" else None,
+                stdin=subprocess.DEVNULL,
             )
         except subprocess.TimeoutExpired as exc:
             detail = "timeout after %ss" % timeout
