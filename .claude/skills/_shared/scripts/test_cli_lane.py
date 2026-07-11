@@ -358,6 +358,116 @@ COMPOSE_REVISION_NO_FENCE_LINE = textwrap.dedent("""\
     - US 2026/0125022 A1, Predictive Airbag Deployment using Vehicle Vision Data.
 """)
 
+# Valid promo-pack for --validate promo: Verification Status substring + >=600 stripped chars.
+VALID_PROMO = textwrap.dedent("""\
+    ---
+    essay_id: intel-us20260191095-backend-hbm
+    essay_source: essays/intel-us20260191095-backend-hbm/essay-final.md
+    closing_posture: measured
+    promo_posture: D
+    promo_version: 1
+    owner_briefing: read
+    ---
+
+    # Promo pack: intel-us20260191095-backend-hbm
+
+    === Verification Status (promo-composer, promo-pack) ===
+    sources: essay-final.md (draft_version 6) + publication.md + owner-briefing.md
+    fact_trace: PASS (every factual phrase mapped; dropped facts: none)
+    subrules: 1 sequence PASS / 2 arithmetic PASS / 3 anchors PASS
+    bold_selection: KR lead = signature line 2, insurance 1 clause; P1 = reader_sentence, insurance 1 clause; process narration 0
+    kr_long: 612자/400-800, 4 단락, 아티클 포인터 있음, 의문형 0, 느낌표 0
+    thread: 3 posts, message-unit (X Premium, no char cap), 439/775/552 chars, link slot in final post
+    hygiene: em-dash 0, bold 0, emoji 0/1, hashtags 0, banned terms 0
+    attachments: cover-5x2.png (KR post, post 1), alt verbatim from posting-checklist.md
+    suspected_essay_defects: none
+    === Deliverables ===
+
+    ## 1. Korean long-form promo post (X, 400-800자)
+
+    ```text
+    인텔은 메모리에서 손을 뗀 회사입니다. 2021년에 NAND 사업을 SK하이닉스에 팔았고, 이듬해에는 Optane 라인도 정리했습니다. 지금 세계의 HBM은 SK하이닉스, 삼성, 마이크론 세 회사가 만들고, 인텔의 몫은 없습니다.
+
+    그런 인텔이 최근 DRAM 출원을 하나 냈습니다. 특이한 것은 셀을 만드는 위치입니다. 청구항 1이 실제로 요구하는 것도 이 한 단어, backend입니다. [ARTICLE-LINK]
+    ```
+
+    - 자수: 612 (공백 포함, [ARTICLE-LINK]=23자)
+    - attach: publication-package/cover-5x2.png
+    - alt: "FIG. 1B: the claimed eight-high memory stack on its base die."
+
+    ## 2. English thread (2-4 message-unit posts)
+
+    ```text
+    Intel walked away from memory. It sold its NAND business to SK hynix in 2021 and wound down Optane the year after. Three companies make the world's HBM today, and Intel is not one of them.
+    ```
+
+    - chars: 439 (message: the story; first sentence is the collapsed-preview hook)
+""")
+
+# Contains Verification Status but well under 600 stripped characters.
+PROMO_TOO_SHORT = textwrap.dedent("""\
+    ---
+    essay_id: short-promo
+    promo_version: 1
+    ---
+
+    === Verification Status (promo-composer, promo-pack) ===
+    fact_trace: PASS
+    === Deliverables ===
+
+    ## 1. Korean long-form promo post
+
+    ```text
+    짧은 프로모입니다. [ARTICLE-LINK]
+    ```
+""")
+
+# Same overall length/shape as VALID_PROMO but no "Verification Status" substring.
+PROMO_NO_VERIFICATION_STATUS = textwrap.dedent("""\
+    ---
+    essay_id: intel-us20260191095-backend-hbm
+    essay_source: essays/intel-us20260191095-backend-hbm/essay-final.md
+    closing_posture: measured
+    promo_posture: D
+    promo_version: 1
+    owner_briefing: read
+    ---
+
+    # Promo pack: intel-us20260191095-backend-hbm
+
+    === Pack Header (promo-composer, promo-pack) ===
+    sources: essay-final.md (draft_version 6) + publication.md + owner-briefing.md
+    fact_trace: PASS (every factual phrase mapped; dropped facts: none)
+    subrules: 1 sequence PASS / 2 arithmetic PASS / 3 anchors PASS
+    bold_selection: KR lead = signature line 2, insurance 1 clause; P1 = reader_sentence, insurance 1 clause; process narration 0
+    kr_long: 612자/400-800, 4 단락, 아티클 포인터 있음, 의문형 0, 느낌표 0
+    thread: 3 posts, message-unit (X Premium, no char cap), 439/775/552 chars, link slot in final post
+    hygiene: em-dash 0, bold 0, emoji 0/1, hashtags 0, banned terms 0
+    attachments: cover-5x2.png (KR post, post 1), alt verbatim from posting-checklist.md
+    suspected_essay_defects: none
+    === Deliverables ===
+
+    ## 1. Korean long-form promo post (X, 400-800자)
+
+    ```text
+    인텔은 메모리에서 손을 뗀 회사입니다. 2021년에 NAND 사업을 SK하이닉스에 팔았고, 이듬해에는 Optane 라인도 정리했습니다. 지금 세계의 HBM은 SK하이닉스, 삼성, 마이크론 세 회사가 만들고, 인텔의 몫은 없습니다.
+
+    그런 인텔이 최근 DRAM 출원을 하나 냈습니다. 특이한 것은 셀을 만드는 위치입니다. 청구항 1이 실제로 요구하는 것도 이 한 단어, backend입니다. [ARTICLE-LINK]
+    ```
+
+    - 자수: 612 (공백 포함, [ARTICLE-LINK]=23자)
+    - attach: publication-package/cover-5x2.png
+    - alt: "FIG. 1B: the claimed eight-high memory stack on its base die."
+
+    ## 2. English thread (2-4 message-unit posts)
+
+    ```text
+    Intel walked away from memory. It sold its NAND business to SK hynix in 2021 and wound down Optane the year after. Three companies make the world's HBM today, and Intel is not one of them.
+    ```
+
+    - chars: 439 (message: the story; first sentence is the collapsed-preview hook)
+""")
+
 
 def _write_stub(path: str, body: str) -> None:
     with open(path, "w", encoding="utf-8") as fh:
@@ -987,6 +1097,65 @@ class TestValidateComposeRevision(CliLaneTestBase):
         self.assertEqual(data["reason"], "invalid-output")
         self.assertTrue(data["substituted"])
         self.assertFalse(os.path.exists(self.output_path))
+
+
+class TestValidatePromo(CliLaneTestBase):
+    def test_valid_promo(self):
+        self._install_grok(mode="success", content=VALID_PROMO)
+        proc = _run_cli(
+            [
+                "--vendor", "grok",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "promo",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
+        data = _parse_json_line(proc.stdout)
+        self.assertTrue(data["ok"])
+        self.assertTrue(os.path.isfile(self.output_path))
+        with open(self.output_path, encoding="utf-8") as fh:
+            body = fh.read()
+        expected = VALID_PROMO if VALID_PROMO.endswith("\n") else VALID_PROMO + "\n"
+        self.assertEqual(body, expected)
+
+    def test_promo_too_short(self):
+        self._install_grok(mode="success", content=PROMO_TOO_SHORT)
+        proc = _run_cli(
+            [
+                "--vendor", "grok",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "promo",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 3, proc.stdout + proc.stderr)
+        data = _parse_json_line(proc.stdout)
+        self.assertEqual(data["reason"], "invalid-output")
+        self.assertTrue(data["substituted"])
+        self.assertFalse(os.path.exists(self.output_path))
+        detail = data.get("detail", "").lower()
+        self.assertTrue("600" in detail or "length" in detail)
+
+    def test_promo_missing_verification_status(self):
+        self._install_grok(mode="success", content=PROMO_NO_VERIFICATION_STATUS)
+        proc = _run_cli(
+            [
+                "--vendor", "grok",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "promo",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 3, proc.stdout + proc.stderr)
+        data = _parse_json_line(proc.stdout)
+        self.assertEqual(data["reason"], "invalid-output")
+        self.assertTrue(data["substituted"])
+        self.assertFalse(os.path.exists(self.output_path))
+        self.assertIn("verification status", data.get("detail", "").lower())
 
 
 def _run():

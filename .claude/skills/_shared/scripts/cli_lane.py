@@ -141,6 +141,20 @@ def _validate_compose_revision(text: str) -> str | None:
     return None
 
 
+def _validate_promo(text: str) -> str | None:
+    """Return None if valid; else a short detail string."""
+    has_length = len(text.strip()) >= 600
+    has_verification = "Verification Status" in text
+    missing = []
+    if not has_length:
+        missing.append("stripped length < 600 characters")
+    if not has_verification:
+        missing.append("missing 'Verification Status' substring")
+    if missing:
+        return "; ".join(missing)
+    return None
+
+
 def _cli_missing_detail(vendor: str) -> str:
     return "%s CLI '%s' not found on PATH" % (vendor, VENDOR_CLI[vendor])
 
@@ -289,6 +303,14 @@ def run_lane(
                 except OSError:
                     pass
                 return _substitute(vendor, "invalid-output", bad, output_path)
+        elif validate == "promo":
+            bad = _validate_promo(content)
+            if bad:
+                try:
+                    Path(output_path).write_text(content, encoding="utf-8")
+                except OSError:
+                    pass
+                return _substitute(vendor, "invalid-output", bad, output_path)
 
         try:
             Path(output_path).parent.mkdir(parents=True, exist_ok=True)
@@ -345,7 +367,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--validate",
-        choices=["grounding", "compose", "compose-revision"],
+        choices=["grounding", "compose", "compose-revision", "promo"],
         default=None,
         help="Optional post-capture output validation",
     )

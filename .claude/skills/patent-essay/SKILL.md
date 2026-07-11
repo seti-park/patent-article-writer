@@ -26,6 +26,7 @@ Content travels on disk. Graph + profiles: `contracts/pipeline.yaml`. Roles:
 | `--self-audit` | from profile | `on` \| `off` |
 | `--verifier-vendor` | `claude` | `claude` \| `gpt` — self_audit grounding-verifier lane; `gpt` = GPT-5.6-sol (reasoning high) via codex CLI lane; auto-fallback to `claude` with the substitution recorded in the run report |
 | `--compose-vendor` | `inherit` | `inherit` \| `grok` — compose lane; `grok` = Grok 4.5 via grok CLI lane; voice pre-gate + round-cap 3 + auto-fallback to `inherit` with substitution recorded |
+| `--promo-vendor` | `inherit` | `inherit` \| `grok` — promo lane; `grok` = Grok 4.5 via CLI lane; Claude safe-claims check + auto-fallback to `inherit` with substitution recorded |
 | `--comprehension-check` | from profile | `on` \| `off` — interactive Owner comprehension check at understand_confirm |
 | `--yes` | off | Skip owner checkpoints (unattended) |
 
@@ -452,6 +453,23 @@ Profile → flags (`contracts/stages/verify.yaml`):
 ### 9. Promo (publish) — `promo-composer`
 
 Post-archive; never edits essay; safe-claims grounding.
+
+**Grok promo lane (`--promo-vendor grok`)** — orchestrator procedure:
+
+1. Pre-flight `cli_lane.py --vendor grok --check`; exit 3 ⇒ inherit promo now, record
+   substitution.
+2. Build the prompt from `references/promo-lane-grok.md`: inline `essays/<id>/essay-final.md`,
+   `essays/<id>/publication-package/publication.md`, `essays/<id>/owner-briefing.md`,
+   README `reader_sentence`, `thesis-trace.md` signature lines. NEVER inline the patent or
+   fact-check-log. Write to `essays/<id>/promo/promo-lane-prompt.md`.
+3. `cli_lane.py --vendor grok --prompt-file <that file> --output
+   essays/<id>/promo/promo-pack.md --validate promo --timeout 900 --cwd
+   essays/<id>/promo` (tool-less; grok sees only the inlined prompt).
+4. exit 3 ⇒ fork promo-composer (inherit) as today; record substitution.
+5. exit 0 ⇒ safe-claims check: fresh cheap Claude fork (sonnet-class) verifies every
+   factual phrase traces to the three inlined sources; verdict SAFE-PASS/SAFE-FAIL +
+   violations ⇒ `essays/<id>/promo/safeclaims-check.md`. FAIL ⇒ one grok re-drive with the
+   violations appended; second FAIL ⇒ inherit re-compose; record.
 
 ### 10. Retro — `pipeline-retro`
 
