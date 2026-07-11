@@ -55,7 +55,7 @@ graceful fallback.** It reuses the exact machinery `fable-advisor` already provi
 | `self_audit` grounding-verifier | **verify claim ↔ source** | **GPT-5.6-sol high (CLI lane)** | spec-determined cross-check; was pinned `sonnet` |
 | `self_audit` adversarial-reader | refute thesis/grounding | `inherit` + optional GPT vote | independent failure distribution |
 | `polish` | plain-language surface | `inherit` (Claude) | byte-protected; voice-sensitive |
-| **`promo`** | **draft** | **Grok 4.5 (CLI lane)** | same pattern; safe-claims gate is load-bearing |
+| **`promo`** | **draft** | **`inherit` (Claude)** default; **Grok** opt-in cost mode | understanding-first (P7); GPT judge = safe-claims + AI-tell |
 
 Rationale for the two cross-vendor placements:
 - **compose/promo → Grok**: the artifacts are re-generatable and fully gated (voice-canon
@@ -244,3 +244,23 @@ cheap lane itself.
   permanent architecture; if the acceptance layer rarely needs to veto or add findings
   across multiple production runs, a future phase may reconsider whether the acceptance
   layer needs to stay this involved.
+
+## 14. P7 (Owner-decided 2026-07-12): understanding-first promo, generation returns to inherit
+
+- **The Owner's verdict** on the first production promo pack: defensive and mechanical.
+- **Three root causes**: a constraint-dominated prompt (too much "don't" versus "explain"),
+  no KR voice anchor, no quality judge for tone (safe-claims fact-checking existed, tone
+  judgment did not).
+- **The redesign**: `owner-study-pack.md`'s problem/solution/effects triad and
+  `comprehension-notes.md`'s landed frames become licensed promo sources (the promo is
+  reframed as the public translation of the Understand-phase work, not a compression of the
+  finished essay); the status/stage hedge is isolated to exactly one final sentence per
+  deliverable; the GPT judge gains the AI-tell duty (3항 병렬 / 은유 사슬 / 균질 결어 /
+  직역투 / 줄표 / 기계적 리듬) alongside its existing safe-claims duty.
+- **§2 rebalance**: Claude generates (default, restored) ⇒ GPT judges (cross-vendor,
+  unchanged principle, but the DIRECTION flips from P3: there, grok generated and Claude
+  judged; here, Claude generates and GPT judges — both satisfy §2 identically, since the
+  rule has always been "judge ≠ generator's vendor," not "judge must always be a specific
+  vendor").
+- **The grok lane is demoted to an opt-in cost mode** (`--promo-vendor grok`), not removed
+  — available when cost matters more than the Owner's voice-quality bar for a given run.

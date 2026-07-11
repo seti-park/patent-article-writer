@@ -26,7 +26,7 @@ Content travels on disk. Graph + profiles: `contracts/pipeline.yaml`. Roles:
 | `--self-audit` | from profile | `on` \| `off` |
 | `--verifier-vendor` | `claude` | `claude` \| `gpt` — self_audit grounding-verifier lane; `gpt` = GPT-5.6-sol (reasoning high) via codex CLI lane; auto-fallback to `claude` with the substitution recorded in the run report |
 | `--compose-vendor` | `grok` | `inherit` \| `grok` — compose lane; `grok` = Grok 4.5 via grok CLI lane; voice pre-gate + round-cap 3 + auto-fallback to `inherit` with substitution recorded (default `grok` per Owner §10-1; no CLI ⇒ degrades to `inherit`) |
-| `--promo-vendor` | `inherit` | `inherit` \| `grok` — promo lane; `grok` = Grok 4.5 via CLI lane; Claude safe-claims check + auto-fallback to `inherit` with substitution recorded |
+| `--promo-vendor` | `inherit` | `inherit` \| `grok` — promo composed by `inherit` by default (understanding-first); `grok` is an opt-in cost lane; GPT safe-claims+AI-tell judge runs either way; substitutions recorded |
 | `--drift-vendor` | `gpt` | `gpt` \| `claude` — polish drift-check lane (GPT-5.6-sol high via codex; fallback claude, recorded) |
 | `--pregate-vendor` | `gpt` | `gpt` \| `claude` — compose voice pre-gate lane (same fallback contract) |
 | `--review-vendor` | `gpt` | `gpt` \| `claude` — review-loop lane; `gpt` = 7-pass review via codex lane, Claude acceptance layer retained (voice veto + CLEAN + arbitration); fallback `claude`, recorded |
@@ -467,7 +467,7 @@ Profile → flags (`contracts/stages/verify.yaml`):
 **Assemble (imperative):**
 
 1. Copy `handoff/03-edit/essay-final.md` → `essays/<id>/essay-final.md`.
-2. Copy from understand: `owner-study-pack.md`, `owner-briefing.md` → `essays/<id>/`.
+2. Copy from understand: `owner-study-pack.md`, `owner-briefing.md`, and (when present) `comprehension-notes.md` → `essays/<id>/`. Tolerate absence of `comprehension-notes.md` on older/different-shaped runs — do not fail archive.
 3. Snapshot `input/patent.md` → `essays/<id>/patent.md` (sha256 must match run-manifest).
 4. Place figures under `essays/<id>/figures/` and into `publication-package/` as needed.
 5. Copy `handoff/02-compose/publication.md` → `essays/<id>/publication-package/publication.md`.
@@ -486,22 +486,24 @@ Profile → flags (`contracts/stages/verify.yaml`):
 
 Post-archive; never edits essay; safe-claims grounding.
 
-**Grok promo lane (`--promo-vendor grok`)** — orchestrator procedure:
+**Default promo procedure (`--promo-vendor inherit`)** — understanding-first:
 
-1. Pre-flight `cli_lane.py --vendor grok --check`; exit 3 ⇒ inherit promo now, record
-   substitution.
-2. Build the prompt from `references/promo-lane-grok.md`: inline `essays/<id>/essay-final.md`,
-   `essays/<id>/publication-package/publication.md`, `essays/<id>/owner-briefing.md`,
-   README `reader_sentence`, `thesis-trace.md` signature lines. NEVER inline the patent or
-   fact-check-log. Write to `essays/<id>/promo/promo-lane-prompt.md`.
-3. `cli_lane.py --vendor grok --prompt-file <that file> --output
-   essays/<id>/promo/promo-pack.md --validate promo --timeout 900 --cwd
-   essays/<id>/promo` (tool-less; grok sees only the inlined prompt).
-4. exit 3 ⇒ fork promo-composer (inherit) as today; record substitution.
-5. exit 0 ⇒ safe-claims check: fresh cheap Claude fork (sonnet-class) verifies every
-   factual phrase traces to the three inlined sources; verdict SAFE-PASS/SAFE-FAIL +
-   violations ⇒ `essays/<id>/promo/safeclaims-check.md`. FAIL ⇒ one grok re-drive with the
-   violations appended; second FAIL ⇒ inherit re-compose; record.
+1. Fork `promo-composer` (`inherit`) per the redesigned skill: sources are the five licensed
+   archive files (`essay-final.md`, `publication.md`, `owner-briefing.md`,
+   `owner-study-pack.md`, `comprehension-notes.md`; tolerate ABSENT on older archives).
+2. Judge: build the prompt from `references/safeclaims-lane-gpt.md` (inline the pack, list
+   the five source paths) → `cli_lane.py --vendor gpt --prompt-file <that> --output
+   essays/<id>/promo/safeclaims-check.md --validate safeclaims --timeout 600 --cwd <repo
+   root>`.
+3. `SAFE-FAIL` or `TELLS-FOUND` ⇒ re-fork the composer with the violations/tells appended
+   (ONE loop); re-check. Second failure ⇒ render BOTH the pack and the check to the Owner
+   (do not silently ship, do not silently drop — a human decision point).
+4. `cli_lane` exit 3 (from the judge lane itself, e.g. codex missing) ⇒ fall back to a
+   fresh sonnet-class Claude check; record the substitution.
+5. `--promo-vendor grok` (opt-in cost mode): keeps the P3 procedure — grok drafts (tool-less,
+   constrained document envelope, `references/promo-lane-grok.md`); same GPT judge applies
+   either way (steps 2–4 above are vendor-agnostic on the JUDGE side). Full grok-lane
+   mechanics: `contracts/stages/promo.yaml` `promo_vendor.grok` + `references/promo-lane-grok.md`.
 
 ### 10. Retro — `pipeline-retro`
 

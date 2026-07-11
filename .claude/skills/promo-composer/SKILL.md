@@ -1,6 +1,6 @@
 ---
 name: promo-composer
-description: "Phase 4 Promote: composes the post-archive promo pack for a finished essay. Consumes the essays/<id>/ archive (essay-final.md + publication-package/publication.md + owner-briefing.md + thesis-trace.md signature lines + README.md reader_sentence) and emits a single essays/<id>/promo/promo-pack.md: (a) Korean long-form promo post 400-800자, 존댓말 설명체 (직역 금지; 서사 훅 + 핵심 1개 + 티저), (b) English thread 2-4 message-unit posts (X Premium, no char cap), both behind one Verification Status header. Bold-selection rule: the promo leads with the boldest claim the essay supports (selection from the protected surface, never fabrication); insurance <=1 status clause per deliverable, examination-process narration 0 (the article hedges, the promo points). Hard grounding rule (safe-claims defense): every factual phrase traces verbatim-consistent to essay-final/publication.md or owner-briefing.md; a fact not in those sources is dropped, never fetched. Posting copy is composed by the session's strongest model (model: inherit, never pinned down) (or the grok CLI lane when --promo-vendor grok; the safe-claims judge stays Claude). Use when an archived essay needs promo, an X post, share copy, a tweet thread, 프로모, or 홍보 문구. NOT for: long-form essay composition (essay-en-composer), editorial review (editorial-review), thesis design (thesis-architect), Korean full-article adaptation (still dropped; the KR deliverable is a promo post, not an article), or editing essay-final.md (the essay is FINAL)."
+description: "Phase 4 Promote: composes the post-archive promo pack for a finished essay. Promo는 이 작업의 정수 — Understand 삼각형(문제·해법·효과)의 대중 번역: the public translation of the Understand triad for a reader between high-school and undergraduate (고등학생과 학부생 사이). Consumes the essays/<id>/ archive (essay-final.md + publication-package/publication.md + owner-briefing.md + owner-study-pack.md triad + comprehension-notes.md landed frames + thesis-trace.md signature lines + README.md reader_sentence) and emits a single essays/<id>/promo/promo-pack.md: (a) Korean long-form promo post 400-800자, 존댓말 설명체 (직역 금지; 서사 훅 + 핵심 메커니즘 1개 + 왜 좋아지는가 + 티저 + 마지막 한 문장 지위 헤지), (b) English thread 2-4 message-unit posts (X Premium, no char cap), both behind one Verification Status header. Bold-selection rule: the promo leads with the boldest claim the sources support (selection from the protected surface and landed frames, never fabrication); insurance <=1 status clause per deliverable, isolated as the FINAL sentence of that deliverable (no defensive mid-body narration; examination-process narration 0). Hard grounding rule (safe-claims defense): every factual phrase traces verbatim-consistent to essay-final/publication.md/owner-briefing.md/owner-study-pack.md (comprehension-notes = hook/framing seed, not a freestanding fact quarry); a fact not in those sources is dropped, never fetched. Posting copy is composed by the session's strongest model (model: inherit, never pinned down); grok lane is an opt-in cost mode (--promo-vendor grok). Use when an archived essay needs promo, an X post, share copy, a tweet thread, 프로모, or 홍보 문구. NOT for: long-form essay composition (essay-en-composer), editorial review (editorial-review), thesis design (thesis-architect), Korean full-article adaptation (still dropped; the KR deliverable is a promo post, not an article), or editing essay-final.md (the essay is FINAL)."
 context: fork
 agent: promo-composer
 ---
@@ -13,11 +13,19 @@ Phase 4 Promote. Runs POST-archive against a finished `essays/<id>/` tree and em
 promo pack. The essay is FINAL: this skill digests it, never edits it, and its findings
 never reopen the Compose↔Edit loop.
 
+Promo is the essence of this pipeline's work — the **public translation of the Understand
+triad** (problem · solution · effects), not a compression of the finished essay's own
+prose. Reader profile: between high-school and undergraduate (고등학생과 학부생 사이).
+
 ```
 essays/<id>/essay-final.md                 (FINAL; frontmatter: essay_id, closing_posture)
   + publication-package/publication.md    (the paste-ready strip readers actually saw)
   + owner-briefing.md                     (Korean owner briefing; parallel archive contract,
                                            may be ABSENT on older archives)
+  + owner-study-pack.md                   (Understand triad: problem · solution · benefits;
+                                           may be ABSENT on older archives)
+  + comprehension-notes.md                (landed frames from Owner comprehension check;
+                                           first-class hook material; may be ABSENT)
   + thesis-trace.md                       (## Signature lines: <=3 protected exact strings)
   + README.md                             (reader_sentence)
   + publication-package/ images + posting-checklist.md   (cover + alt-text lines)
@@ -28,11 +36,13 @@ essays/<id>/essay-final.md                 (FINAL; frontmatter: essay_id, closin
        (b) English thread, 2-4 message-unit posts (X Premium, no char cap), bold hook
 ```
 
-**Model allocation (owner decision, 2026-07-05):** the posting copy — the fenced paste
-blocks — is composed by the session's strongest model (the agent declares
-`model: inherit`; never pin promo-composer to a cheaper model: prose quality is bounded
-by the model that holds the pen). Mechanical verification (fact-trace, counts, hygiene)
-may be delegated to a cheaper instrument; composition may not.
+**Model allocation (owner decision, 2026-07-05; P7 restore 2026-07-12):** the posting
+copy — the fenced paste blocks — is composed by the session's strongest model (the agent
+declares `model: inherit`; never pin promo-composer to a cheaper model: prose quality is
+bounded by the model that holds the pen). The grok CLI lane (`--promo-vendor grok`) is an
+**opt-in cost mode**, not the default. Mechanical verification (fact-trace, counts,
+hygiene) and the GPT safe-claims+AI-tell judge may be delegated to a cheaper or
+cross-vendor instrument; composition may not.
 
 ## When to invoke
 
@@ -45,16 +55,18 @@ X post, share copy, thread, 프로모, 홍보 문구.
 - `essay-en-composer`: long-form ~2,000-3,500w from `handoff/01-design/`, full `[dddd]`
   citation apparatus, investor-reader altitude.
 - `promo-composer`: two short deliverables from the ARCHIVE, zero new facts, zero `[dddd]`
-  anchors in output, feed-reader altitude. It compresses corrected text; it performs no
-  analysis of its own.
+  anchors in output, feed-reader altitude. It translates the Understand triad for the
+  public; it performs no analysis of its own.
 
 ## The grounding rule (hard): the safe-claims defense
 
 1. **Allowed factual sources**, and the only ones: `essays/<id>/essay-final.md`,
-   `essays/<id>/publication-package/publication.md`, `essays/<id>/owner-briefing.md`.
-   These carry the loop-corrected phrasings; treating them as the sole quarry is what keeps
-   already-fixed errors dead (rationale + the scrubbed error classes:
-   `references/fact-verification.md`).
+   `essays/<id>/publication-package/publication.md`, `essays/<id>/owner-briefing.md`,
+   `essays/<id>/owner-study-pack.md`. `comprehension-notes.md` seeds hooks and framing
+   only (landed frames) — it does not expand the factual license beyond those four.
+   These carry the loop-corrected phrasings and the frozen triad; treating them as the
+   sole quarry is what keeps already-fixed errors dead (rationale + the scrubbed error
+   classes: `references/fact-verification.md`).
 2. **Every factual phrase traces** to a sentence in those sources. Numbers, dates, names,
    venue words, and verbs of certainty stay verbatim-consistent with the essay's wording
    (an application-era essay says "asks for" and "filed"; the promo never upgrades that to
@@ -77,35 +89,67 @@ X post, share copy, thread, 프로모, 홍보 문구.
 1. **Load the archive.** `essay-final.md` (frontmatter: `essay_id`, `closing_posture`,
    `draft_version`), `publication-package/publication.md`,
    `publication-package/posting-checklist.md`, `owner-briefing.md`,
-   `thesis-trace.md`, `README.md`. Reject the run if `essay-final.md` or
-   `publication.md` is missing. `owner-briefing.md` absent: proceed and record `ABSENT` in
-   the header; the KR post then translates from the essay's protected lines instead of
-   reusing the briefing's Korean phrasings.
+   `owner-study-pack.md`, `comprehension-notes.md`, `thesis-trace.md`, `README.md`.
+   Reject the run if `essay-final.md` or `publication.md` is missing.
+   `owner-briefing.md` / `owner-study-pack.md` / `comprehension-notes.md` absent: proceed
+   and record `ABSENT` in the header (older archives may lack any of them); do not fail
+   the run. When the study pack is present, harvest Problem · Solution · Benefits as the
+   compositional spine. When comprehension-notes is present, harvest "Framing that landed"
+   as first-class hook seeds.
 2. **Harvest the protected surface**: `reader_sentence` (README.md), the `## Signature
-   lines` exact strings (thesis-trace.md), the title, the lead ¶1, the closing call, and
-   `closing_posture`. This is the entire hook vocabulary: promo hooks compress these lines,
-   they do not coin new ones.
+   lines` exact strings (thesis-trace.md), the title, the lead ¶1, the closing call,
+   `closing_posture`, plus any landed frames from `comprehension-notes.md`. This is the
+   entire hook vocabulary: promo hooks compress these lines and landed frames; they do
+   not coin new ones.
 3. **Audience adapt** per `references/audience-adaptation.md` (essay reader → X feed; KR
-   post → the publisher's own Korean followers).
+   post → the publisher's own Korean followers). Reader altitude: high-school through
+   undergraduate — explain the mechanism; do not lecture the patent process.
 4. **Voice shift** per `references/voice-shift-from-essay.md`. Optional: invoke
    `voice-canon-lookup` for the `opening-news-event` and closing pattern bodies, the
    pack's only two canon touchpoints.
 5. **Select the bold lead** per `references/promo-format.md` bold-selection rule: pick
-   the boldest supportable line from the protected surface for each deliverable's lead;
-   budget insurance (<=1 status clause per deliverable, AFTER the beat; process
-   narration 0 — the article hedges, the promo points).
-6. **Compose the KR long post** (400-800자) per `references/promo-format.md` KR rules.
-   Register per `_shared/references/working-dialogue-voice.md`: 건조한 평서문, 과장
-   배제, 발행자 1인칭 허용 — 대담함은 문장 선택에서. ¶1 훅 → 메커니즘 단락(기술) →
-   함의/receipts → 아티클 포인터. 기술 어휘는 briefing 재사용, stance/hedge 문장은
-   재사용 금지.
+   the boldest supportable line from the protected surface (or a landed frame) for each
+   deliverable's lead; budget insurance as exactly **ONE status/stage hedge sentence
+   per deliverable, positioned as the LAST sentence of that deliverable** (process
+   narration 0 mid-body — the article hedges, the promo points, then ends with one
+   stage caveat).
+
+### Understanding-first compositional shape (KR post AND EN thread)
+
+Both deliverables follow this five-beat shape. It is the public translation of the
+Understand triad, not a defensive summary of the essay:
+
+1. **Hook** (서사 훅) — seed from a `comprehension-notes.md` landed frame when one
+   exists, else from the protected surface (reader_sentence / signature lines / title /
+   lead ¶1 / closing call).
+2. **발명의 핵심 메커니즘 하나를 쉬운 그림/비유로** — the triad's Solution component,
+   pulled from `owner-study-pack.md` (or essay/publication when the pack is ABSENT).
+   One core mechanism; one easy image or analogy. Not a claim chart.
+3. **왜 좋아지는가** — the triad's Benefits component. Keep the document's own
+   can/may-qualified claims (never strengthen into certainty), but **explain** why the
+   improvement follows — 왜 이게 개선인지 설명하라, 매 문장마다 유보하지 말라.
+4. **티저 (에세이로)** — point at the essay for the full read (`[ARTICLE-LINK]`).
+5. **마지막 한 문장 지위 헤지** — exactly ONE status/stage hedge sentence, as the
+   LAST thing in the deliverable. No examination-process narration anywhere in the body.
+
+**Anti-AI-tell duty (explicit; also GPT-judged):** no 3항 병렬 남용 (no parallel-triad
+overuse), no 은유 사슬 (no metaphor chains), no 균질 결어 (no homogeneous paragraph
+endings), no 직역투 (no translation-ese), no 줄표 (no em-dashes). Prefer one concrete
+image over a stack of metaphors; vary paragraph landings; write as if composed natively
+in the target language.
+
+6. **Compose the KR long post** (400-800자) per `references/promo-format.md` KR rules
+   and the understanding-first shape above. Register per
+   `_shared/references/working-dialogue-voice.md`: 건조한 평서문, 과장 배제, 발행자
+   1인칭 허용 — 대담함은 문장 선택에서. 기술 어휘는 briefing / study-pack 재사용,
+   stance/hedge 문장은 재사용 금지 (hedge lives only in beat 5).
 7. **Compose the EN thread** (2-4 message-unit posts; X Premium, no char cap) per
-   `references/promo-format.md` thread rules: post 1 narrative hook (first sentence =
-   collapsed-preview; no insurance), middle post(s) one message each (core point +
-   interpretation boundary), final post call-first verdict + `[ARTICLE-LINK]` slot.
-   Chars measured and reported, not bound. Closing posture of both deliverables agrees
-   with the essay's `closing_posture` per `references/closing-posture.md` (firm essay →
-   no open-question close).
+   `references/promo-format.md` thread rules and the same five-beat shape: post 1
+   narrative hook (first sentence = collapsed-preview; no insurance), middle post(s)
+   mechanism + why-better (one message each), final post call + `[ARTICLE-LINK]` + the
+   single closing status hedge as its last sentence. Chars measured and reported, not
+   bound. Closing posture of both deliverables agrees with the essay's `closing_posture`
+   per `references/closing-posture.md` (firm essay → no open-question close).
 8. **Attachment lines** per `references/figure-attachment-policy.md`:
    `publication-package/` images only, `cover-5x2.png` default, 1-2 figures max per
    deliverable, alt text verbatim from `posting-checklist.md`.
@@ -119,7 +163,8 @@ X post, share copy, thread, 프로모, 홍보 문구.
       regexes); Tier-2 judgment tells checked per `_shared/references/anti-ai-writing.md`.
     - counts: KR long post 400-800자 (공백 포함, `[ARTICLE-LINK]` = 23자), each EN post
       chars measured (no 280 bound; link slot = 23); bold-selection line (lead source +
-      insurance count per deliverable).
+      insurance count per deliverable); confirm the status hedge is one final sentence
+      per deliverable (not interleaved mid-body).
 11. **Emit** `essays/<id>/promo/promo-pack.md` (create `promo/` if needed). Every
     Verification Status line carries a measured number or PASS. Revisions overwrite in
     place with `promo_version` bumped.
@@ -133,13 +178,16 @@ X post, share copy, thread, 프로모, 홍보 문구.
 - `essays/<id>/owner-briefing.md` expected (tracked archive deliverable per the
   owner-comprehension overhaul; contract landing in parallel). Absence is tolerated and
   recorded, not fatal.
+- `essays/<id>/owner-study-pack.md` and `essays/<id>/comprehension-notes.md` expected on
+  post-P7 archives (understanding-first sources). Absence on older archives is tolerated
+  and recorded `ABSENT`, not fatal — same posture as `owner-briefing.md`.
 
 ## Post-conditions
 
 - `essays/<id>/promo/promo-pack.md` exists: frontmatter + Verification Status header +
   three fenced paste-ready blocks + attachment metadata lines.
 - All budgets met and MEASURED (자수, words, chars printed in the header).
-- Every factual phrase traceable to the three sources; dropped-fact list in the header
+- Every factual phrase traceable to the licensed sources; dropped-fact list in the header
   (usually `none`).
 - Digest posture agrees with `closing_posture`.
 - Everything else under `essays/<id>/` byte-identical to before the run.

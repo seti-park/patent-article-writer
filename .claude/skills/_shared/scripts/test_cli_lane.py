@@ -104,6 +104,33 @@ INVALID_PREGATE = textwrap.dedent("""\
     notes: malformed verdict for validator exercise.
 """)
 
+# Valid safe-claims+AI-tell judge output for --validate safeclaims.
+VALID_SAFECLAIMS = textwrap.dedent("""\
+    check: safe-claims+ai-tell (gpt lane)
+    generator: claude inherit (promo-composer)
+    verdict: SAFE-PASS
+    aitell: CLEAN
+
+    violations:
+    - none
+    tells:
+    - none
+    trace-notes: hem geometry -> essay-final ¶2; equipment list may-claim -> publication; application-stage hedge as final sentence only.
+""")
+
+# Has check: + SAFE-PASS verdict but MISSING the aitell: line entirely.
+INVALID_SAFECLAIMS = textwrap.dedent("""\
+    check: safe-claims+ai-tell (gpt lane)
+    generator: claude inherit (promo-composer)
+    verdict: SAFE-PASS
+
+    violations:
+    - none
+    tells:
+    - none
+    trace-notes: malformed output missing aitell line for validator exercise.
+""")
+
 # Valid review-lane output for --validate review.
 VALID_REVIEW = textwrap.dedent("""\
     reviewer: gpt-5.6-sol high (cli-lane)
@@ -1424,6 +1451,46 @@ class TestValidateReview(CliLaneTestBase):
                 "--prompt-file", self.prompt_path,
                 "--output", self.output_path,
                 "--validate", "review",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 3, proc.stdout + proc.stderr)
+        data = _parse_json_line(proc.stdout)
+        self.assertEqual(data["reason"], "invalid-output")
+        self.assertTrue(data["substituted"])
+        self.assertFalse(os.path.exists(self.output_path))
+
+
+class TestValidateSafeclaims(CliLaneTestBase):
+    def test_valid_safeclaims(self):
+        self._install_codex(mode="success", content=VALID_SAFECLAIMS)
+        proc = _run_cli(
+            [
+                "--vendor", "gpt",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "safeclaims",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
+        data = _parse_json_line(proc.stdout)
+        self.assertTrue(data["ok"])
+        self.assertTrue(os.path.isfile(self.output_path))
+        with open(self.output_path, encoding="utf-8") as fh:
+            body = fh.read()
+        self.assertIn("check:", body)
+        self.assertIn("verdict: SAFE-PASS", body)
+        self.assertIn("aitell:", body)
+
+    def test_invalid_safeclaims_missing_aitell(self):
+        self._install_codex(mode="success", content=INVALID_SAFECLAIMS)
+        proc = _run_cli(
+            [
+                "--vendor", "gpt",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "safeclaims",
             ],
             self.env,
         )
