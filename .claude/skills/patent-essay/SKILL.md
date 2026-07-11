@@ -24,6 +24,7 @@ Content travels on disk. Graph + profiles: `contracts/pipeline.yaml`. Roles:
 | `--max-iter` | profile default | Max **revision** rounds (confirmation does not count) |
 | `--mode` | from profile | `essay` \| `wire` |
 | `--self-audit` | from profile | `on` \| `off` |
+| `--verifier-vendor` | `claude` | `claude` \| `gpt` — self_audit grounding-verifier lane; `gpt` = GPT-5.6-sol (reasoning high) via codex CLI lane; auto-fallback to `claude` with the substitution recorded in the run report |
 | `--comprehension-check` | from profile | `on` \| `off` — interactive Owner comprehension check at understand_confirm |
 | `--yes` | off | Skip owner checkpoints (unattended) |
 
@@ -79,6 +80,10 @@ Checkpoint instances (hardness × profile):
 
 - **Main / judgment workers** (`patent-reader`, design, compose, review, adversarial, polish, promo): `model: inherit` (session strongest).
 - **Mechanical** (`figures-prep`, `grounding-verifier`): cheaper pin OK (`sonnet` class).
+- **Vendor lanes:** opt-in flags defaulting to today's models. The judge/verifier is NEVER
+  the vendor that generated the artifact (non-negotiable — `docs/architecture/multi-vendor-lanes.md` §2).
+  CLI missing / quota / web ⇒ graceful degradation to the default model; substitution recorded;
+  run must succeed identically.
 
 ## Pipeline by stage
 
@@ -330,6 +335,26 @@ checklist-FREE (the "cold reader"; same agent type, casual-scroller prompt only 
 in `contracts/stages/self_audit.yaml`); multi-vote; fix via revision mode; normalize deltas
 to ledger. Cap 3 dry-loop iterations.
 
+**GPT verifier lane (`--verifier-vendor gpt`)** — replaces the claude grounding-verifier
+(not an extra vote). Orchestrator procedure:
+
+1. Pre-flight: `python3 .claude/skills/_shared/scripts/cli_lane.py --vendor gpt --check`;
+   exit 3 ⇒ fall back to the claude grounding-verifier now, record substitution.
+2. Run the mechanical layer yourself (same two commands as grounding-verifier mode-A
+   step 1: `gate_quotes.py` + `gate_anchors.py`) and keep their output.
+3. Build the prompt: copy `.claude/skills/patent-essay/references/verifier-lane-gpt.md`,
+   fill `<DRAFT_PATH>` / `<ROUND_N>` / `<GATE_OUTPUTS>`, write to
+   `handoff/03-edit/verifier-lane-prompt.round-N.md`.
+4. `python3 .claude/skills/_shared/scripts/cli_lane.py --vendor gpt --prompt-file
+   handoff/03-edit/verifier-lane-prompt.round-N.md --output
+   handoff/03-edit/grounding-check-round-N.md --validate grounding --timeout 900
+   --cwd <repo root>`.
+5. exit 0 ⇒ append the step-2 gate outputs to the grounding-check file (same
+   "verdict table + gate outputs" shape as the claude verifier), proceed with
+   multi-vote exactly as today.
+6. exit 3 ⇒ fork the claude grounding-verifier exactly as today; record the
+   substitution JSON in the run report and final report.
+
 ### 6. Polish (publish) — `prose-polish`
 
 Surface-only 윤문; zero-new gate findings.
@@ -426,6 +451,7 @@ substitutes for a checkpoint.
 - Final essay (if any)  
 - Promo (if any)  
 - Score history + check_run line  
+- Vendor lanes used + any substitutions (vendor, reason)  
 - CAP HIT / open findings if any  
 
 ## Optional /goal

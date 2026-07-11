@@ -75,6 +75,14 @@ def _run_meta_validators():
     return ok
 
 
+def _run_cli_lane_tests():
+    """Run the cli-lane unittest suite as a subprocess. Return True on success."""
+    test_path = os.path.join(SCRIPTS, "test_cli_lane.py")
+    print("== cli-lane test suite ==")
+    rc = subprocess.call([sys.executable, test_path])
+    return rc == 0
+
+
 def _load(path):
     with open(path, "r", encoding="utf-8") as fh:
         return fh.read()
@@ -197,6 +205,7 @@ def main(argv=None):
     all_ok = True
     if not args.fixtures_only:
         all_ok = _run_gate_tests() and all_ok
+        all_ok = _run_cli_lane_tests() and all_ok
         all_ok = _run_meta_validators() and all_ok
 
     print("== fixtures ==")
