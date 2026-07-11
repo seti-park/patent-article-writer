@@ -1,0 +1,15 @@
+check: safe-claims (grok promo lane)
+generator: grok-4.5 (cli-lane)
+verdict: SAFE-PASS
+
+violations:
+- none
+
+trace-notes:
+- Bold-selection lead (KR para 1 close / EN post 1): "다음 tabless 출원은 포일을 잘라 flag를 만들지 않습니다. 가장자리를 접고, 그 접힘이 탭이 됩니다." / "It does not cut the foil into flags. It folds the edge, and the fold is the tab." → essay-final.md bolded thesis line: "**Tesla's next tabless filing doesn't cut the foil into flags. It folds the edge, and the fold is the tab.**" Verbatim-consistent; correctly the boldest claim the protected surface supports.
+- Equipment list (KR para 2 / EN post 2): "태빙·슬리팅·노칭·flag interleaving·부스러기 처리 장치가 이 라인에 필요 없을 수 있다" / "a hemmed line may not necessarily require a tabbing device, slitting device, notching device, flag-interleaving device, or debris-handling device" → essay-final.md [0025] quote: "the machine for making a hemmed electrode may not necessarily require the use of a tabbing device, slitting device, notching device, flag interleaving device, or debris handling device...". Order and hedge ("may not necessarily require" / "필요 없을 수 있다") preserved intact — not stripped into an overstated claim.
+- Winding-to-winding contact + collector attachment (KR para 2 / EN post 2): "감긴 상태에서 헴 가장자리의 앞 감김과 뒤 감김이 서로 닿고, 컬렉터가 그 접힌 테두리에 전기적으로 통하며 기계적으로 붙습니다." / "one winding of that hemmed edge touches the next, and the collector sits on the folded rim as both electrical contact and mechanical attachment" → essay-final.md [0004] quotes ("a proceeding winding of the hemmed edge contacts a succeeding winding..."; "the collector is in electrical communication and mechanically attached to the hemmed edge") and owner-briefing §③ same claim-1 paraphrase.
+- Status/insurance clause (KR para 3 / EN post 3): "보호를 요청한 범위이지 아직 등록된 권리는 아닙니다" / "Protection asked for, not yet granted: a pending application filed 6 January 2025 and published 9 July 2026" → essay-final.md: "is a pending Tesla application filed 6 January 2025 and published 9 July 2026... the protection Tesla is asking for, not yet granted." Dates exact; application-stage language (출원/pending/sought/not yet granted) never drifts into 특허/patented/granted/등록 for this filing.
+- "Neither add a tab nor subtract a flag. Only fold." (KR para 2 / EN post 2, verbatim in both languages via translation) → essay-final.md synthesis line of the same wording, itself grounded in [0038] quote ("does not include any additional geometries associated with the addition of foil material (e.g. 'tabs') or the subtraction of foil material (e.g. 'flags')").
+
+notes: Insurance status clause count = 1 per deliverable (KR post, EN thread final post) as self-reported. Examination-process narration = 0 (no 심사/office-action/USPTO-review language, despite being available in owner-briefing §status). No fact traced outside essay-final.md / publication.md / owner-briefing.md. One loose "Patent cross-section" phrase in the KR alt text mirrors essay-final.md's own title usage ("Its New Patent Deletes the Machines") for the pending application — not an overstatement introduced by the promo, so not counted as a violation.
