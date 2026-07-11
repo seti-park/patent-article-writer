@@ -111,6 +111,8 @@ first. All lanes are opt-in flags that default to today's behavior (`inherit`/`s
 absent flags = no change.
 
 ### P1 — GPT verifier upgrade (lowest risk, additive, highest value)
+> Verifier model id is Owner-confirmed (2026-07-11): **`gpt-5.6-sol`, reasoning `high`**
+> — distinct from the codex-companion review gate's `gpt-5.6-terra`.
 - New flag `--verifier-vendor gpt|claude` (default `claude`), consumed by the `self_audit`
   stage. When `gpt`: the grounding-verifier work is driven through a `codex` CLI lane
   (`codex exec -m gpt-5.6-sol -c model_reasoning_effort=high -s read-only`), fed the
