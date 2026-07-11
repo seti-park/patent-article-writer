@@ -197,3 +197,40 @@ recurrence 5, still unapplied; `gate_figure_use.py` remains unpatched). `redunda
 still held at `watch` by design (heterogeneous sub-mechanisms, never cost a loop iteration).
 `evidence-scope-overreach` paired across origins this run (inner-loop r1-F1 + self-post-accept
 SA-delta-9, the same §6 proof-point seam caught twice).
+
+## Run tesla-us20260196678-hemmed-tabless classes (added 2026-07-11)
+
+First full production run of the multi-vendor lanes (compose/revisions = grok-4.5;
+grounding/pregate/drift = gpt-5.6-sol; review/audit/arbitration = claude inherit).
+Double-clean at rounds 3+4 after one grounding hard-gate FAIL round; self-audit closed
+DRY after 2 apply rounds; polish drift-checked; check_run PASS; promo SAFE-PASS.
+New/adjacent classes routed here so the ledger records resolve:
+
+| Finding class (pattern_tag) | Source signal | Goal | Owner stage | Owner artifact | Default lever |
+|---|---|---|---|---|---|
+| `quotable-span-scope-clip` | pass-3 r1-F4 (grounding hard-gate FAIL) + self-audit SA-2 — an invention-summary Quotable span clipped mid-sentence at a scope boundary; the composer fence makes the clip invisible downstream (once falsified the steelman, once licensed an overbroad deletion reading that round-2 pass-3 explicitly accepted) | 1 | design | thesis-architect/references/quote-anchor-conventions.md span-completeness rule + patent-understand invention-summary self-check (**proposal 2026-07-11-understand-span-completeness**, recommended-apply) | reference-edit |
+| `checker-template-string-collision` | check_run RUN-013 false FAIL / RUN-006 path — CAP_HIT_RE regexes the WHOLE score-history.md; the handoff-template's own schema comment contains "CAP HIT", so every template copy trips it AND suppresses RUN-005 (false-negative masking) | all | gate | _shared/scripts/check_run.py cap_hit detection + handoff-template/03-edit/score-history.md comment (**proposal 2026-07-11-check-run-template-string-scoping**) | gate-strengthen |
+| `checker-confirmation-overfire` (2nd essay) | check_run signal 3 matched "confirmation" in a round-3 NOTES cell; the applied 2026-07-06 veto held (warn, not skip) | all | gate | _shared/scripts/check_run.py `_is_confirmation_transition` signal-3 cell scoping (same proposal as above) | gate-strengthen |
+| `claim-scope-absolute` | self-audit round-2 C-1 — in-document absolute ("Nothing is welded on.") refutable from the description the essay itself quotes; sibling of `claim-scope-misattribution` (semantics) and `external-fact-universalization` (external) | 1 | compose | execution-boundary.md in-document absolutes discipline | reference-edit |
+| `rhetorical-figure-repetition` | pass-1 1A r1-F1 — one rhetorical figure ("X is not A. It is B.") carrying three body beats; voice-pregate flagged the sibling header shape | 4b | compose | anti-ai-writing.md judgment tier (structural-tic awareness) | reference-edit |
+| `blockquote-attribution-form-drift` | pass-6 r1-F12 — patent blockquotes deviating from the exemplar quote-line + attribution-line form | 4a | compose | x-articles-format-en.md blockquote exemplar | reference-edit |
+| `dropped-low-reescalation` | self-audit rounds 1→2 — 2 of 13 LOG-AND-DROPped lows (both claim-scope family) returned as the only round-2 mediums from a fresh persona, costing a full audit round | 1 | orchestrator | self_audit multi-vote LOG-AND-DROP disposition (**proposal 2026-07-11-selfaudit-dropped-low-recheck**, watch) | reference-edit |
+| `polish-gloss-meaning-add` | GPT drift check polish-8 MEANING-CHANGED, sustained by orchestrator ruling (grounded gloss of adjacent anchored sentences answering the cold-reader prior) — instrument and ruling both correct; jurisdiction-boundary watch | 3 | edit | prose-polish SKILL surface-only jurisdiction (codify the sanctioned-gloss exemption if it recurs) | reference-edit |
+| `lane-turn-budget-undersized` / `lane-micro-revision-validator-substitution` / `lane-envelope-trailing-data` / `lane-stdin-inheritance-hang` | multi-vendor lane incidents — grok round-0 needed --max-turns 48 at ~220KB prompts (96 at ~430KB); grok skipped DISPOSITIONS on a 2-line micro-diff → invalid-output ×2 → inherit fallback (chain worked); grok envelope + trailing data → strict json.loads substitution (**proposal 2026-07-11-cli-lane-envelope-first-object**, watch); codex stdin hang fixed in-run (stdin=DEVNULL) | all | tooling | _shared/scripts/cli_lane.py + lane prompt contracts | gate-strengthen / runbook note |
+
+Recurrence notes (this run): `external-fact-universalization` gained **3 HIGH records**
+(r1-F5 inner-loop + SA-1/SA-3 post-accept; r1-F5's sentence came verbatim from the
+Phase-1 title-lead pair — design authored the overreach) → standing recommended-apply
+proposal `2026-06-11-external-fact-scope-discipline` now recurrence 6 and 30 days
+pending. The revision-added family (`revision-induced-duplication` r2-F1,
+`revision-induced-band-break` r2-F2/F3, plus SA-7/SA-9 created by round-1 fixes)
+promoted `2026-07-03-revision-mode-new-sentence-check` to recommended-apply
+(recurrence 9 across 3 runs; every round-2 medium this run was a round-1 application
+side-effect). `claim-scope-misattribution` added 3 (SA-4, SA-5, SA2-C2 external-patent
+variant) — still the dominant goal-1 class (18 across the ledger).
+`conclusion-over-hedge` (r1-F11 qualifier-led opener, gate_hedge-invisible) → proposal
+recurrence 2, watch. `pending-application-status-precision` recurred on the title
+surface (3 audit voices, all dropped under title-energy latitude) → proposal
+`2026-07-04-pending-application-edition` recurrence 2. GPT verifier instrument
+validated: 3/3 grounding overreach calls genuine; drift 1/12 flag correct and correctly
+sustained.

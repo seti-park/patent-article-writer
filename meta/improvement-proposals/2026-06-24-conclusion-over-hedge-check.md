@@ -6,7 +6,7 @@ lever: reference-edit
 goal: "4a"
 root_cause_stage: edit
 root_cause_artifact: editorial-review/references/pass-6-lead-conclusion-format.md (no over-hedge check) + posture-lens.md (no firm-closing default for verdict editions)
-recurrence_count: 1
+recurrence_count: 2
 confidence: medium
 triggering_findings:
   - essay_id: us12560948b2 ad-hoc run (pre-pipeline), pattern_tag: conclusion-over-hedge, surfaced by SETI catch (not in ledger)
@@ -101,3 +101,14 @@ applying:
   reads these files).
 - Observable success criterion: the next investor-edition run lands a firm, evidence-proportionate
   verdict by construction, and Pass 6 6G flags any over-hedge before a human catch is needed.
+
+## Amendment (2026-07-11, tesla-us20260196678-hemmed-tabless)
+
+Recurrence 1 → 2. r1-F11 (medium): the close opened with a sentence ABOUT the verdict
+("The call is firm on what the document shows and modest on what the factory will do")
+— the qualifier-led-opener sub-shape, plus mild self-grading, re-listing a caveat §4 had
+already priced. gate_hedge PASSed it (below lexicon); the judgment-tier 6G check caught
+it in round 1 and the fix held through double-clean — i.e., the pass-6 6G leg of this
+proposal is field-working; the open question remains whether the qualifier-led-opener
+shape ("firm on X, modest on Y" as sentence 1) merits a gate_hedge lexicon line. Stays
+watch.
