@@ -55,6 +55,6 @@ compose_vendor:
     lane: "_shared/scripts/cli_lane.py --vendor grok  (grok --prompt-file, -m grok-4.5, tool-less, constrained --json-schema document envelope)"
     prompt_template: .claude/skills/patent-essay/references/compose-lane-grok.md
     isolation: "tool-less grok (--tools '' --no-subagents --disable-web-search; single-shot generation) + prompt INLINES design handoff + voice refs; input/patent.md never in the prompt (invariant 3); gate_patent_leak stays the vendor-agnostic net"
-    voice_pregate: "cheap fresh Claude fork before each full review round on a grok draft; VOICE-FAIL => one grok re-drive with the tells, second FAIL => inherit re-compose (guardrail 2)"
+    voice_pregate: "default judge = gpt lane via --pregate-vendor (prompt template pregate-lane-gpt.md, cli_lane.py --vendor gpt --validate pregate); fallback = fresh sonnet-class Claude fork as today, substitution recorded; GPT is not grok so judging a grok draft satisfies §2 (vendor-isolation); VOICE-FAIL => one grok re-drive with the tells, second FAIL => inherit re-compose (guardrail 2)"
     round_cap: "after 3 grok revision rounds without acceptance, remaining rounds compose with inherit (guardrail 3); lane switch recorded"
     fallback: "cli_lane exit 3 => compose with inherit as today; the run report MUST record the substitution (never silent)"

@@ -56,6 +56,100 @@ INVALID_GROUNDING = textwrap.dedent("""\
     | s1 | [0001] | MAYBE | span | — |
 """)
 
+# Valid drift-check output for --validate drift (mode-B vocabulary).
+VALID_DRIFT = textwrap.dedent("""\
+    verifier: gpt-5.6-sol high (cli-lane, drift mode)
+    round: 1
+
+    | pair | verdict | evidence |
+    |---|---|---|
+    | p1 | MEANING-PRESERVED | rewrite restates same claim; anchors intact |
+
+    tally: MEANING-PRESERVED 1 / MEANING-CHANGED 0 / PROTECTED-TOUCHED 0
+""")
+
+# Has verifier: + |--- but no drift-mode verdict token from the required set.
+INVALID_DRIFT = textwrap.dedent("""\
+    verifier: gpt-5.6-sol high (cli-lane, drift mode)
+    round: 1
+
+    | pair | verdict | evidence |
+    |---|---|---|
+    | p1 | UNCHANGED | rewrite looks similar |
+""")
+
+# Valid voice pre-gate output for --validate pregate.
+VALID_PREGATE = textwrap.dedent("""\
+    pregate: voice-drift (guardrail 2)
+    generator: grok-4.5 (cli-lane)
+    round: 1
+    verdict: VOICE-PASS
+
+    tells:
+    - none
+
+    notes: clean draft, no repeated tells, register matches the exemplars.
+""")
+
+# Has pregate: line but no VOICE-PASS / VOICE-FAIL verdict substring.
+INVALID_PREGATE = textwrap.dedent("""\
+    pregate: voice-drift (guardrail 2)
+    generator: grok-4.5 (cli-lane)
+    round: 1
+    verdict: MAYBE
+
+    tells:
+    - none
+
+    notes: malformed verdict for validator exercise.
+""")
+
+# Valid review-lane output for --validate review.
+VALID_REVIEW = textwrap.dedent("""\
+    reviewer: gpt-5.6-sol high (cli-lane)
+    round: 1
+    round_type: confirmation
+    posture_applied: measured
+    grounding: PASS
+    goal-2: PASS
+    verdict: PASS
+    assessment: pass
+
+    findings:
+    - id: r1-F1
+      pass: pass-1-voice-anti-ai
+      severity: low
+      quote: "The architecture routes vision data upstream."
+      why: Minor cadence drift in §2 supporting prose; not publication-blocking.
+      fix-direction: Tighten the opening clause to land the mechanism first.
+
+    warn_dispositions:
+    - gate_surface SURF-003: noted; surface already within band after pre-gate.
+""")
+
+# Same shape (round_type + hard-gate labels + findings list) but no valid assessment token.
+INVALID_REVIEW = textwrap.dedent("""\
+    reviewer: gpt-5.6-sol high (cli-lane)
+    round: 1
+    round_type: confirmation
+    posture_applied: measured
+    grounding: PASS
+    goal-2: PASS
+    verdict: PASS
+    assessment: needs-work
+
+    findings:
+    - id: r1-F1
+      pass: pass-1-voice-anti-ai
+      severity: low
+      quote: "The architecture routes vision data upstream."
+      why: Minor cadence drift in §2 supporting prose.
+      fix-direction: Tighten the opening clause.
+
+    warn_dispositions:
+    - gate_surface SURF-003: noted.
+""")
+
 # Valid compose draft for --validate compose: frontmatter fence, [dddd] anchor, >=800 stripped chars.
 VALID_COMPOSE = textwrap.dedent("""\
     ---
@@ -872,6 +966,67 @@ class TestTimeout(CliLaneTestBase):
         self.assertFalse(os.path.exists(self.output_path))
 
 
+class TestGptStdinNotInherited(CliLaneTestBase):
+    def test_codex_child_gets_devnull_not_parent_pipe(self):
+        """cli_lane must not forward its own (possibly never-EOF) stdin to codex.
+
+        Background/piped orchestrator runs leave stdin as an open pipe; codex
+        exec appends stdin when not a TTY. With stdin=DEVNULL on the child, a
+        stub that does extra="$(cat)" returns immediately; if the open pipe
+        were inherited, the stub (and this test) would hang until timeout.
+        """
+        content = GPT_CANNED
+        body = (
+            "#!/bin/bash\n"
+            "extra=\"$(cat)\"\n"
+            "out=\"\"\n"
+            "while [ $# -gt 0 ]; do\n"
+            "  if [ \"$1\" = \"-o\" ]; then out=\"$2\"; shift 2; continue; fi\n"
+            "  shift\n"
+            "done\n"
+            "if [ -z \"$out\" ]; then echo 'no -o' >&2; exit 1; fi\n"
+            "cat > \"$out\" <<'EOF'\n"
+            + content
+            + ("\n" if not content.endswith("\n") else "")
+            + "EOF\n"
+            "exit 0\n"
+        )
+        _write_stub(os.path.join(self.bin_dir, "codex"), body)
+
+        # Outer cli_lane stdin is a never-EOF pipe (live background hang shape).
+        # If cli_lane inherited/forwarded it to codex, the stub's cat would block.
+        r_fd, w_fd = os.pipe()
+        try:
+            proc = subprocess.run(
+                [
+                    sys.executable,
+                    CLI_LANE,
+                    "--vendor", "gpt",
+                    "--prompt-file", self.prompt_path,
+                    "--output", self.output_path,
+                    "--timeout", "5",
+                ],
+                stdin=r_fd,
+                capture_output=True,
+                text=True,
+                env=self.env,
+                timeout=8,
+            )
+        finally:
+            try:
+                os.close(r_fd)
+            except OSError:
+                pass
+            try:
+                os.close(w_fd)
+            except OSError:
+                pass
+
+        self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
+        data = _parse_json_line(proc.stdout)
+        self.assertTrue(data["ok"])
+
+
 class TestEmptyOutput(CliLaneTestBase):
     def test_gpt_empty(self):
         self._install_codex(mode="empty")
@@ -1156,6 +1311,127 @@ class TestValidatePromo(CliLaneTestBase):
         self.assertTrue(data["substituted"])
         self.assertFalse(os.path.exists(self.output_path))
         self.assertIn("verification status", data.get("detail", "").lower())
+
+
+class TestValidateDrift(CliLaneTestBase):
+    def test_valid_drift(self):
+        self._install_codex(mode="success", content=VALID_DRIFT)
+        proc = _run_cli(
+            [
+                "--vendor", "gpt",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "drift",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
+        data = _parse_json_line(proc.stdout)
+        self.assertTrue(data["ok"])
+        self.assertTrue(os.path.isfile(self.output_path))
+        with open(self.output_path, encoding="utf-8") as fh:
+            body = fh.read()
+        self.assertIn("verifier:", body)
+        self.assertIn("MEANING-PRESERVED", body)
+        self.assertIn("|---", body)
+
+    def test_invalid_drift_no_verdict(self):
+        self._install_codex(mode="success", content=INVALID_DRIFT)
+        proc = _run_cli(
+            [
+                "--vendor", "gpt",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "drift",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 3, proc.stdout + proc.stderr)
+        data = _parse_json_line(proc.stdout)
+        self.assertEqual(data["reason"], "invalid-output")
+        self.assertTrue(data["substituted"])
+        self.assertFalse(os.path.exists(self.output_path))
+
+
+class TestValidatePregate(CliLaneTestBase):
+    def test_valid_pregate(self):
+        self._install_codex(mode="success", content=VALID_PREGATE)
+        proc = _run_cli(
+            [
+                "--vendor", "gpt",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "pregate",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
+        data = _parse_json_line(proc.stdout)
+        self.assertTrue(data["ok"])
+        self.assertTrue(os.path.isfile(self.output_path))
+        with open(self.output_path, encoding="utf-8") as fh:
+            body = fh.read()
+        self.assertIn("pregate:", body)
+        self.assertIn("verdict: VOICE-PASS", body)
+
+    def test_invalid_pregate_no_verdict(self):
+        self._install_codex(mode="success", content=INVALID_PREGATE)
+        proc = _run_cli(
+            [
+                "--vendor", "gpt",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "pregate",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 3, proc.stdout + proc.stderr)
+        data = _parse_json_line(proc.stdout)
+        self.assertEqual(data["reason"], "invalid-output")
+        self.assertTrue(data["substituted"])
+        self.assertFalse(os.path.exists(self.output_path))
+
+
+class TestValidateReview(CliLaneTestBase):
+    def test_valid_review(self):
+        self._install_codex(mode="success", content=VALID_REVIEW)
+        proc = _run_cli(
+            [
+                "--vendor", "gpt",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "review",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
+        data = _parse_json_line(proc.stdout)
+        self.assertTrue(data["ok"])
+        self.assertTrue(os.path.isfile(self.output_path))
+        with open(self.output_path, encoding="utf-8") as fh:
+            body = fh.read()
+        self.assertIn("round_type:", body)
+        self.assertIn("assessment: pass", body)
+        self.assertIn("grounding", body)
+        self.assertIn("goal-2", body)
+        self.assertIn("verdict", body)
+
+    def test_invalid_review_no_assessment(self):
+        self._install_codex(mode="success", content=INVALID_REVIEW)
+        proc = _run_cli(
+            [
+                "--vendor", "gpt",
+                "--prompt-file", self.prompt_path,
+                "--output", self.output_path,
+                "--validate", "review",
+            ],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 3, proc.stdout + proc.stderr)
+        data = _parse_json_line(proc.stdout)
+        self.assertEqual(data["reason"], "invalid-output")
+        self.assertTrue(data["substituted"])
+        self.assertFalse(os.path.exists(self.output_path))
 
 
 def _run():

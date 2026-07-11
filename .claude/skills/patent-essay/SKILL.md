@@ -27,6 +27,9 @@ Content travels on disk. Graph + profiles: `contracts/pipeline.yaml`. Roles:
 | `--verifier-vendor` | `claude` | `claude` \| `gpt` — self_audit grounding-verifier lane; `gpt` = GPT-5.6-sol (reasoning high) via codex CLI lane; auto-fallback to `claude` with the substitution recorded in the run report |
 | `--compose-vendor` | `grok` | `inherit` \| `grok` — compose lane; `grok` = Grok 4.5 via grok CLI lane; voice pre-gate + round-cap 3 + auto-fallback to `inherit` with substitution recorded (default `grok` per Owner §10-1; no CLI ⇒ degrades to `inherit`) |
 | `--promo-vendor` | `inherit` | `inherit` \| `grok` — promo lane; `grok` = Grok 4.5 via CLI lane; Claude safe-claims check + auto-fallback to `inherit` with substitution recorded |
+| `--drift-vendor` | `gpt` | `gpt` \| `claude` — polish drift-check lane (GPT-5.6-sol high via codex; fallback claude, recorded) |
+| `--pregate-vendor` | `gpt` | `gpt` \| `claude` — compose voice pre-gate lane (same fallback contract) |
+| `--review-vendor` | `gpt` | `gpt` \| `claude` — review-loop lane; `gpt` = 7-pass review via codex lane, Claude acceptance layer retained (voice veto + CLEAN + arbitration); fallback `claude`, recorded |
 | `--comprehension-check` | from profile | `on` \| `off` — interactive Owner comprehension check at understand_confirm |
 | `--yes` | off | Skip owner checkpoints (unattended) |
 
@@ -85,7 +88,10 @@ Checkpoint instances (hardness × profile):
 - **Vendor lanes:** opt-in flags defaulting to today's models. The judge/verifier is NEVER
   the vendor that generated the artifact (non-negotiable — `docs/architecture/multi-vendor-lanes.md` §2).
   CLI missing / quota / web ⇒ graceful degradation to the default model; substitution recorded;
-  run must succeed identically.
+  run must succeed identically. **Exception / clarification (P6 hybrid):** `review_loop`
+  execution may run on the GPT lane by default (`--review-vendor gpt`), but the
+  judge/acceptance AUTHORITY (voice veto, `CLEAN(N)`, LOOP-07 arbitration) stays
+  `inherit` — never grok (§2).
 
 ## Pipeline by stage
 
@@ -305,11 +311,15 @@ mode-shift proposals go through the **OWNER_QUESTION relay**, not in-session eli
    handoff/02-compose`. The lane runs tool-less (`--tools ''`) — grok sees only the
    inlined prompt.
 4. exit 3 ⇒ inherit compose as today; record substitution.
-5. exit 0 ⇒ voice-drift pre-gate (guardrail 2): fork a FRESH cheap Claude checker
-   (sonnet-class; not the reviewer) with the draft + the same exemplars + anti-AI tells;
-   verdict `VOICE-PASS`/`VOICE-FAIL` + tell list → `handoff/02-compose/voice-pregate-round-N.md`.
-   FAIL ⇒ one grok re-drive with the tells appended; second FAIL ⇒ inherit re-compose;
-   record.
+5. exit 0 ⇒ voice-drift pre-gate (guardrail 2, default `--pregate-vendor gpt`): build
+   prompt from `references/pregate-lane-gpt.md` (inline draft + same exemplars + anti-AI
+   rules) → `handoff/02-compose/pregate-lane-prompt.round-N.md`; run
+   `cli_lane.py --vendor gpt --prompt-file handoff/02-compose/pregate-lane-prompt.round-N.md
+   --output handoff/02-compose/voice-pregate-round-N.md --validate pregate --timeout 600
+   --cwd <repo root>`. exit 3 ⇒ fall back to a fresh sonnet-class Claude fork (not the
+   reviewer) exactly as before; record substitution. Verdict
+   `VOICE-PASS`/`VOICE-FAIL` + tell list → `voice-pregate-round-N.md`. FAIL ⇒ one grok
+   re-drive with the tells appended; second FAIL ⇒ inherit re-compose; record.
 6. Derivative artifacts (adoption fork): fork essay-composer (inherit) instructed to ADOPT
    the draft prose as-is (frontmatter completion only, no rewriting) and emit
    figures-rationale.md, thesis-trace.md (≤3 signature lines), publication.md via the strip
@@ -343,6 +353,21 @@ Per round N:
 On grok-composed drafts the voice pre-gate runs before each full round; the round-cap lane
 switch (compose block step 7) operates INSIDE `max_revision` — the profile revision cap
 itself is unchanged.
+
+**GPT review lane (`--review-vendor gpt`)** — per round:
+
+1. Gates as today (`run_gates.py` → `gate-result.round-N.json`).
+2. Build the prompt from `references/review-lane-gpt.md` (fill placeholders with PATHS, not
+   inlined content — codex reads the repo itself) → `handoff/03-edit/review-lane-prompt.round-N.md`.
+3. `cli_lane.py --vendor gpt --prompt-file handoff/03-edit/review-lane-prompt.round-N.md
+   --output handoff/03-edit/edit-log.round-N.gpt.md --validate review --timeout 900
+   --cwd <repo root>`.
+4. exit 3 ⇒ fork the claude `editorial-reviewer` as before; record substitution.
+5. exit 0 ⇒ ACCEPTANCE LAYER (orchestrator, `inherit`): read the GPT log + the draft's
+   protected surfaces; ratify or veto findings (voice veto explicit); rule `CLEAN(N)` per
+   the unchanged definition; prepend an `orchestrator-acceptance:` block (ruling, vetoes,
+   arbitration) and save as `edit-log.round-N.md`; append the score-history row as today.
+   Double-clean semantics are UNCHANGED.
 
 **Acceptance:**
 
@@ -404,8 +429,15 @@ Surface-only 윤문; zero-new gate findings.
 
 1. Polish worker returns a changed-sentence list and marks `drift-check PENDING` in its
    final message (worker does **not** spawn the verifier).
-2. Orchestrator forks `grounding-verifier` on old/new pairs. Any `MEANING-CHANGED` **or**
-   `PROTECTED-TOUCHED` ⇒ re-fork polish to revert that sentence; re-run gates as needed.
+2. Orchestrator builds `handoff/03-edit/drift-lane-prompt.md` from
+   `references/drift-lane-gpt.md` (inline old/new pairs) and runs
+   `cli_lane.py --vendor gpt --prompt-file handoff/03-edit/drift-lane-prompt.md
+   --output handoff/03-edit/drift-check.md --validate drift --timeout 600
+   --cwd <repo root>` (default `--drift-vendor gpt`). exit 3 ⇒ fork the sonnet
+   `grounding-verifier` drift-mode fork exactly as today; record substitution. Any
+   `MEANING-CHANGED` **or** `PROTECTED-TOUCHED` (gpt lane or Claude fallback) ⇒ re-fork
+   polish to revert that sentence; re-run gates as needed. Orchestrator (`inherit`)
+   rules on every revert.
 
 ### 7. Verify
 
