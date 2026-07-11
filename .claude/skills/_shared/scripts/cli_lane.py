@@ -19,6 +19,7 @@ Contract (orchestrator keys on exit codes + one JSON line on stdout):
   --validate drift  post-capture shape check (verifier line + drift-verdict token + |---).
   --validate pregate  post-capture shape check (pregate line + VOICE-PASS/FAIL verdict).
   --validate review  post-capture shape check (round_type + assessment token + 3 hard-gate labels + findings list).
+  --validate safeclaims  post-capture shape check (check: line + SAFE-PASS/FAIL verdict + aitell: line).
   --max-turns N  grok runaway-turn guard only (default 16); NOT the isolation mechanism.
   Isolation is tool-less grok: every grok invoke always gets --tools "" --no-subagents
   --disable-web-search (prompts inline everything; no tool use required).
@@ -236,6 +237,27 @@ def _validate_review(text: str) -> str | None:
     return None
 
 
+def _validate_safeclaims(text: str) -> str | None:
+    """Return None if valid; else a short detail string."""
+    has_check = any(line.lstrip().startswith("check:") for line in text.splitlines())
+    has_verdict = (
+        "verdict: SAFE-PASS" in text or "verdict: SAFE-FAIL" in text
+    )
+    has_aitell = any(line.lstrip().startswith("aitell:") for line in text.splitlines())
+    missing = []
+    if not has_check:
+        missing.append("no line starting with 'check:'")
+    if not has_verdict:
+        missing.append(
+            "no 'verdict: SAFE-PASS' or 'verdict: SAFE-FAIL' substring"
+        )
+    if not has_aitell:
+        missing.append("no line starting with 'aitell:'")
+    if missing:
+        return "; ".join(missing)
+    return None
+
+
 def _cli_missing_detail(vendor: str) -> str:
     return "%s CLI '%s' not found on PATH" % (vendor, VENDOR_CLI[vendor])
 
@@ -417,6 +439,14 @@ def run_lane(
                 except OSError:
                     pass
                 return _substitute(vendor, "invalid-output", bad, output_path)
+        elif validate == "safeclaims":
+            bad = _validate_safeclaims(content)
+            if bad:
+                try:
+                    Path(output_path).write_text(content, encoding="utf-8")
+                except OSError:
+                    pass
+                return _substitute(vendor, "invalid-output", bad, output_path)
 
         try:
             Path(output_path).parent.mkdir(parents=True, exist_ok=True)
@@ -473,7 +503,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument(
         "--validate",
-        choices=["grounding", "compose", "compose-revision", "promo", "drift", "pregate", "review"],
+        choices=["grounding", "compose", "compose-revision", "promo", "drift", "pregate", "review", "safeclaims"],
         default=None,
         help="Optional post-capture output validation",
     )

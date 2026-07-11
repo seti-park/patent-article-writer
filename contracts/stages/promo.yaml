@@ -10,6 +10,8 @@ may_read:
   - essays/<id>/essay-final.md
   - essays/<id>/publication-package/**
   - essays/<id>/owner-briefing.md
+  - essays/<id>/owner-study-pack.md      # understanding-first (P7): the Understand triad is a first-class promo source
+  - essays/<id>/comprehension-notes.md   # understanding-first (P7): landed frames are first-class promo sources
   - essays/<id>/README.md
   - essays/<id>/thesis-trace.md        # slim archive (2026-07-11): graduated from handoff/02-compose/
   - essays/<id>/promo/**                 # prior pack for overwrite bumps
@@ -36,19 +38,24 @@ rules:
   - "Essay is FINAL; never edit anything under essays/<id>/ except promo-pack.md."
   - "Safe-claims: every factual phrase traces to essay-final / publication.md / owner-briefing only. Missing fact → drop, never fetch."
   - "Attachments: publication-package/ images only; cover-5x2.png default."
-  - "model: inherit for posting copy (never pin down) — unless --promo-vendor grok routes the DRAFT through the vendor lane; the safe-claims judge stays Claude."
+  - "model: inherit for posting copy (never pin down) — the grok lane (--promo-vendor grok) is an opt-in cost mode, not the default."
+  - "Understanding-first: the body explains the invention's core mechanism + effects for a reader between high-school and undergraduate; the status hedge is ONE sentence, isolated at the end of each deliverable; no defensive narration mid-body."
   - "Standalone profile promo-only: positional arg is existing essays/<id>/ id."
 
-# Multi-vendor promo lane (docs/architecture/multi-vendor-lanes.md §8 P3)
+# Multi-vendor promo lane (docs/architecture/multi-vendor-lanes.md §8 P3, §14 P7)
+# Default generation = inherit (Claude). Grok is opt-in cost mode only.
+# Judge = GPT either way (§2: Claude generates => GPT judges).
 promo_vendor:
   flag: "--promo-vendor"
   values: [inherit, grok]
   default: inherit
+  # Judge applies to BOTH draft paths (inherit default and grok opt-in).
+  # §2: Claude generates => GPT judges (never Claude grading Claude's own promo).
+  safeclaims_check: "GPT lane (cli_lane --vendor gpt --validate safeclaims, prompt template safeclaims-lane-gpt.md) judges every factual phrase against the five licensed sources AND scans for AI-tells (3항 병렬 / 은유 사슬 / 균질 결어 / 직역투 / 줄표 / 기계적 리듬); SAFE-FAIL or TELLS-FOUND => one composer revision loop + re-check; second failure => render BOTH pack + check to the Owner (do NOT silently ship or drop)"
   grok:
-    lane: "_shared/scripts/cli_lane.py --vendor grok  (tool-less, constrained --json-schema document envelope)"
+    lane: "_shared/scripts/cli_lane.py --vendor grok  (tool-less, constrained --json-schema document envelope); opt-in cost-mode lane only (--promo-vendor grok), not the default"
     prompt_template: .claude/skills/patent-essay/references/promo-lane-grok.md
     isolation: "prompt INLINES essays/<id> sources only; input/patent.md and fact-check-log stay must_not_read (already contract law)"
-    safeclaims_check: "fresh cheap Claude fork judges every factual phrase against the three inlined sources; SAFE-FAIL => one grok re-drive with the violations, second FAIL => inherit re-compose (§2: judge never = generator vendor)"
     fallback: "cli_lane exit 3 => promo-composer (inherit) as today; run report MUST record the substitution (never silent)"
 
 preconditions:
