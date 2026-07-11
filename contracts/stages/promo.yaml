@@ -36,8 +36,20 @@ rules:
   - "Essay is FINAL; never edit anything under essays/<id>/ except promo-pack.md."
   - "Safe-claims: every factual phrase traces to essay-final / publication.md / owner-briefing only. Missing fact → drop, never fetch."
   - "Attachments: publication-package/ images only; cover-5x2.png default."
-  - "model: inherit for posting copy (never pin down)."
+  - "model: inherit for posting copy (never pin down) — unless --promo-vendor grok routes the DRAFT through the vendor lane; the safe-claims judge stays Claude."
   - "Standalone profile promo-only: positional arg is existing essays/<id>/ id."
+
+# Multi-vendor promo lane (docs/architecture/multi-vendor-lanes.md §8 P3)
+promo_vendor:
+  flag: "--promo-vendor"
+  values: [inherit, grok]
+  default: inherit
+  grok:
+    lane: "_shared/scripts/cli_lane.py --vendor grok  (tool-less, constrained --json-schema document envelope)"
+    prompt_template: .claude/skills/patent-essay/references/promo-lane-grok.md
+    isolation: "prompt INLINES essays/<id> sources only; input/patent.md and fact-check-log stay must_not_read (already contract law)"
+    safeclaims_check: "fresh cheap Claude fork judges every factual phrase against the three inlined sources; SAFE-FAIL => one grok re-drive with the violations, second FAIL => inherit re-compose (§2: judge never = generator vendor)"
+    fallback: "cli_lane exit 3 => promo-composer (inherit) as today; run report MUST record the substitution (never silent)"
 
 preconditions:
   - essays/<id>/essay-final.md exists

@@ -53,3 +53,15 @@ profiles:
   publish: required
   draft: off
   wire: off
+
+# Multi-vendor verifier lane (docs/architecture/multi-vendor-lanes.md §8 P1)
+# Owner-confirmed 2026-07-11: replacement for the claude grounding-verifier, not an extra vote.
+verifier_vendor:
+  flag: "--verifier-vendor"
+  values: [claude, gpt]
+  default: claude
+  gpt:
+    replaces: grounding-verifier          # same required_outputs, same multi-vote role
+    lane: "_shared/scripts/cli_lane.py --vendor gpt  (codex exec -m gpt-5.6-sol, reasoning high, read-only)"
+    prompt_template: .claude/skills/patent-essay/references/verifier-lane-gpt.md
+    fallback: "cli_lane exit 3 (cli-missing|nonzero|timeout|empty-output|invalid-output) => fork the claude grounding-verifier as today; the run report MUST record the substitution (never silent)"

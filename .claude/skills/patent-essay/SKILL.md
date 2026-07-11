@@ -24,6 +24,9 @@ Content travels on disk. Graph + profiles: `contracts/pipeline.yaml`. Roles:
 | `--max-iter` | profile default | Max **revision** rounds (confirmation does not count) |
 | `--mode` | from profile | `essay` \| `wire` |
 | `--self-audit` | from profile | `on` \| `off` |
+| `--verifier-vendor` | `claude` | `claude` \| `gpt` — self_audit grounding-verifier lane; `gpt` = GPT-5.6-sol (reasoning high) via codex CLI lane; auto-fallback to `claude` with the substitution recorded in the run report |
+| `--compose-vendor` | `grok` | `inherit` \| `grok` — compose lane; `grok` = Grok 4.5 via grok CLI lane; voice pre-gate + round-cap 3 + auto-fallback to `inherit` with substitution recorded (default `grok` per Owner §10-1; no CLI ⇒ degrades to `inherit`) |
+| `--promo-vendor` | `inherit` | `inherit` \| `grok` — promo lane; `grok` = Grok 4.5 via CLI lane; Claude safe-claims check + auto-fallback to `inherit` with substitution recorded |
 | `--comprehension-check` | from profile | `on` \| `off` — interactive Owner comprehension check at understand_confirm |
 | `--yes` | off | Skip owner checkpoints (unattended) |
 
@@ -79,6 +82,10 @@ Checkpoint instances (hardness × profile):
 
 - **Main / judgment workers** (`patent-reader`, design, compose, review, adversarial, polish, promo): `model: inherit` (session strongest).
 - **Mechanical** (`figures-prep`, `grounding-verifier`): cheaper pin OK (`sonnet` class).
+- **Vendor lanes:** opt-in flags defaulting to today's models. The judge/verifier is NEVER
+  the vendor that generated the artifact (non-negotiable — `docs/architecture/multi-vendor-lanes.md` §2).
+  CLI missing / quota / web ⇒ graceful degradation to the default model; substitution recorded;
+  run must succeed identically.
 
 ## Pipeline by stage
 
@@ -283,6 +290,41 @@ Reads design handoff (+ understand spans). **Never** raw patent. Writes `handoff
 Inside the pipeline the forked worker runs **strict-execution** only; gap-stops and
 mode-shift proposals go through the **OWNER_QUESTION relay**, not in-session elicitation.
 
+**Grok compose lane (`--compose-vendor grok`)** — orchestrator procedure:
+
+1. Pre-flight: `python3 .claude/skills/_shared/scripts/cli_lane.py --vendor grok --check`;
+   exit 3 ⇒ inherit compose now, record substitution.
+2. Build the prompt from `references/compose-lane-grok.md`: inline thesis-spine,
+   invention-summary, figure-selection, fact-check-log, voice rules
+   (deliverable-voice-rules + anti-ai-writing), 2–3 voice-canon exemplars, draft schema.
+   NEVER inline or reference `input/patent.md` (invariant 3). Write to
+   `handoff/02-compose/compose-lane-prompt.round-N.md`.
+3. `python3 .claude/skills/_shared/scripts/cli_lane.py --vendor grok --prompt-file
+   handoff/02-compose/compose-lane-prompt.round-N.md --output
+   handoff/02-compose/essay-draft.md --validate compose --timeout 900 --cwd
+   handoff/02-compose`. The lane runs tool-less (`--tools ''`) — grok sees only the
+   inlined prompt.
+4. exit 3 ⇒ inherit compose as today; record substitution.
+5. exit 0 ⇒ voice-drift pre-gate (guardrail 2): fork a FRESH cheap Claude checker
+   (sonnet-class; not the reviewer) with the draft + the same exemplars + anti-AI tells;
+   verdict `VOICE-PASS`/`VOICE-FAIL` + tell list → `handoff/02-compose/voice-pregate-round-N.md`.
+   FAIL ⇒ one grok re-drive with the tells appended; second FAIL ⇒ inherit re-compose;
+   record.
+6. Derivative artifacts (adoption fork): fork essay-composer (inherit) instructed to ADOPT
+   the draft prose as-is (frontmatter completion only, no rewriting) and emit
+   figures-rationale.md, thesis-trace.md (≤3 signature lines), publication.md via the strip
+   pipeline. If adoption would require prose changes it raises OWNER_QUESTION — never
+   silently rewrites.
+7. Revision rounds: re-drive with `<REVISION_FINDINGS>` (edit-log findings + prior draft)
+   via `cli_lane.py --vendor grok --prompt-file handoff/02-compose/compose-lane-prompt.round-N.md
+   --output handoff/02-compose/grok-revision-round-N.md --validate compose-revision --timeout
+   900 --cwd handoff/02-compose`. exit 0 ⇒ split on the FIRST line that is exactly `---`:
+   everything before → `revision-response.round-N.md`, everything from that line onward
+   (inclusive) replaces `essay-draft.md`. exit 3 ⇒ inherit re-compose; record substitution.
+   Voice pre-gate again before the next review round. After **3** grok revision rounds
+   without acceptance ⇒ remaining rounds compose with **inherit** (guardrail 3;
+   Owner-confirmed N=3); record the lane switch in the run report.
+
 ### 4. Review loop — `editorial-review` / editorial-reviewer
 
 Per round N:
@@ -297,6 +339,10 @@ Per round N:
 4. After each round, append one row to `handoff/03-edit/score-history.md`
    (template: `handoff-template/03-edit/score-history.md`):
    `round | round_type | assessment | gates | clean | notes`.
+
+On grok-composed drafts the voice pre-gate runs before each full round; the round-cap lane
+switch (compose block step 7) operates INSIDE `max_revision` — the profile revision cap
+itself is unchanged.
 
 **Acceptance:**
 
@@ -329,6 +375,26 @@ Reaching `max_revision` without acceptance is an owner checkpoint:
 checklist-FREE (the "cold reader"; same agent type, casual-scroller prompt only — contracted
 in `contracts/stages/self_audit.yaml`); multi-vote; fix via revision mode; normalize deltas
 to ledger. Cap 3 dry-loop iterations.
+
+**GPT verifier lane (`--verifier-vendor gpt`)** — replaces the claude grounding-verifier
+(not an extra vote). Orchestrator procedure:
+
+1. Pre-flight: `python3 .claude/skills/_shared/scripts/cli_lane.py --vendor gpt --check`;
+   exit 3 ⇒ fall back to the claude grounding-verifier now, record substitution.
+2. Run the mechanical layer yourself (same two commands as grounding-verifier mode-A
+   step 1: `gate_quotes.py` + `gate_anchors.py`) and keep their output.
+3. Build the prompt: copy `.claude/skills/patent-essay/references/verifier-lane-gpt.md`,
+   fill `<DRAFT_PATH>` / `<ROUND_N>` / `<GATE_OUTPUTS>`, write to
+   `handoff/03-edit/verifier-lane-prompt.round-N.md`.
+4. `python3 .claude/skills/_shared/scripts/cli_lane.py --vendor gpt --prompt-file
+   handoff/03-edit/verifier-lane-prompt.round-N.md --output
+   handoff/03-edit/grounding-check-round-N.md --validate grounding --timeout 900
+   --cwd <repo root>`.
+5. exit 0 ⇒ append the step-2 gate outputs to the grounding-check file (same
+   "verdict table + gate outputs" shape as the claude verifier), proceed with
+   multi-vote exactly as today.
+6. exit 3 ⇒ fork the claude grounding-verifier exactly as today; record the
+   substitution JSON in the run report and final report.
 
 ### 6. Polish (publish) — `prose-polish`
 
@@ -388,6 +454,23 @@ Profile → flags (`contracts/stages/verify.yaml`):
 
 Post-archive; never edits essay; safe-claims grounding.
 
+**Grok promo lane (`--promo-vendor grok`)** — orchestrator procedure:
+
+1. Pre-flight `cli_lane.py --vendor grok --check`; exit 3 ⇒ inherit promo now, record
+   substitution.
+2. Build the prompt from `references/promo-lane-grok.md`: inline `essays/<id>/essay-final.md`,
+   `essays/<id>/publication-package/publication.md`, `essays/<id>/owner-briefing.md`,
+   README `reader_sentence`, `thesis-trace.md` signature lines. NEVER inline the patent or
+   fact-check-log. Write to `essays/<id>/promo/promo-lane-prompt.md`.
+3. `cli_lane.py --vendor grok --prompt-file <that file> --output
+   essays/<id>/promo/promo-pack.md --validate promo --timeout 900 --cwd
+   essays/<id>/promo` (tool-less; grok sees only the inlined prompt).
+4. exit 3 ⇒ fork promo-composer (inherit) as today; record substitution.
+5. exit 0 ⇒ safe-claims check: fresh cheap Claude fork (sonnet-class) verifies every
+   factual phrase traces to the three inlined sources; verdict SAFE-PASS/SAFE-FAIL +
+   violations ⇒ `essays/<id>/promo/safeclaims-check.md`. FAIL ⇒ one grok re-drive with the
+   violations appended; second FAIL ⇒ inherit re-compose; record.
+
 ### 10. Retro — `pipeline-retro`
 
 Propose-only; surface top proposal one line.
@@ -426,6 +509,7 @@ substitutes for a checkpoint.
 - Final essay (if any)  
 - Promo (if any)  
 - Score history + check_run line  
+- Vendor lanes used + any substitutions (vendor, reason)  
 - CAP HIT / open findings if any  
 
 ## Optional /goal
