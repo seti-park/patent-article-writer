@@ -264,3 +264,31 @@ cheap lane itself.
   vendor").
 - **The grok lane is demoted to an opt-in cost mode** (`--promo-vendor grok`), not removed
   — available when cost matters more than the Owner's voice-quality bar for a given run.
+
+### §14 addendum — judge nondeterminism (2026-07-12, pilot learning)
+
+On near-identical pack text the GPT judge flipped PASS → FAIL between runs, and the FAIL
+round misapplied its own rubric (flagged the documents' required can/may modality as
+insurance violations; flagged protected signature lines and claim-language fidelity as
+AI-tells). Mitigations, both applied: (1) rubric precision — the template now defines
+what the insurance budget does NOT cover and lists tell-scan exclusions; (2) the
+orchestrator (`inherit`) arbitrates every judge verdict rather than treating it as
+mechanical truth — over-strict rulings are overruled with the ruling recorded, genuine
+catches survive arbitration. Verdict stability across runs is a watch item.
+
+## 15. P8 (Owner-directed, 2026-07-12): KR promo voice — canon + correction-pair loop
+
+The pilot's five Owner corrections converged on a diagnosis: the missing asset was not
+rules but EXEMPLARS — the English essay had a voice canon; the KR promo had none. P8:
+
+1. **KR promo canon**: the Owner-approved pilot KR post is canon entry #1
+   (`voice-canon-lookup/voice-canon/promo-kr-full-post-hemmed-tabless.md`); each future
+   Owner-approved KR post is admitted the same way.
+2. **Correction-pair ledger** (`promo-composer/references/kr-correction-pairs.md`): the
+   Owner's actual before→after corrections, with principle tags (수사는 단위명사형 /
+   평서형 화제 문장 / 문서는 장소 / 전환은 실질·조사 / 발화 가능성 테스트). Concrete
+   pairs steer a writer better than abstract rules; the composer fork inlines both
+   canon and ledger.
+3. **Harvest rule** at the new `promo_owner_review` soft checkpoint: every correction
+   is appended to the ledger and the approved post admitted to the canon — the Owner's
+   review loop compounds into pipeline capability run over run.

@@ -138,6 +138,23 @@ endings), no 직역투 (no translation-ese), no 줄표 (no em-dashes). Prefer on
 image over a stack of metaphors; vary paragraph landings; write as if composed natively
 in the target language.
 
+**KR register-calque ban (Owner calibration, 2026-07-12):** the subtler failure class is
+English-ESSAY rhetoric transplanted into Korean, not word-level translation-ese —
+(a) 문서 의인화: an inanimate document as the agent of a pointed action ("명세서가 ~를
+짚어 적습니다"). Korean 설명체 treats the document as a location: "명세서에는 ~가 적혀
+있습니다." (b) 영어 수사 이식: abstract compound nouns ("성능 논리") and
+metaphor-transition sentences ("같은 그림에서 나옵니다"). Transitions go through the
+substance itself ("저항이 줄어든다는 주장도 같은 구조에서 나옵니다"), never through a
+metaphor. Test each KR sentence: would you say it aloud to a student? If not, recompose.
+
+**KR voice anchors (P8, 2026-07-12):** before composing, read (or receive inlined from
+the orchestrator) BOTH: (1) the `promo-kr-*` entries in
+`.claude/skills/voice-canon-lookup/voice-canon/` — Owner-approved KR promo posts; match
+their cadence the way the essay composer matches the essay canon; and (2)
+`references/kr-correction-pairs.md` — the Owner's actual before→after corrections.
+The pairs outrank any abstract rule: if a sentence you wrote resembles a ✗ side,
+recompose it toward the ✓ side's shape.
+
 6. **Compose the KR long post** (400-800자) per `references/promo-format.md` KR rules
    and the understanding-first shape above. Register per
    `_shared/references/working-dialogue-voice.md`: 건조한 평서문, 과장 배제, 발행자

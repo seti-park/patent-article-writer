@@ -168,3 +168,8 @@ entries:
     pattern_category: closing-binary-test
     source_essay: essay-spacex-tesla-convergence-en
     file: closing-binary-test-spacex-tesla-ecosystem-realized.md
+
+  - entry_id: promo-kr-full-post-hemmed-tabless
+    pattern_category: promo-kr-full-post
+    source_essay: tesla-us20260196678-hemmed-tabless
+    file: promo-kr-full-post-hemmed-tabless.md

@@ -491,6 +491,8 @@ Post-archive; never edits essay; safe-claims grounding.
 1. Fork `promo-composer` (`inherit`) per the redesigned skill: sources are the five licensed
    archive files (`essay-final.md`, `publication.md`, `owner-briefing.md`,
    `owner-study-pack.md`, `comprehension-notes.md`; tolerate ABSENT on older archives).
+   Inline the KR voice anchors into the fork: the `promo-kr-*` canon entries
+   (voice-canon-lookup) + `promo-composer/references/kr-correction-pairs.md`.
 2. Judge: build the prompt from `references/safeclaims-lane-gpt.md` (inline the pack, list
    the five source paths) → `cli_lane.py --vendor gpt --prompt-file <that> --output
    essays/<id>/promo/safeclaims-check.md --validate safeclaims --timeout 600 --cwd <repo
@@ -504,6 +506,14 @@ Post-archive; never edits essay; safe-claims grounding.
    constrained document envelope, `references/promo-lane-grok.md`); same GPT judge applies
    either way (steps 2–4 above are vendor-agnostic on the JUDGE side). Full grok-lane
    mechanics: `contracts/stages/promo.yaml` `promo_vendor.grok` + `references/promo-lane-grok.md`.
+6. **Owner review checkpoint (`promo_owner_review`, soft) + harvest (P8):** RENDER the KR
+   post + thread inline and ASK for corrections (STOP waived — posting copy passes the
+   Owner before posting anyway). HARVEST RULE: every sentence-level correction the Owner
+   gives is appended as a before→after pair (with its principle tag) to
+   `promo-composer/references/kr-correction-pairs.md`, and the final Owner-approved KR
+   post is admitted to the voice canon as a `promo-kr-full-post-<id>` entry (+ index
+   row). The corrections ARE the pipeline's KR-voice training signal — never let one
+   evaporate in the conversation.
 
 ### 10. Retro — `pipeline-retro`
 

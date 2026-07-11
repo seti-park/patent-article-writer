@@ -55,6 +55,13 @@ Status language **NEVER upgrades**: an application-stage essay's "출원" / "fil
 AND it must be positioned as the **FINAL sentence** of that deliverable. Position matters,
 not just count — a hedge mid-body is a violation even when the count is one.
 
+**What the insurance budget does NOT cover (calibration, 2026-07-12 arbitration):**
+an *insurance clause* is a STATUS statement (출원/심사/등록 여부, "pending application",
+"not yet granted"). The documents' own modal verbs — "can improve", "may not necessarily
+require", "~할 수 있다" — are **required verbatim-consistency**, not hedging; flagging
+them as insurance violations is a rule misapplication. Conversely, REMOVING the modality
+(rendering a "may" claim as an unconditional fact) IS a violation of Duty 1.
+
 **Examination-process narration:** ZERO anywhere in the body (office actions, RCE, fees,
 liens, examiner dialogue stay out of promo copy entirely).
 
@@ -68,8 +75,25 @@ Scan especially the KR post (also flag clear EN-thread tells) for:
 - **직역투** — translation-ese phrasing that reads translated rather than natively composed
 - **줄표** — em-dashes (`—`)
 - **기계적 리듬** — mechanical, over-regular sentence rhythm
+- **문서 의인화** — inanimate document as agent of a pointed action (e.g. "명세서가 ~를
+  짚어 적습니다"); Korean 설명체 treats documents as locations ("명세서에는 ~가 적혀
+  있습니다"), not actors (Owner calibration, 2026-07-12)
+- **영어 수사 이식** — English-essay rhetorical structures transplanted into Korean:
+  abstract compound nouns ("성능 논리") and metaphor-transition sentences ("같은
+  그림에서 나옵니다"); transitions must go through substance, not metaphor
 
 Quote each tell found, with its location (deliverable + approximate line / paragraph).
+
+**Tell-scan exclusions (calibration, 2026-07-12 arbitration):**
+- Declared **signature lines** (thesis-trace protected surface, echoed verbatim in the
+  pack) are exempt — their deliberate cadence is the Owner's voice, not a tell.
+- **Verbatim-consistent renderings of claim language** (e.g. "전기적으로 통하고
+  기계적으로 붙습니다" for "electrically connected / mechanically attached") are
+  fidelity, not 직역투. 직역투 means *avoidable* translation-ese in free prose.
+- The patent's/essay's **own terms of art and images** (옷단/hem, the equipment-list
+  framing) do not count toward 은유 사슬 — a chain requires stacked *invented* metaphors.
+- Judge at the pack level, not sentence-by-sentence maximal strictness: flag a tell only
+  when the pattern repeats or clearly breaks the register.
 
 ## Required output format
 
