@@ -6,7 +6,7 @@ lever: reference-edit
 goal: "1"
 root_cause_stage: compose
 root_cause_artifact: essay-en-composer/references/execution-boundary.md (external-fact scope discipline)
-recurrence_count: 3
+recurrence_count: 6
 confidence: medium
 triggering_findings:
   - essay_id: 2026-06-10-us12636684b1-deleted-dome, iter: 1, pattern_tag: external-fact-universalization
@@ -73,3 +73,28 @@ Documentation-only change. `python .claude/skills/_shared/scripts/test_gates.py`
 criterion: zero pass-3 external-fact scope findings in the next run; a third *distinct*
 instance after applying would flip this class toward `ineffective-patch` accounting
 (CASCADE_CAP watch).
+
+## Amendment (2026-07-11, tesla-us20260196678-hemmed-tabless)
+
+Recurrence 3 → 6; all three new records are **HIGH** and two reached the post-accept
+audit — the class is escalating in severity while the proposal sits unapplied
+(oldest pending recommended-apply, 30 days):
+
+- **r1-F5 (inner-loop HIGH)**: lead pinned the flag-cut process to the 4680 by name;
+  the log supports only generic industry practice (IOP 4680 teardown never fetched).
+  Provenance: the sentence came **verbatim from the Phase-1 tension title-lead pair** —
+  the design stage authored the overreach, so the discipline must bind
+  thesis-architect's title-lead-candidates too, not just compose.
+- **SA-1 (self-post-accept HIGH, A-1+B-2 agree)**: "A slitting device, a notching
+  device, and a flag interleaving device have no job on a tab-only line" — categorical
+  unlogged equipment claim propping the central machine-mapping; refutable on sight.
+- **SA-3 (self-post-accept HIGH, A-2+B-1 agree)**: the Tesla-specific cutting premise
+  survived r1-F5's narrowing in generalized clothing (lead subject + §1 header
+  possessive "Its" + "Tesla's celebrated cut-edge process") — the essay asserted as
+  fact what its own §4 labeled as the essay's mapping.
+
+Scope addition on apply: extend the same literal-scope rule to
+`thesis-architect/references/` (title-lead candidates + spine hook payloads carry
+external facts too — r1-F5's provenance) and note the "generalized clothing" recurrence
+mode (a narrowed sentence re-implying the retracted specific via possessives/derived
+headers — SA-3).

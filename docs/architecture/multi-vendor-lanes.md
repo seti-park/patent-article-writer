@@ -55,7 +55,7 @@ graceful fallback.** It reuses the exact machinery `fable-advisor` already provi
 | `self_audit` grounding-verifier | **verify claim ↔ source** | **GPT-5.6-sol high (CLI lane)** | spec-determined cross-check; was pinned `sonnet` |
 | `self_audit` adversarial-reader | refute thesis/grounding | `inherit` + optional GPT vote | independent failure distribution |
 | `polish` | plain-language surface | `inherit` (Claude) | byte-protected; voice-sensitive |
-| **`promo`** | **draft** | **Grok 4.5 (CLI lane)** | same pattern; safe-claims gate is load-bearing |
+| **`promo`** | **draft** | **`inherit` (Claude)** default; **Grok** opt-in cost mode | understanding-first (P7); GPT judge = safe-claims + AI-tell |
 
 Rationale for the two cross-vendor placements:
 - **compose/promo → Grok**: the artifacts are re-generatable and fully gated (voice-canon
@@ -244,3 +244,51 @@ cheap lane itself.
   permanent architecture; if the acceptance layer rarely needs to veto or add findings
   across multiple production runs, a future phase may reconsider whether the acceptance
   layer needs to stay this involved.
+
+## 14. P7 (Owner-decided 2026-07-12): understanding-first promo, generation returns to inherit
+
+- **The Owner's verdict** on the first production promo pack: defensive and mechanical.
+- **Three root causes**: a constraint-dominated prompt (too much "don't" versus "explain"),
+  no KR voice anchor, no quality judge for tone (safe-claims fact-checking existed, tone
+  judgment did not).
+- **The redesign**: `owner-study-pack.md`'s problem/solution/effects triad and
+  `comprehension-notes.md`'s landed frames become licensed promo sources (the promo is
+  reframed as the public translation of the Understand-phase work, not a compression of the
+  finished essay); the status/stage hedge is isolated to exactly one final sentence per
+  deliverable; the GPT judge gains the AI-tell duty (3항 병렬 / 은유 사슬 / 균질 결어 /
+  직역투 / 줄표 / 기계적 리듬) alongside its existing safe-claims duty.
+- **§2 rebalance**: Claude generates (default, restored) ⇒ GPT judges (cross-vendor,
+  unchanged principle, but the DIRECTION flips from P3: there, grok generated and Claude
+  judged; here, Claude generates and GPT judges — both satisfy §2 identically, since the
+  rule has always been "judge ≠ generator's vendor," not "judge must always be a specific
+  vendor").
+- **The grok lane is demoted to an opt-in cost mode** (`--promo-vendor grok`), not removed
+  — available when cost matters more than the Owner's voice-quality bar for a given run.
+
+### §14 addendum — judge nondeterminism (2026-07-12, pilot learning)
+
+On near-identical pack text the GPT judge flipped PASS → FAIL between runs, and the FAIL
+round misapplied its own rubric (flagged the documents' required can/may modality as
+insurance violations; flagged protected signature lines and claim-language fidelity as
+AI-tells). Mitigations, both applied: (1) rubric precision — the template now defines
+what the insurance budget does NOT cover and lists tell-scan exclusions; (2) the
+orchestrator (`inherit`) arbitrates every judge verdict rather than treating it as
+mechanical truth — over-strict rulings are overruled with the ruling recorded, genuine
+catches survive arbitration. Verdict stability across runs is a watch item.
+
+## 15. P8 (Owner-directed, 2026-07-12): KR promo voice — canon + correction-pair loop
+
+The pilot's five Owner corrections converged on a diagnosis: the missing asset was not
+rules but EXEMPLARS — the English essay had a voice canon; the KR promo had none. P8:
+
+1. **KR promo canon**: the Owner-approved pilot KR post is canon entry #1
+   (`voice-canon-lookup/voice-canon/promo-kr-full-post-hemmed-tabless.md`); each future
+   Owner-approved KR post is admitted the same way.
+2. **Correction-pair ledger** (`promo-composer/references/kr-correction-pairs.md`): the
+   Owner's actual before→after corrections, with principle tags (수사는 단위명사형 /
+   평서형 화제 문장 / 문서는 장소 / 전환은 실질·조사 / 발화 가능성 테스트). Concrete
+   pairs steer a writer better than abstract rules; the composer fork inlines both
+   canon and ledger.
+3. **Harvest rule** at the new `promo_owner_review` soft checkpoint: every correction
+   is appended to the ledger and the approved post admitted to the canon — the Owner's
+   review loop compounds into pipeline capability run over run.
