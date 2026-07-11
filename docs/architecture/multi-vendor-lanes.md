@@ -184,3 +184,26 @@ discipline in practice:
 - The revision-round output shape (`<!-- DISPOSITIONS -->` before the draft) needs its
   own validator (`compose-revision`) — the round-0 validator would have silently
   substituted every revision round to inherit.
+- Real-size prompts (~220KB inlined) exceed the `--max-turns 16` runaway guard —
+  grok ingests large prompt files in chunked turns. First real run needed 48.
+  Raise the helper default or scale it with prompt size.
+
+## 12. P4 (proposed, Owner-endorsed 2026-07-11): grok drift-verifier lane
+
+Owner observation from the first real run: for mechanical verdict work, grok 4.5 is
+faster than (and at least as good as) the sonnet pin. Where that swap is legitimate:
+
+- **`polish` drift check → grok lane** (`--drift-vendor grok|claude`, default `claude`):
+  the drift check judges CLAUDE-polished sentence pairs, so a grok judge *satisfies*
+  §2 (cross-vendor). Mechanical vocabulary (MEANING-PRESERVED / MEANING-CHANGED /
+  PROTECTED-TOUCHED), sentence pairs inline, constrained document envelope — the
+  exact pattern P1–P3 proved.
+- **NOT the voice pre-gate** — it judges grok-composed drafts; grok would be grading
+  its own generator (§2 violation). Stays Claude regardless of tier.
+- **NOT figures-prep** — tool-heavy + vision; opposite of the tool-less lane pattern
+  that made grok reliable.
+
+Owner's standing condition: cheap lanes may hold the pen anywhere mechanical, as long
+as **the `inherit` (Fable) tier does the verification properly** — the orchestrator
+rules on every revert, and ambiguity escalates to `inherit`, never resolved by the
+cheap lane itself.
