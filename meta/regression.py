@@ -83,6 +83,14 @@ def _run_cli_lane_tests():
     return rc == 0
 
 
+def _run_promo_voice_tests():
+    """Run the promo-voice-score unittest suite as a subprocess. Return True on success."""
+    test_path = os.path.join(SCRIPTS, "test_promo_voice_score.py")
+    print("== promo-voice-score test suite ==")
+    rc = subprocess.call([sys.executable, test_path])
+    return rc == 0
+
+
 def _load(path):
     with open(path, "r", encoding="utf-8") as fh:
         return fh.read()
@@ -206,6 +214,7 @@ def main(argv=None):
     if not args.fixtures_only:
         all_ok = _run_gate_tests() and all_ok
         all_ok = _run_cli_lane_tests() and all_ok
+        all_ok = _run_promo_voice_tests() and all_ok
         all_ok = _run_meta_validators() and all_ok
 
     print("== fixtures ==")

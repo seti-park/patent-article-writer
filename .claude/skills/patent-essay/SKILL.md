@@ -510,10 +510,14 @@ Post-archive; never edits essay; safe-claims grounding.
    post + thread inline and ASK for corrections (STOP waived — posting copy passes the
    Owner before posting anyway). HARVEST RULE: every sentence-level correction the Owner
    gives is appended as a before→after pair (with its principle tag) to
-   `promo-composer/references/kr-correction-pairs.md`, and the final Owner-approved KR
-   post is admitted to the voice canon as a `promo-kr-full-post-<id>` entry (+ index
-   row). The corrections ARE the pipeline's KR-voice training signal — never let one
-   evaporate in the conversation.
+   `promo-composer/references/kr-correction-pairs.md` (EN corrections included, tagged
+   EN), and the final Owner-approved deliverables are admitted to the voice canon —
+   KR post as `promo-kr-full-post-<id>`, EN thread as `promo-en-thread-<id>` (+ index
+   rows). An Owner HAND-WRITTEN reference always outranks an approved-generated entry.
+   The corrections ARE the pipeline's voice training signal — never let one evaporate
+   in the conversation. Voice regression instrument: `references/promo-voice-rubric.md`
+   (KR 18 + EN 14 items) with `_shared/scripts/promo_voice_score.py` for the mechanical
+   halves; target diff ≤5% on two consecutive judge runs + safeclaims SAFE-PASS.
 
 ### 10. Retro — `pipeline-retro`
 
