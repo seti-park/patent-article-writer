@@ -173,3 +173,8 @@ entries:
     pattern_category: promo-kr-full-post
     source_essay: tesla-us20260196678-hemmed-tabless
     file: promo-kr-full-post-hemmed-tabless.md
+
+  - entry_id: promo-kr-full-post-hemmed-tabless-owner
+    pattern_category: promo-kr-full-post
+    source_essay: tesla-us20260196678-hemmed-tabless
+    file: promo-kr-full-post-hemmed-tabless-owner.md

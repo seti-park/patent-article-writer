@@ -1,6 +1,6 @@
 ---
 name: promo-composer
-description: "Phase 4 Promote: composes the post-archive promo pack for a finished essay. Promo는 이 작업의 정수 — Understand 삼각형(문제·해법·효과)의 대중 번역: the public translation of the Understand triad for a reader between high-school and undergraduate (고등학생과 학부생 사이). Consumes the essays/<id>/ archive (essay-final.md + publication-package/publication.md + owner-briefing.md + owner-study-pack.md triad + comprehension-notes.md landed frames + thesis-trace.md signature lines + README.md reader_sentence) and emits a single essays/<id>/promo/promo-pack.md: (a) Korean long-form promo post 400-800자, 존댓말 설명체 (직역 금지; 서사 훅 + 핵심 메커니즘 1개 + 왜 좋아지는가 + 티저 + 마지막 한 문장 지위 헤지), (b) English thread 2-4 message-unit posts (X Premium, no char cap), both behind one Verification Status header. Bold-selection rule: the promo leads with the boldest claim the sources support (selection from the protected surface and landed frames, never fabrication); insurance <=1 status clause per deliverable, isolated as the FINAL sentence of that deliverable (no defensive mid-body narration; examination-process narration 0). Hard grounding rule (safe-claims defense): every factual phrase traces verbatim-consistent to essay-final/publication.md/owner-briefing.md/owner-study-pack.md (comprehension-notes = hook/framing seed, not a freestanding fact quarry); a fact not in those sources is dropped, never fetched. Posting copy is composed by the session's strongest model (model: inherit, never pinned down); grok lane is an opt-in cost mode (--promo-vendor grok). Use when an archived essay needs promo, an X post, share copy, a tweet thread, 프로모, or 홍보 문구. NOT for: long-form essay composition (essay-en-composer), editorial review (editorial-review), thesis design (thesis-architect), Korean full-article adaptation (still dropped; the KR deliverable is a promo post, not an article), or editing essay-final.md (the essay is FINAL)."
+description: "Phase 4 Promote: composes the post-archive promo pack for a finished essay. Promo는 이 작업의 정수 — Understand 삼각형(문제·해법·효과)의 대중 번역: the public translation of the Understand triad for a reader between high-school and undergraduate (고등학생과 학부생 사이). Consumes the essays/<id>/ archive (essay-final.md + publication-package/publication.md + owner-briefing.md + owner-study-pack.md triad + comprehension-notes.md landed frames + thesis-trace.md signature lines + README.md reader_sentence) and emits a single essays/<id>/promo/promo-pack.md: (a) Korean long-form promo post 400-800자, 존댓말 설명체 (직역 금지; 서사 훅 + 핵심 메커니즘 1개 + 왜 좋아지는가 + 티저 + 마지막 한 문장 지위 헤지), (b) English thread 2-4 message-unit posts (X Premium, no char cap), both behind one Verification Status header. Bold-selection rule: the promo leads with the boldest claim the sources support (selection from the protected surface and landed frames, never fabrication); insurance <=1 status clause per deliverable, at/near the END as a plain informational sentence — never a disclaimer formula, never a meta restatement of the documents' can/may modality (the verbs already carry it); no defensive mid-body narration; examination-process narration 0. Hard grounding rule (safe-claims defense): every factual phrase traces verbatim-consistent to essay-final/publication.md/owner-briefing.md/owner-study-pack.md (comprehension-notes = hook/framing seed, not a freestanding fact quarry); a fact not in those sources is dropped, never fetched. Posting copy is composed by the session's strongest model (model: inherit, never pinned down); grok lane is an opt-in cost mode (--promo-vendor grok). Use when an archived essay needs promo, an X post, share copy, a tweet thread, 프로모, or 홍보 문구. NOT for: long-form essay composition (essay-en-composer), editorial review (editorial-review), thesis design (thesis-architect), Korean full-article adaptation (still dropped; the KR deliverable is a promo post, not an article), or editing essay-final.md (the essay is FINAL)."
 context: fork
 agent: promo-composer
 ---
@@ -72,9 +72,10 @@ X post, share copy, thread, 프로모, 홍보 문구.
    (an application-era essay says "asks for" and "filed"; the promo never upgrades that to
    "patented" or "owns").
 3. **No new factual claims. No memory-written facts. No fetching.** No web search, no
-   re-reading the patent, no mining fact-check-log or other handoff internals for facts the
-   essay chose not to print. If a fact you want is not in the sources, you drop it. You do
-   not fetch it.
+   re-reading the patent. ONE narrow exception (P9 lineage, Owner 2026-07-12): a run
+   fact-check-log entry of tier 1-3 directly connected to the essay topic may be used when
+   the Verification Status header names the entry id (owner-authorized). Anything else not
+   in the sources: drop, never fetch.
 4. **The essay is FINAL.** Promo never edits any file under `essays/<id>/` except writing
    `promo/promo-pack.md`. A suspected factual defect noticed while packing goes on the
    header's `suspected_essay_defects` line for the human-post-accept channel
@@ -82,7 +83,7 @@ X post, share copy, thread, 프로모, 홍보 문구.
    reopen the loop.
 5. **Owner context steers, never grounds.** Optional owner input (시의성, channel, timing)
    may adjust emphasis and posting register; a fact the owner supplies that is not in the
-   sources is surfaced back as a question, not printed.
+   sources and not a P9 lineage entry is surfaced back as a question, not printed.
 
 ## Process
 
@@ -116,21 +117,27 @@ X post, share copy, thread, 프로모, 홍보 문구.
 
 ### Understanding-first compositional shape (KR post AND EN thread)
 
-Both deliverables follow this five-beat shape. It is the public translation of the
-Understand triad, not a defensive summary of the essay:
+Both deliverables follow this five-beat shape (calibrated 2026-07-12 against the
+Owner's own hand-written reference — canon entry `promo-kr-full-post-hemmed-tabless-owner`,
+the PRIMARY exemplar). It is the public translation of the Understand triad:
 
-1. **Hook** (서사 훅) — seed from a `comprehension-notes.md` landed frame when one
-   exists, else from the protected surface (reader_sentence / signature lines / title /
-   lead ¶1 / closing call).
-2. **발명의 핵심 메커니즘 하나를 쉬운 그림/비유로** — the triad's Solution component,
-   pulled from `owner-study-pack.md` (or essay/publication when the pack is ABSENT).
-   One core mechanism; one easy image or analogy. Not a claim chart.
-3. **왜 좋아지는가** — the triad's Benefits component. Keep the document's own
-   can/may-qualified claims (never strengthen into certainty), but **explain** why the
-   improvement follows — 왜 이게 개선인지 설명하라, 매 문장마다 유보하지 말라.
-4. **티저 (에세이로)** — point at the essay for the full read (`[ARTICLE-LINK]`).
-5. **마지막 한 문장 지위 헤지** — exactly ONE status/stage hedge sentence, as the
-   LAST thing in the deliverable. No examination-process narration anywhere in the body.
+1. **숙제 도입 (문제, 기술적으로 특정)** — open with the problem as a plain topic
+   paragraph, technically specified (what physically has to happen, e.g. 적층체 내부의
+   전류를 셀 외부 단자까지). Trust technical nouns; gloss with 한글(영문) 병기.
+2. **기존 방법 열거** — enumerate the known approaches explicitly ("지금까지 알려진
+   방법은 두 가지였습니다"), naming actors and lineage (Tesla, Battery Day).
+3. **세 번째 방법 서사** — the invention as a sequential mechanism story (접다 → 감다 →
+   층층이 맞닿다 → 컬렉터 부착), with one concrete life analogy (옷단, 롤 케이크 류).
+   Patent-practice verbs are natural here: "해당 특허는 ~을 제안/제시하고 있습니다".
+4. **효과 열거** — announce the count ("얻을 수 있는 효과는 크게 세 가지입니다") and
+   walk them in order (먼저 / 또한 / 세 번째로), covering the triad's Benefits
+   COMPLETELY (공정·장비, 성능, 구조/안전 — whatever the study pack carries). Keep the
+   document's can/may modality in the verbs; connect lineage where the sources license
+   it (e.g. 과거 tabless 주장과의 관계).
+5. **아티클 포인터로 종결** — point at the essay (`[ARTICLE-LINK]`). A separate status
+   sentence is OPTIONAL (0–1): the modality verbs already carry the insurance; if
+   included, it is one plain informational sentence, never a disclaimer formula. No
+   examination-process narration anywhere.
 
 **Anti-AI-tell duty (explicit; also GPT-judged):** no 3항 병렬 남용 (no parallel-triad
 overuse), no 은유 사슬 (no metaphor chains), no 균질 결어 (no homogeneous paragraph
@@ -159,12 +166,12 @@ recompose it toward the ✓ side's shape.
    and the understanding-first shape above. Register per
    `_shared/references/working-dialogue-voice.md`: 건조한 평서문, 과장 배제, 발행자
    1인칭 허용 — 대담함은 문장 선택에서. 기술 어휘는 briefing / study-pack 재사용,
-   stance/hedge 문장은 재사용 금지 (hedge lives only in beat 5).
+   stance/hedge 문장은 재사용 금지 (status sentence optional per beat 5; modality lives in the verbs).
 7. **Compose the EN thread** (2-4 message-unit posts; X Premium, no char cap) per
    `references/promo-format.md` thread rules and the same five-beat shape: post 1
    narrative hook (first sentence = collapsed-preview; no insurance), middle post(s)
-   mechanism + why-better (one message each), final post call + `[ARTICLE-LINK]` + the
-   single closing status hedge as its last sentence. Chars measured and reported, not
+   mechanism + why-better (one message each), final post call + `[ARTICLE-LINK]`; an optional single plain status
+   sentence may close it (never a disclaimer formula). Chars measured and reported, not
    bound. Closing posture of both deliverables agrees with the essay's `closing_posture`
    per `references/closing-posture.md` (firm essay → no open-question close).
 8. **Attachment lines** per `references/figure-attachment-policy.md`:
