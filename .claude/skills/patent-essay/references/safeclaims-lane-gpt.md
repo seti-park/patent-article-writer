@@ -51,9 +51,14 @@ names, venue words, and verbs of certainty stay consistent with the sources' own
 Status language **NEVER upgrades**: an application-stage essay's "출원" / "filed" /
 "asks for" never becomes "특허" / "granted" / "patented" in the promo.
 
-**Insurance budget (P7 structural):** at most ONE status/hedge clause per deliverable,
-AND it must be positioned as the **FINAL sentence** of that deliverable. Position matters,
-not just count — a hedge mid-body is a violation even when the count is one.
+**Insurance budget (P7 structural; P8 texture refinement, Owner 2026-07-12):** at most
+ONE status clause per deliverable, positioned at/near the END (final or folded into the
+teaser). Position matters, not just count — a hedge mid-body is a violation even when
+the count is one. TEXTURE: the status clause must read as a plain informational sentence
+(e.g. "이 출원은 아직 심사를 받고 있습니다"), never as a disclaimer formula. A META
+restatement of the documents' modality ("이 모든 효과가 '~할 수 있다(can/may)'로 적힌")
+is REDUNDANT with the body verbs and counts as a safe-harbor texture violation — the
+modality lives in the verbs, not in a closing disclaimer.
 
 **What the insurance budget does NOT cover (calibration, 2026-07-12 arbitration):**
 an *insurance clause* is a STATUS statement (출원/심사/등록 여부, "pending application",
