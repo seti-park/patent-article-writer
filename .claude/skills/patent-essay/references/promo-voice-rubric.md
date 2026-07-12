@@ -49,3 +49,25 @@
 출력 규율: 항목당 정확히 한 줄 `item_id | score | evidence`, 마지막 줄 `JUDGE_SUBTOTAL: <합>/12`. 재작성 제안 금지, 그 외 텍스트 금지.
 
 <!-- v2.1 (2026-07-12): E2·E4는 이 루브릭에서 제외(소스를 읽는 safeclaims 게이트가 전담; 보이스 심판은 소스를 못 봄). 판정 = 기계 8항목(_shared/scripts/promo_voice_score.py) + GPT 판단 12항목 중 E2·E4 제외 10항목... 정정: 기계 8 + 판단 10 = 18항목, diff = (18-합)/18*100, 목표 ≤5% 연속 2회 + safeclaims SAFE-PASS 필수. -->
+
+---
+
+# EN thread voice rubric v1 (P10/B안, 2026-07-12; 기준문 = promo-en-thread canon; 14항목, diff=(14-합)/14×100, 목표 ≤5% 연속 2회 + safeclaims SAFE-PASS)
+
+## 기계 항목 6 (promo_voice_score.py --en)
+- EN-M1 포스트 수 2–4
+- EN-M2 [ARTICLE-LINK]가 마지막 포스트에 존재
+- EN-M3 지위 표현(pending/application/filed 지위절)은 최대 1회, 마지막 포스트에만
+- EN-M4 em-dash 0, 해시태그 0
+- EN-M5 포스트 1은 지위절 없이 훅으로 끝난다
+- EN-M6 문장 길이 변화(최장 ≥100자, 최단 ≤40자)
+
+## 판단 항목 8 (GPT, EN 캐논 기준문 대조)
+- EN-J1 포스트 1 = 훅: 기존 방법(들) 대비 세 번째 길 프레임, reader_sentence/서명줄급 착지
+- EN-J2 메커니즘 포스트: 접다→감다→맞닿다→컬렉터 순차 서사, 생활 비유 유지
+- EN-J3 효과 커버리지: 장비 생략 + 저항 + 구조 강성/손상 완화 (셋 다), 문서 서법(can/may) 유지
+- EN-J4 계보 연결(Battery Day/과거 tabless)
+- EN-J5 서명줄 1개 이상 verbatim 탑재(보호 표면)
+- EN-J6 칼크·추상 복합명사 전환문 0 (performance-logic 류)
+- EN-J7 마지막 포스트 = 콜 + 링크 (+선택적 평서 지위 한 문장, 면책조항체 0)
+- EN-J8 에세이/캐논 케이던스 정합(단문 punch 남용 0, 균질 결어 0)
