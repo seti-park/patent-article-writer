@@ -60,6 +60,17 @@ restatement of the documents' modality ("이 모든 효과가 '~할 수 있다(c
 is REDUNDANT with the body verbs and counts as a safe-harbor texture violation — the
 modality lives in the verbs, not in a closing disclaimer.
 
+**Owner-canon calibrations (2026-07-12, from the Owner's own reference text):**
+- A status sentence is OPTIONAL (0-1). Its ABSENCE is never a violation when the body
+  verbs carry the modality. Referring to the document mid-body as 출원/새 출원/filing is
+  IDENTIFICATION, not an insurance clause.
+- "해당 특허는 ~을 제안/제시하고 있습니다" is Korean patent-practice idiom for referring
+  to the DOCUMENT (application included) — it is NOT a status upgrade. Status upgrade
+  means status VERBS/NOUNS asserting grant: 등록됐다/특허를 받았다/patented/granted.
+- Korean coordination under a final modal distributes: "A가 높고 B가 완화될 수
+  있습니다" reads as "can be A and can mitigate B" — do not flag the first conjunct as
+  unconditional when the final 수 있다 scopes the coordination.
+
 **What the insurance budget does NOT cover (calibration, 2026-07-12 arbitration):**
 an *insurance clause* is a STATUS statement (출원/심사/등록 여부, "pending application",
 "not yet granted"). The documents' own modal verbs — "can improve", "may not necessarily

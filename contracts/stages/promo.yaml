@@ -36,7 +36,7 @@ required_outputs:
 
 rules:
   - "Essay is FINAL; never edit anything under essays/<id>/ except promo-pack.md."
-  - "Safe-claims: every factual phrase traces to essay-final / publication.md / owner-briefing only. Missing fact → drop, never fetch."
+  - "Safe-claims: every factual phrase traces to essay-final / publication.md / owner-briefing / owner-study-pack. Lineage exception (P9, Owner 2026-07-12): a run fact-check-log entry of tier 1-3 directly connected to the essay topic MAY be used when the Verification Status header names the entry id (owner-authorized). Anything else: drop, never fetch."
   - "Attachments: publication-package/ images only; cover-5x2.png default."
   - "model: inherit for posting copy (never pin down) — the grok lane (--promo-vendor grok) is an opt-in cost mode, not the default."
   - "Understanding-first: the body explains the invention's core mechanism + effects for a reader between high-school and undergraduate; the status hedge is ONE sentence, isolated at the end of each deliverable; no defensive narration mid-body."
