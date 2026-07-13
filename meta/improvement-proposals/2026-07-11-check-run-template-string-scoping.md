@@ -6,13 +6,20 @@ lever: gate-promotion
 goal: "all"
 root_cause_stage: gate
 root_cause_artifact: _shared/scripts/check_run.py (CAP_HIT_RE whole-file search; _is_confirmation_transition signal 3 whole-row-line regex) + handoff-template/03-edit/score-history.md schema comment
-recurrence_count: 2
+recurrence_count: 3
 confidence: high
 triggering_findings:
   - essay_id: tesla-us20260196678-hemmed-tabless, check_id: RUN-013, pattern_tag: checker-template-string-collision
   - essay_id: tesla-us20260196678-hemmed-tabless, check_id: RUN-000, pattern_tag: checker-confirmation-overfire
   - essay_id: intel-us20260191095-backend-hbm, check_id: RUN-000, pattern_tag: checker-confirmation-overfire (prior essay, veto proposal 2026-07-06 applied)
+  - essay_id: tesla-wo2026148096-ladder-hoist, check_id: RUN-013/RUN-006 path, pattern_tag: checker-template-string-collision (2nd essay — template "CAP HIT" comment false-triggered CAP detection again on a never-capped double-clean run; orchestrator stripped the comment line from the run copy to clear verify; recorded in the essay README known-defect notes, 2026-07-13)
 ---
+
+> Recurrence update 2026-07-13 (pipeline-retro, run tesla-wo2026148096-ladder-hoist):
+> part (a) recurred exactly as predicted ("deterministic on every future run") — the
+> faithful template copy tripped CAP detection, and the mitigation was again a manual
+> comment-strip mid-run. recurrence_count 2 → 3; status remains recommended-apply;
+> `check_run.py` CAP_HIT_RE and the template comment are still unpatched.
 
 ## Problem
 

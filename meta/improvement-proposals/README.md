@@ -47,15 +47,21 @@ Status values: `proposed` | `recommended-apply` | `applied` | `rejected`
 | 2026-07-06-steelman-two-sided | applied | 2 | 2026-07-06 |
 | 2026-07-08-promo-explainer-register-message-units | applied | 1 | 2026-07-08 |
 | 2026-07-11-understand-span-completeness | recommended-apply | 2 | 2026-07-11 |
-| 2026-07-11-check-run-template-string-scoping | recommended-apply | 2 | 2026-07-11 |
+| 2026-07-11-check-run-template-string-scoping | recommended-apply | 3 | 2026-07-13 |
 | 2026-07-11-cli-lane-envelope-first-object | watch | 1 | 2026-07-11 |
 | 2026-07-11-selfaudit-dropped-low-recheck | watch | 1 | 2026-07-11 |
+| 2026-07-13-figures-index-filename-parse | watch | 1 | 2026-07-13 |
+| 2026-07-13-lane-log-assessment-key | watch | 1 | 2026-07-13 |
+| 2026-07-13-grok-lane-turn-budget | watch | 2 | 2026-07-13 |
+| 2026-07-13-grounding-verifier-modifier-sweep | watch | 1 | 2026-07-13 |
+| 2026-07-13-revision-notes-delta-contract | watch | 2 | 2026-07-13 |
 
 **Pending recommended-apply (7):** emoji-host-fence-decidable (rec 3),
 external-fact-scope-discipline (rec 6), gate-structure-word-wall (rec 4),
 pending-application-edition (rec 2), revision-mode-new-sentence-check (rec 9),
-understand-span-completeness (rec 2), check-run-template-string-scoping (rec 2).
-Oldest pending recommended-apply date: 2026-06-11 (30 days at 2026-07-11).
+understand-span-completeness (rec 2), check-run-template-string-scoping (rec 3,
+recurred 2026-07-13 — CAP HIT template comment stripped mid-run again).
+Oldest pending recommended-apply date: 2026-06-11 (32 days at 2026-07-13).
 
 Run `python3 meta/proposals_index.py --check` to verify this index against each
 proposal file's `status:` frontmatter.
