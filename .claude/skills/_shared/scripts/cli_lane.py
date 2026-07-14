@@ -10,7 +10,8 @@ Contract (orchestrator keys on exit codes + one JSON line on stdout):
 
   exit 0  success  {"ok": true, "vendor": "...", "output": "<path>", "duration_s": N}
   exit 3  substitute  {"ok": false, "substituted": true, "vendor": "...",
-                       "reason": "cli-missing|nonzero|timeout|empty-output|invalid-output",
+                       "reason": "cli-missing|exec-failed|nonzero|timeout|empty-output"
+                                 "|invalid-output",
                        "detail": "..."}
   exit 2  usage error (argparse)
 
@@ -25,6 +26,13 @@ Contract (orchestrator keys on exit codes + one JSON line on stdout):
   --disable-web-search (prompts inline everything; no tool use required).
   Grok capture uses constrained --json-schema (document envelope); extract
   structuredOutput.document (fallback: json.loads(text)["document"]).
+
+Prompt delivery: grok takes --prompt-file (a path); codex takes the prompt on stdin
+(`codex exec -`), written by the parent and closed at EOF. The prompt must NEVER ride
+on codex's argv: Linux caps a single argv entry at MAX_ARG_STRLEN = 128 KiB, and lane
+prompts run 165-434 KB, so execve fails with E2BIG before any network call. The
+parent's own stdin is still never inherited by either child (a piped orchestrator run
+leaves it open forever, and codex appends non-TTY stdin to the prompt).
 
 Stdlib only. Never shell=True — argv lists only.
 """
@@ -270,7 +278,7 @@ def run_check(vendor: str) -> int:
     return _substitute(vendor, "cli-missing", _cli_missing_detail(vendor), None)
 
 
-def _build_gpt_argv(cwd: str, prompt_text: str, last_message_path: str) -> list[str]:
+def _build_gpt_argv(cwd: str, last_message_path: str) -> list[str]:
     return [
         "codex", "exec",
         "--skip-git-repo-check",
@@ -279,7 +287,7 @@ def _build_gpt_argv(cwd: str, prompt_text: str, last_message_path: str) -> list[
         "-m", "gpt-5.6-sol",
         "-c", "model_reasoning_effort=high",
         "-o", last_message_path,
-        prompt_text,
+        "-",  # prompt arrives on stdin; argv entries are capped at 128 KiB
     ]
 
 
@@ -323,11 +331,13 @@ def run_lane(
     tmp_last = None
     try:
         if vendor == "gpt":
-            prompt_text = prompt_path.read_text(encoding="utf-8")
+            # Prompt goes down stdin, never on argv (128 KiB per-arg ceiling).
+            stdin_kwargs = {"input": prompt_path.read_text(encoding="utf-8")}
             fd, tmp_last = tempfile.mkstemp(prefix="cli_lane_gpt_", suffix=".txt")
             os.close(fd)
-            argv = _build_gpt_argv(cwd, prompt_text, tmp_last)
+            argv = _build_gpt_argv(cwd, tmp_last)
         else:
+            stdin_kwargs = {"stdin": subprocess.DEVNULL}
             argv = _build_grok_argv(cwd, str(prompt_path), max_turns)
 
         t0 = time.monotonic()
@@ -338,7 +348,7 @@ def run_lane(
                 text=True,
                 timeout=timeout,
                 cwd=cwd if vendor == "grok" else None,
-                stdin=subprocess.DEVNULL,
+                **stdin_kwargs,
             )
         except subprocess.TimeoutExpired as exc:
             detail = "timeout after %ss" % timeout
@@ -348,6 +358,13 @@ def run_lane(
                 )
                 detail = (detail + ": " + err)[-200:]
             return _substitute(vendor, "timeout", detail, output_path)
+        except OSError as exc:
+            # execve never happened — the CLI produced no exit status at all.
+            return _substitute(
+                vendor, "exec-failed",
+                "could not exec %s: %s" % (cli, exc),
+                output_path,
+            )
         duration = time.monotonic() - t0
 
         if proc.returncode != 0:
