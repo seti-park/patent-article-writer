@@ -710,6 +710,41 @@ class CliLaneTestBase(unittest.TestCase):
             )
         _write_stub(os.path.join(self.bin_dir, "codex"), body)
 
+    def _install_codex_stdin_echo(self) -> None:
+        """Install stub codex that copies its stdin (the prompt) into the -o file.
+
+        Makes the captured output a byte-for-byte proof of what reached the CLI.
+        """
+        body = textwrap.dedent("""\
+            #!/bin/bash
+            out=""
+            while [ $# -gt 0 ]; do
+              if [ "$1" = "-o" ]; then out="$2"; shift 2; continue; fi
+              shift
+            done
+            if [ -z "$out" ]; then echo 'no -o' >&2; exit 1; fi
+            cat > "$out"
+            exit 0
+        """)
+        _write_stub(os.path.join(self.bin_dir, "codex"), body)
+
+    def _install_codex_argv_recorder(self, record_path: str) -> None:
+        """Install stub codex that records full argv, then copies stdin into -o."""
+        rec = record_path.replace("'", "'\\''")
+        body = (
+            "#!/bin/bash\n"
+            "printf '%%s\\n' \"$@\" > '%s'\n"
+            "out=\"\"\n"
+            "while [ $# -gt 0 ]; do\n"
+            "  if [ \"$1\" = \"-o\" ]; then out=\"$2\"; shift 2; continue; fi\n"
+            "  shift\n"
+            "done\n"
+            "if [ -z \"$out\" ]; then echo 'no -o' >&2; exit 1; fi\n"
+            "cat > \"$out\"\n"
+            "exit 0\n"
+        ) % rec
+        _write_stub(os.path.join(self.bin_dir, "codex"), body)
+
     def _grok_envelope_fixture(self, content: str, name: str = "grok_stdout.json") -> str:
         """Write a grok JSON envelope fixture; return its path for the bash stub to cat."""
         envelope = json.dumps({
@@ -994,34 +1029,17 @@ class TestTimeout(CliLaneTestBase):
 
 
 class TestGptStdinNotInherited(CliLaneTestBase):
-    def test_codex_child_gets_devnull_not_parent_pipe(self):
-        """cli_lane must not forward its own (possibly never-EOF) stdin to codex.
+    def test_codex_child_gets_the_prompt_not_the_parent_pipe(self):
+        """codex's stdin must be the prompt (closed at EOF), never cli_lane's own stdin.
 
-        Background/piped orchestrator runs leave stdin as an open pipe; codex
-        exec appends stdin when not a TTY. With stdin=DEVNULL on the child, a
-        stub that does extra="$(cat)" returns immediately; if the open pipe
-        were inherited, the stub (and this test) would hang until timeout.
+        Background/piped orchestrator runs leave stdin as an open pipe, and codex
+        exec appends stdin when not a TTY. The child must therefore read the prompt
+        we hand it and then see EOF; if the parent's never-EOF pipe were inherited
+        instead, the stub's `cat` (and this test) would block until timeout.
         """
-        content = GPT_CANNED
-        body = (
-            "#!/bin/bash\n"
-            "extra=\"$(cat)\"\n"
-            "out=\"\"\n"
-            "while [ $# -gt 0 ]; do\n"
-            "  if [ \"$1\" = \"-o\" ]; then out=\"$2\"; shift 2; continue; fi\n"
-            "  shift\n"
-            "done\n"
-            "if [ -z \"$out\" ]; then echo 'no -o' >&2; exit 1; fi\n"
-            "cat > \"$out\" <<'EOF'\n"
-            + content
-            + ("\n" if not content.endswith("\n") else "")
-            + "EOF\n"
-            "exit 0\n"
-        )
-        _write_stub(os.path.join(self.bin_dir, "codex"), body)
+        self._install_codex_stdin_echo()
 
         # Outer cli_lane stdin is a never-EOF pipe (live background hang shape).
-        # If cli_lane inherited/forwarded it to codex, the stub's cat would block.
         r_fd, w_fd = os.pipe()
         try:
             proc = subprocess.run(
@@ -1052,6 +1070,81 @@ class TestGptStdinNotInherited(CliLaneTestBase):
         self.assertEqual(proc.returncode, 0, proc.stderr + proc.stdout)
         data = _parse_json_line(proc.stdout)
         self.assertTrue(data["ok"])
+        # The stub echoed its stdin into -o: prove it was the prompt, not the pipe.
+        with open(self.prompt_path, encoding="utf-8") as fh:
+            prompt_body = fh.read()
+        with open(self.output_path, encoding="utf-8") as fh:
+            self.assertEqual(fh.read(), prompt_body)
+
+
+class TestGptPromptDelivery(CliLaneTestBase):
+    def test_prompt_over_argv_limit_survives(self):
+        """A prompt above MAX_ARG_STRLEN (128 KiB) must reach codex intact.
+
+        Real lane prompts run 165-434 KB. On argv, execve fails with E2BIG before
+        any network call, and the lane silently substitutes Claude — so this is the
+        regression that keeps the prompt on stdin.
+        """
+        big_prompt = "filler line to pad the lane prompt\n" * 6000
+        self.assertGreater(
+            len(big_prompt.encode("utf-8")), 131072,
+            "fixture must exceed the 128 KiB per-arg ceiling to be meaningful",
+        )
+        with open(self.prompt_path, "w", encoding="utf-8") as fh:
+            fh.write(big_prompt)
+        self._install_codex_stdin_echo()
+
+        proc = _run_cli(
+            ["--vendor", "gpt", "--prompt-file", self.prompt_path, "--output", self.output_path],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+        data = _parse_json_line(proc.stdout)
+        self.assertTrue(data["ok"])
+        with open(self.output_path, encoding="utf-8") as fh:
+            self.assertEqual(fh.read(), big_prompt)
+
+    def test_prompt_body_never_on_argv(self):
+        """codex argv must end in '-' and carry no fragment of the prompt body."""
+        marker = "PROMPT-BODY-MARKER-DO-NOT-PUT-ON-ARGV"
+        with open(self.prompt_path, "w", encoding="utf-8") as fh:
+            fh.write(marker + "\n")
+        record_path = os.path.join(self.tmp, "codex_argv.txt")
+        self._install_codex_argv_recorder(record_path)
+
+        proc = _run_cli(
+            ["--vendor", "gpt", "--prompt-file", self.prompt_path, "--output", self.output_path],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+
+        with open(record_path, encoding="utf-8") as fh:
+            argv_lines = [ln.rstrip("\n") for ln in fh.readlines()]
+        self.assertEqual(argv_lines[-1], "-", argv_lines)
+        for arg in argv_lines:
+            self.assertNotIn(marker, arg, "prompt body leaked onto argv: %r" % arg)
+        self.assertIn("-o", argv_lines)
+        self.assertIn("read-only", argv_lines)
+        self.assertIn("gpt-5.6-sol", argv_lines)
+
+
+class TestExecFailed(CliLaneTestBase):
+    def test_unexecutable_cli_reports_exec_failed(self):
+        """execve failure (no exit status) must not masquerade as 'nonzero'."""
+        _write_stub(
+            os.path.join(self.bin_dir, "codex"),
+            "#!/nonexistent/interpreter\nexit 0\n",
+        )
+        proc = _run_cli(
+            ["--vendor", "gpt", "--prompt-file", self.prompt_path, "--output", self.output_path],
+            self.env,
+        )
+        self.assertEqual(proc.returncode, 3, proc.stdout + proc.stderr)
+        data = _parse_json_line(proc.stdout)
+        self.assertTrue(data["substituted"])
+        self.assertEqual(data["reason"], "exec-failed")
+        self.assertIn("codex", data.get("detail", ""))
+        self.assertFalse(os.path.exists(self.output_path))
 
 
 class TestEmptyOutput(CliLaneTestBase):
